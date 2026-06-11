@@ -1,0 +1,219 @@
+<app-sidebar-admin>
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1>Utilisateurs</h1>
+      <div class="users-count">{{ filteredUsers.length }} comptes enregistrés</div>
+    </div>
+
+    <div class="page-header-actions">
+      <button type="button" class="btn-primary" (click)="openAddModal()">
+        + Ajouter un utilisateur
+      </button>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="filter-search">
+      <svg width="15" height="15" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input
+        type="text"
+        placeholder="Rechercher par nom ou email..."
+        [(ngModel)]="searchTerm"
+        (input)="applyFilters()"
+      />
+    </div>
+
+    <div class="filter-select">
+      <select [(ngModel)]="roleFilter" (ngModelChange)="applyFilters()">
+        <option value="" disabled selected hidden>Rôle</option>
+        <option value="ADMIN">Admin</option>
+        <option value="MANAGER">Manager</option>
+        <option value="RESPONSABLE_RH">Responsable RH</option>
+      </select>
+    </div>
+
+    <div class="filter-select">
+      <select [(ngModel)]="statutFilter" (ngModelChange)="applyFilters()">
+        <option value="" disabled selected hidden>Statut</option>
+        <option value="actif">Actif</option>
+        <option value="inactif">Inactif</option>
+      </select>
+    </div>
+
+    <div class="filter-select">
+      <select [(ngModel)]="validationFilter" (ngModelChange)="applyFilters()">
+        <option value="" disabled selected hidden>Validation</option>
+        <option value="VALIDÉ">Validé</option>
+        <option value="NON_VALIDÉ">Non validé</option>
+      </select>
+    </div>
+
+    <a class="reset-filters" (click)="resetFilters()">Réinitialiser les filtres</a>
+  </div>
+
+  <div class="table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th (click)="onSort('nom')" class="sortable">
+            Utilisateur <span class="sort-indicator">{{ sortIndicator('nom') }}</span>
+          </th>
+          <th (click)="onSort('role')" class="sortable">
+            Rôle <span class="sort-indicator">{{ sortIndicator('role') }}</span>
+          </th>
+          <th (click)="onSort('statut')" class="sortable">
+            Statut <span class="sort-indicator">{{ sortIndicator('statut') }}</span>
+          </th>
+          <th>Validation</th>
+          <th (click)="onSort('derniereConnexion')" class="sortable">
+            Dernière connexion <span class="sort-indicator">{{ sortIndicator('derniereConnexion') }}</span>
+          </th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr
+          *ngFor="let u of filteredUsers"
+          [class.row-highlight]="isHighlighted(u.id)"
+        >
+          <td class="cell-user">
+            <div class="user-cell">
+              <div class="user-avatar">{{ initialsFromFullName(fullNameOf(u)) }}</div>
+              <div class="user-text">
+                <div class="user-name">{{ fullNameOf(u) }}</div>
+                <div class="user-email">{{ u.email }}</div>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <span
+              class="{{ roleBadgeClass(u.role) }}"
+              role="button"
+              tabindex="0"
+              (click)="openRoleModal(u)"
+            >
+              {{ roleLabel(u.role) }}
+            </span>
+          </td>
+
+          <td>
+            <label class="switch">
+              <input
+                type="checkbox"
+                [checked]="u.statut === 'actif'"
+                (change)="onToggleStatus(u.id)"
+              />
+              <span class="slider"></span>
+            </label>
+          </td>
+
+          <td>
+            <div class="validation-cell">
+              <span *ngIf="u.validated" class="validation-badge validation-badge--valid">Validé</span>
+
+              <div *ngIf="!u.validated" class="validation-pending-wrap">
+                <span class="validation-badge validation-badge--pending">En attente</span>
+                <button type="button" class="btn-primary btn-small btn-validate-icon" (click)="onValidate(u.id)" aria-label="Valider le compte" title="Valider">
+                  &#10003;
+                </button>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <span *ngIf="u.derniereConnexion; else never" class="last-connexion">
+              {{ formatLastConnexion(u.derniereConnexion) }}
+            </span>
+            <ng-template #never><span class="never-connected">Jamais</span></ng-template>
+          </td>
+
+          <td>
+            <div class="actions">
+              <button class="icon-btn" type="button" title="Modifier" (click)="openEditModal(u)">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                </svg>
+              </button>
+
+              <button class="icon-btn" type="button" title="Réinitialiser" (click)="openResetModal(u)">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M21 2l-2 2" />
+                  <path d="M7 17a4 4 0 0 1 0-6l6-6a4 4 0 1 1 6 6l-6 6a4 4 0 0 1-6 0z" />
+                  <path d="M15 9l-1 1" />
+                </svg>
+              </button>
+
+              <button class="icon-btn danger" type="button" title="Supprimer" (click)="openDeleteModal(u)">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                  <path d="M10 11v6" />
+                  <path d="M14 11v6" />
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr class="empty-row" *ngIf="filteredUsers.length === 0">
+          <td colspan="6">
+            <div class="empty-inline">
+              <svg width="18" height="18" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+              </svg>
+              Aucun utilisateur trouvé
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <app-modal-utilisateur
+    *ngIf="modalType === 'add'"
+    [mode]="'add'"
+    [roles]="roles"
+    [existingUsers]="users"
+    (cancel)="closeModal()"
+    (submit)="onAddUser($event)"
+  ></app-modal-utilisateur>
+
+  <app-modal-utilisateur
+    *ngIf="modalType === 'edit'"
+    [mode]="'edit'"
+    [roles]="roles"
+    [existingUsers]="users"
+    [user]="selectedUser"
+    (cancel)="closeModal()"
+    (submit)="onEditUser($event)"
+  ></app-modal-utilisateur>
+
+  <app-modal-role
+    *ngIf="modalType === 'role'"
+    [user]="selectedUser!"
+    [roles]="roles"
+    (cancel)="closeModal()"
+    (confirmRole)="onRoleChange($event)"
+  ></app-modal-role>
+
+  <app-modal-reset-password
+    *ngIf="modalType === 'reset'"
+    [user]="selectedUser!"
+    (close)="onPasswordResetClose()"
+  ></app-modal-reset-password>
+
+  <app-modal-confirm-delete
+    *ngIf="modalType === 'delete'"
+    [user]="selectedUser!"
+    (cancel)="closeModal()"
+    (confirmDelete)="onDeleteConfirmed()"
+  ></app-modal-confirm-delete>
+</app-sidebar-admin>
+

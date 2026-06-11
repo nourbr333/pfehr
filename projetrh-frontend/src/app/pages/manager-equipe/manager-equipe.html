@@ -1,0 +1,316 @@
+﻿<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><h2>HRScope</h2><p>Portail Manager</p></div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" [routerLink]="dashboardRoute" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>Tableau de bord
+      </a>
+      <a class="nav-item" routerLink="/manager/equipe" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-3-3.8A4 4 0 0 0 9 13H7a4 4 0 0 0-3.9 3.2L3 19v2"/>
+          <circle cx="9" cy="7" r="3.5"/>
+          <path d="M21 21v-2a4 4 0 0 0-3-3.8"/><circle cx="18" cy="8" r="3"/>
+        </svg>Mon Équipe
+      </a>
+      <a class="nav-item" routerLink="/manager/absences-avancees" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/>
+          <path d="M3 10h18"/><path d="M9 15l2 2 4-4"/>
+        </svg>Absences avancé
+      </a>
+      <a class="nav-item" routerLink="/manager/okr" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <circle cx="12" cy="12" r="6"/>
+          <circle cx="12" cy="12" r="2"/>
+          <line x1="12" y1="2" x2="12" y2="6"/>
+          <line x1="12" y1="18" x2="12" y2="22"/>
+          <line x1="2" y1="12" x2="6" y2="12"/>
+          <line x1="18" y1="12" x2="22" y2="12"/>
+        </svg>Objectifs
+      </a>
+      <a class="nav-item" routerLink="/manager/evaluations" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+          <rect x="9" y="3" width="6" height="4" rx="1"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>Évaluations
+      </a>
+      <a class="nav-item" routerLink="/manager/rapports" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 17v-6"/><path d="M12 17V7"/><path d="M15 17v-4"/>
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2z"/>
+        </svg>Rapports
+      </a>
+
+      <a class="nav-item" routerLink="/manager/calendrier" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>Calendrier
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-logout" (click)="onDeconnexion()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>Déconnexion
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-actions">
+        <app-notifications-panel></app-notifications-panel>
+        <div class="user-info">
+          <div class="user-info-text">
+            <div class="name">{{ utilisateur?.prenom }} {{ utilisateur?.nom }}</div>
+            <div class="role">{{ utilisateur?.role }}</div>
+          </div>
+          <div class="avatar" (click)="onProfil()" title="Mon profil">{{ utilisateur?.initiales }}</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="page-header">
+        <div>
+          <h1>Mon Équipe</h1>
+          <p>{{ membersCountLabel }}</p>
+        </div>
+      </div>
+
+      <div class="table-toolbar">
+        <div class="table-search">
+          <svg width="15" height="15" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" placeholder="Rechercher par nom…" [(ngModel)]="searchTerm" (input)="onSearch()"/>
+        </div>
+        <div class="table-filter">
+          <svg width="15" height="15" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M3 4h18l-7 8v6l-4 2v-8L3 4z"/>
+          </svg>
+          <select [(ngModel)]="selectedDepartmentId" (ngModelChange)="onDepartmentFilterChange($event)">
+            <option [ngValue]="null">Tous les départements</option>
+            <option *ngFor="let department of departmentOptions" [ngValue]="department.id">{{ department.label }}</option>
+          </select>
+        </div>
+        <div class="filter-count-chip">
+          {{ selectedDepartmentLabel }}: {{ selectedDepartmentCount }}
+        </div>
+        <button class="btn-invite" type="button" (click)="openInviteModal()">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/>
+          </svg>
+          Inviter un collaborateur
+        </button>
+      </div>
+
+      <div class="kpi-grid">
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Membres affichés</span>
+          </div>
+          <strong class="kpi-value">{{ totalMembersCount }}</strong>
+          <span class="kpi-subvalue">Membres dans l'équipe</span>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Départements représentés</span>
+          </div>
+          <strong class="kpi-value">{{ distinctDeptCount }}</strong>
+          <span class="kpi-subvalue">Départements distincts</span>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Postes uniques</span>
+          </div>
+          <strong class="kpi-value">{{ distinctPostCount }}</strong>
+          <span class="kpi-subvalue">Rôles Distincts</span>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Arrivées récentes</span>
+          </div>
+          <strong class="kpi-value">{{ recentArrivalsCount }}</strong>
+          <span class="kpi-subvalue">Nouveau(x) collaborateur(s) · 30 derniers jours</span>
+        </article>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="col-name">Nom Prénom</th>
+              <th>Département</th>
+              <th>Score Perf</th>
+              <th>Taux Présence</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of paginatedMembers">
+              <td class="col-name">
+                <button class="linkish name-cell" type="button" (click)="openDrawer(m)" [title]="m.firstName + ' ' + m.lastName">
+                  {{ m.firstName }} {{ m.lastName }}
+                </button>
+              </td>
+              <td>{{ memberDepartment(m) }}</td>
+              <td>
+                <span [class]="perfBadgeClass(m.performance_score)">{{ m.performance_score }}</span>
+              </td>
+              <td>
+                <div class="presence">
+                  <div class="presence-bar">
+                    <div class="presence-fill" [class]="presenceBarClass(m.attendance_rate)" [style.width.%]="m.attendance_rate"></div>
+                  </div>
+                  <div class="presence-text">{{ m.attendance_rate }}%</div>
+                </div>
+              </td>
+              <td>
+                <div class="actions">
+                  <button class="icon-btn" type="button" title="Voir fiche" (click)="openDrawer(m)">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                  <button class="icon-btn danger" type="button" title="Retirer de l'équipe" (click)="openRetireModal(m)">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                      <line x1="22" y1="11" x2="16" y2="11"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="empty-row" *ngIf="filteredMembers.length === 0">
+              <td colspan="5">
+                <div class="empty-inline">Aucun membre trouvé</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-toolbar pagination-toolbar">
+        <div class="toolbar-search pagination-status">
+          <span>Page {{ currentPage }} / {{ totalPages }}</span>
+        </div>
+        <div class="toolbar-filter pagination-controls">
+          <button type="button" class="page-nav-btn" (click)="previousPage()" [disabled]="!canGoPrevious">Précédent</button>
+          <button type="button" class="page-nav-btn" (click)="nextPage()" [disabled]="!canGoNext">Suivant</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- MODAL: invite employee -->
+<div class="modal-backdrop" *ngIf="isInviteModalOpen" (click)="closeInviteModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">Inviter un collaborateur</div>
+      <button class="modal-close" type="button" (click)="closeInviteModal()" [disabled]="isInviting">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="invite-hint">Recherchez un collaborateur à inviter dans votre équipe. Le responsable RH recevra une notification et procédera à l'affectation.</p>
+      <div class="invite-search-box">
+        <svg width="15" height="15" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" placeholder="Nom ou ID collaborateur…" [(ngModel)]="inviteSearchQuery" (input)="onInviteSearch()" [disabled]="isInviting"/>
+      </div>
+      <div class="invite-list" *ngIf="inviteFilteredList.length > 0">
+        <div class="invite-row" *ngFor="let emp of inviteFilteredList">
+          <div class="invite-info">
+            <div class="invite-avatar">{{ (emp.firstName[0] ?? '') + (emp.lastName[0] ?? '') | uppercase }}</div>
+            <div>
+              <div class="invite-name">{{ emp.firstName }} {{ emp.lastName }}</div>
+              <div class="invite-sub">{{ emp.poste }} • {{ emp.departmentLabel }}</div>
+            </div>
+          </div>
+          <button class="btn-invite-action" type="button" (click)="inviteEmployee(emp)" [disabled]="isInviting">
+            Inviter
+          </button>
+        </div>
+      </div>
+      <div class="empty-inline" *ngIf="inviteSearchQuery && inviteFilteredList.length === 0">Aucun résultat</div>
+      <div class="invite-success" *ngIf="inviteSuccessMessage">{{ inviteSuccessMessage }}</div>
+      <div class="error" *ngIf="inviteError">{{ inviteError }}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" type="button" (click)="closeInviteModal()" [disabled]="isInviting">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: retire from team -->
+<div class="modal-backdrop" *ngIf="isDeleteModalOpen" (click)="closeDeleteModal()">
+  <div class="modal-card sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">Retirer de l'équipe</div>
+      <button class="modal-close" type="button" (click)="closeDeleteModal()" [disabled]="isDeletingMember">✕</button>
+    </div>
+    <div class="modal-body">
+      Êtes-vous sûr de vouloir retirer <b>{{ memberToDelete?.firstName }} {{ memberToDelete?.lastName }}</b> de votre équipe ?<br>
+      <small>le collaborateur ne sera plus rattaché à votre équipe mais restera dans le système.</small>
+      <div class="error" *ngIf="deleteError" style="margin-top:8px">{{ deleteError }}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" type="button" (click)="closeDeleteModal()" [disabled]="isDeletingMember">Annuler</button>
+      <button class="btn-danger" type="button" (click)="confirmDelete()" [disabled]="isDeletingMember">
+        {{ isDeletingMember ? 'Retrait en cours…' : 'Confirmer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DRAWER fiche -->
+<div class="drawer-backdrop" [class.open]="isDrawerOpen" (click)="closeDrawer()">
+  <div class="drawer" [class.open]="isDrawerOpen" (click)="$event.stopPropagation()">
+    <div class="drawer-header">
+      <div class="drawer-left">
+        <div class="drawer-avatar">{{ selectedMember ? initialsOf(selectedMember) : '' }}</div>
+        <div>
+          <div class="drawer-name">{{ selectedMember?.firstName }} {{ selectedMember?.lastName }}</div>
+          <div class="drawer-sub">{{ selectedMember?.poste }} • {{ selectedMember?.email }}</div>
+        </div>
+      </div>
+      <button class="drawer-close" type="button" (click)="closeDrawer()">✕</button>
+    </div>
+
+    <div class="drawer-content" *ngIf="selectedMember">
+      <div class="eval-list profile-info">
+        <div class="kpi-mini">
+          <div class="kpi-mini-label">NOM COMPLET</div>
+          <div class="kpi-mini-value">{{ selectedMember.name }}</div>
+        </div>
+
+        <div class="kpi-mini">
+          <div class="kpi-mini-label">POSTE</div>
+          <div class="kpi-mini-value">{{ selectedMember.job_title || '—' }}</div>
+        </div>
+
+        <div class="kpi-mini">
+          <div class="kpi-mini-label">DÉPARTEMENT</div>
+          <div class="kpi-mini-value">{{ selectedMember.department || '—' }}</div>
+        </div>
+
+        <div class="kpi-mini">
+          <div class="kpi-mini-label">ID EMPLOYÉ</div>
+          <div class="kpi-mini-value">{{ selectedMember.id }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

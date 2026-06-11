@@ -1,0 +1,34 @@
+<section class="filter-bar">
+  <div class="filter-group">
+    <span class="filter-label">Période</span>
+    <div class="period-pills">
+      <button type="button" [class.active]="selectedPeriod === 'month'" (click)="onPeriodClick('month')">Mois</button>
+      <button type="button" [class.active]="selectedPeriod === 'quarter'" (click)="onPeriodClick('quarter')">Trimestre</button>
+      <button type="button" [class.active]="selectedPeriod === 'year'" (click)="onPeriodClick('year')">Année</button>
+    </div>
+  </div>
+
+  @if (showDepartmentFilter) {
+  <div class="filter-group">
+    <span class="filter-label">Département</span>
+    <select
+      class="filter-select"
+      [ngModel]="selectedDepartmentId"
+      (ngModelChange)="onDepartmentChange($event)">
+      <option [ngValue]="null">Tous</option>
+      @for (department of departments; track department.departmentId) {
+        <option [ngValue]="department.departmentId">{{ department.departmentName }}</option>
+      }
+    </select>
+  </div>
+  }
+
+  <button class="btn-export-excel" type="button" (click)="exportClicked.emit()" title="Exporter en Excel">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/>
+      <polyline points="9 15 12 18 15 15"/>
+    </svg>
+    Exporter en Excel
+  </button>
+</section>

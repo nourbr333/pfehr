@@ -1,0 +1,143 @@
+﻿<app-sidebar-admin>
+  <div class="dashboard-header">
+    <div>
+      <h1>Vue Managers</h1>
+      <p>Récap de l’activité des managers : équipes, objectifs OKR, évaluations et absences à traiter.</p>
+    </div>
+    <div class="dashboard-header-right">
+      <span class="employee-muted">Mise à jour · {{ todayLabel }}</span>
+    </div>
+  </div>
+
+  <div class="dashboard-content">
+    <section class="section-block">
+      <div class="section-title-row">
+        <h2>Indicateurs managers</h2>
+      </div>
+      <div class="kpi-grid">
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Managers</span>
+            <div class="kpi-icon" aria-hidden="true">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="2" y="7" width="20" height="14" rx="2" />
+                <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+              </svg>
+            </div>
+          </div>
+          <strong class="kpi-value">{{ overview?.totalManagers ?? 0 }}</strong>
+          <span class="kpi-subvalue">{{ overview?.managersAvecCompteActif ?? 0 }} avec compte actif</span>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Avancement OKR moyen</span>
+            <div class="kpi-icon kpi-icon-green" aria-hidden="true">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="6" />
+                <circle cx="12" cy="12" r="2" />
+              </svg>
+            </div>
+          </div>
+          <strong class="kpi-value">{{ overview?.avancementOkrMoyen ?? 0 }}%</strong>
+          <span class="kpi-subvalue">Tous objectifs confondus</span>
+        </article>
+
+        <article class="kpi-card" [class.kpi-card-alert]="(overview?.objectifsEnRisque ?? 0) > 0">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Objectifs en risque</span>
+            <div class="kpi-icon kpi-icon-red" aria-hidden="true">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </div>
+          </div>
+          <strong class="kpi-value">{{ overview?.objectifsEnRisque ?? 0 }}</strong>
+          <span class="kpi-subvalue">Statut « à risque » ou « hors piste »</span>
+        </article>
+
+        <article class="kpi-card" [class.kpi-card-alert]="(overview?.absencesEnAttenteTotal ?? 0) > 0">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Absences à traiter</span>
+            <div class="kpi-icon kpi-icon-orange" aria-hidden="true">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </div>
+          </div>
+          <strong class="kpi-value">{{ overview?.absencesEnAttenteTotal ?? 0 }}</strong>
+          <span class="kpi-subvalue">{{ overview?.evaluationsAnnee ?? 0 }} évaluation(s) réalisée(s) cette année</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-block">
+      <div class="section-title-row">
+        <h2>Détail par manager</h2>
+        <span class="section-title-hint">{{ managers.length }} manager(s)</span>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Manager</th>
+              <th>Équipe</th>
+              <th>OKR</th>
+              <th>En risque</th>
+              <th>Évaluations</th>
+              <th>Absences en attente</th>
+              <th>Compte</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of managers">
+              <td>
+                <div class="manager-cell">
+                  <div class="manager-avatar">{{ initialsOf(m.nom) }}</div>
+                  <div class="manager-info">
+                    <div class="manager-name">{{ m.nom }}</div>
+                    <div class="manager-dept">{{ m.departement || '—' }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>{{ m.tailleEquipe }} membre(s)</td>
+              <td>
+                <div class="okr-cell" *ngIf="m.objectifs > 0; else noOkr">
+                  <div class="okr-meta">{{ m.objectifs }} obj. · {{ m.avancementMoyen }}%</div>
+                  <div class="progress-track">
+                    <div [class]="progressClass(m.avancementMoyen)" [style.width.%]="clampPercent(m.avancementMoyen)"></div>
+                  </div>
+                </div>
+                <ng-template #noOkr><span class="cell-muted">Aucun objectif</span></ng-template>
+              </td>
+              <td>
+                <span *ngIf="m.objectifsEnRisque > 0" class="log-type-pill log-type-pill-red">{{ m.objectifsEnRisque }}</span>
+                <span *ngIf="m.objectifsEnRisque === 0" class="cell-muted">—</span>
+              </td>
+              <td>{{ m.evaluationsAnnee }}</td>
+              <td>
+                <span *ngIf="m.absencesEnAttente > 0" class="log-type-pill log-type-pill-orange">{{ m.absencesEnAttente }}</span>
+                <span *ngIf="m.absencesEnAttente === 0" class="cell-muted">—</span>
+              </td>
+              <td>
+                <span *ngIf="m.compteActif" class="log-type-pill log-type-pill-green">Actif</span>
+                <span *ngIf="!m.compteActif" class="log-type-pill log-type-pill-gray">Non lié</span>
+              </td>
+            </tr>
+
+            <tr *ngIf="!loading && managers.length === 0">
+              <td colspan="7">
+                <div class="empty-row">Aucun manager identifié (champ « is_manager » des collaborateurs)</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</app-sidebar-admin>

@@ -1,0 +1,169 @@
+<div class="modal-backdrop" (click)="cancel.emit()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">
+        {{
+          mode === 'add'
+            ? 'Ajouter un utilisateur'
+            : 'Modifier ' + fullNameOfUser(user)
+        }}
+      </div>
+      <button type="button" class="modal-close" (click)="cancel.emit()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-grid">
+        <label>
+          Prénom* :
+          <input
+            type="text"
+            name="prenom"
+            [(ngModel)]="prenom"
+            placeholder="Ex: Nour"
+          />
+        </label>
+
+        <label>
+          Nom* :
+          <input
+            type="text"
+            name="nom"
+            [(ngModel)]="nom"
+            placeholder="Ex: Trabelsi"
+          />
+        </label>
+
+        <label class="full">
+          Email* :
+          <input
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            placeholder="Ex: nour@company.com"
+          />
+          <div class="inline-error" *ngIf="email && !emailValid">
+            Format email invalide
+          </div>
+          <div class="inline-error" *ngIf="emailDuplicate">
+            Email déjà utilisé
+          </div>
+        </label>
+
+        <label>
+          Rôle* :
+          <select name="role" [(ngModel)]="role">
+            <option value="ADMIN">Admin</option>
+            <option value="MANAGER">Manager</option>
+            <option value="RESPONSABLE_RH">Responsable RH</option>
+          </select>
+        </label>
+
+        <div class="toggle-block">
+          <div class="toggle-label">Statut :</div>
+          <label class="switch">
+            <input
+              type="checkbox"
+              name="statutToggle"
+              [ngModel]="statut === 'actif'"
+              (ngModelChange)="statut = $event ? 'actif' : 'inactif'"
+            />
+            <span class="slider"></span>
+          </label>
+          <div class="toggle-values">
+            <span [class.toggle-value--active]="statut === 'actif'">Actif</span>
+            <span [class.toggle-value--active]="statut === 'inactif'">Inactif</span>
+          </div>
+        </div>
+
+        <div class="toggle-block">
+          <div class="toggle-label">Validation :</div>
+          <label class="switch">
+            <input
+              type="checkbox"
+              name="validated"
+              [ngModel]="validated"
+              (ngModelChange)="validated = $event"
+            />
+            <span class="slider"></span>
+          </label>
+          <div class="toggle-values">
+            <span [class.toggle-value--active]="validated">Validé</span>
+            <span [class.toggle-value--active]="!validated">En attente</span>
+          </div>
+        </div>
+
+        <div class="full">
+          <div class="password-block" *ngIf="mode === 'add'">
+            <div class="password-title">
+              Mot de passe* :
+            </div>
+
+            <div class="password-row">
+              <input
+                class="password-input"
+                [type]="showPassword ? 'text' : 'password'"
+                name="password"
+                [(ngModel)]="password"
+                placeholder="Créer un mot de passe"
+              />
+              <button type="button" class="eye-btn" (click)="showPassword = !showPassword">
+                {{ showPassword ? 'Masquer' : 'Voir' }}
+              </button>
+            </div>
+
+            <div class="strength-bar">
+              <div
+                class="strength-fill"
+                [style.width]="(addPasswordScore / 4) * 100 + '%'"
+                [style.background]="strengthColor(addPasswordScore).fill"
+              ></div>
+            </div>
+          </div>
+
+          <div class="password-block" *ngIf="mode === 'edit'">
+            <label class="checkbox-line">
+              <input type="checkbox" name="modifyPassword" [(ngModel)]="modifyPassword" />
+              <span>Modifier le mot de passe</span>
+            </label>
+
+            <div class="password-row" *ngIf="modifyPassword">
+              <input
+                class="password-input"
+                [type]="showNewPassword ? 'text' : 'password'"
+                name="newPassword"
+                [(ngModel)]="newPassword"
+                placeholder="Nouveau mot de passe"
+              />
+              <button type="button" class="eye-btn" (click)="showNewPassword = !showNewPassword">
+                {{ showNewPassword ? 'Masquer' : 'Voir' }}
+              </button>
+            </div>
+
+            <div class="strength-bar" *ngIf="modifyPassword">
+              <div
+                class="strength-fill"
+                [style.width]="(newPasswordScore / 4) * 100 + '%'"
+                [style.background]="strengthColor(newPasswordScore).fill"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" (click)="cancel.emit()">
+        Annuler
+      </button>
+      <button
+        type="button"
+        class="btn-primary"
+        [disabled]="!canSubmit"
+        (click)="onSubmit()"
+      >
+        {{ mode === 'add' ? 'Ajouter l\'utilisateur' : 'Enregistrer les modifications' }}
+      </button>
+    </div>
+  </div>
+</div>
+

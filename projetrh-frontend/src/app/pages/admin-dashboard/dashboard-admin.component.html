@@ -1,0 +1,204 @@
+<app-sidebar-admin>
+  <div class="dashboard-header">
+    <div>
+      <h1>Tableau de bord admin</h1>
+      <p>Supervision des comptes, des rôles et de l’activité sur la plateforme.</p>
+    </div>
+    <div class="dashboard-header-right">
+      <button type="button" class="dash-outline-btn" (click)="onGoVueResponsables()">Vue Responsables</button>
+      <button type="button" class="dash-outline-btn" (click)="onGoVueManagers()">Vue Managers</button>
+      <button type="button" class="dash-outline-btn" (click)="onGoUsers()">Utilisateurs</button>
+      <button type="button" class="dash-outline-btn" (click)="onGoLogs()">Activités</button>
+      <span class="employee-muted">Mise à jour · {{ todayLabel }}</span>
+    </div>
+  </div>
+
+  <div class="dashboard-content">
+    <section class="section-block">
+      <div class="section-title-row">
+        <h2>Vue d’ensemble</h2>
+      </div>
+      <div class="kpi-grid">
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Utilisateurs</span>
+            <div class="kpi-icon" aria-hidden="true">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+          </div>
+          <strong class="kpi-value">{{ totalUsers }}</strong>
+          <span class="kpi-subvalue">{{ activeUsers }} actifs · {{ inactiveUsers }} inactifs</span>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Connexions récentes</span>
+            <div class="kpi-icon kpi-icon-green" aria-hidden="true">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+            </div>
+          </div>
+          <strong class="kpi-value">{{ stats?.recentConnections ?? 0 }}</strong>
+          <span class="kpi-subvalue">Sur les 7 derniers jours</span>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Rôles actifs</span>
+            <div class="kpi-icon kpi-icon-orange" aria-hidden="true">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+          </div>
+          <strong class="kpi-value">{{ stats?.activeRolesCount ?? 0 }}</strong>
+          <span class="kpi-subvalue">{{ stats?.activeRolesLabel }}</span>
+        </article>
+
+        <article
+          class="kpi-card kpi-card-pending"
+          role="button"
+          tabindex="0"
+          (click)="onGoPendingAccounts()"
+          (keydown.enter)="onGoPendingAccounts()"
+          [class.kpi-card-alert]="pendingCount > 0"
+        >
+          <div class="kpi-card-head">
+            <span class="kpi-label">En attente de validation</span>
+            <div
+              class="kpi-icon"
+              aria-hidden="true"
+              [style.background]="pendingCount > 0 ? '#e74c3c26' : '#e5e7eb'"
+              [style.color]="pendingCount > 0 ? '#e74c3c' : '#9ca3af'"
+            >
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </div>
+          </div>
+          <strong class="kpi-value">{{ pendingCount }}</strong>
+          <span class="kpi-subvalue"> </span>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-block">
+      <div class="section-title-row">
+        <h2>Activité & validations</h2>
+      </div>
+      <div class="section-grid two-col">
+        <article class="chart-card">
+          <div class="chart-head">
+            <h3>Journal récent</h3>
+            <button type="button" class="linkish chart-head-action" (click)="onGoLogs()">Toutes les activités</button>
+          </div>
+          <div class="recent-chips" role="tablist">
+            <button
+              *ngFor="let c of recentChips"
+              type="button"
+              role="tab"
+              class="recent-chip"
+              [class.active]="recentFilter === c.id"
+              [attr.aria-selected]="recentFilter === c.id"
+              (click)="setRecentFilter(c.id)"
+            >
+              {{ c.label }}
+            </button>
+          </div>
+          <div class="chart-body chart-body--list">
+            <div class="recent-list">
+              <div class="recent-item" *ngFor="let l of recentLogs">
+                <span class="action-dot" [ngClass]="actionPillClass(l.action)" aria-hidden="true"></span>
+                <div class="recent-text">{{ actionLabel(l.action) }} — {{ l.cible }}</div>
+                <div class="recent-date">{{ relativeDate(l.date) }}</div>
+              </div>
+              <div class="empty-row" *ngIf="recentLogs.length === 0">Aucune activité récente dans cette catégorie</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="chart-card">
+          <div class="chart-head">
+            <h3>Comptes en attente</h3>
+            <button type="button" class="linkish chart-head-action" (click)="onGoUsers()">Gérer</button>
+          </div>
+          <div class="chart-body chart-body--list">
+            <div *ngIf="pendingUsers.length === 0" class="empty-state-mini">
+              <svg width="40" height="40" fill="none" stroke="#22c55e" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <div class="empty-state-text">Aucun compte en attente</div>
+            </div>
+
+            <div class="pending-list" *ngIf="pendingUsers.length > 0">
+              <div class="pending-item" *ngFor="let u of pendingUsers">
+                <div class="pending-avatar">{{ initialsOf(fullNameOf(u)) }}</div>
+                <div class="pending-info">
+                  <div class="pending-name">{{ fullNameOf(u) }}</div>
+                  <div class="pending-sub">
+                    <span class="{{ roleBadgeClass(u.role) }}" (click)="onSeeUser(u.id)" role="button" tabindex="0">
+                      {{ roleLabel(u.role) }}
+                    </span>
+                    <span class="pending-created">Créé le {{ formatDateYmd(u.dateCreation) }}</span>
+                  </div>
+                </div>
+                <div class="pending-actions">
+                  <button type="button" class="btn-primary btn-small" (click)="onValidateUser(u.id)">Valider</button>
+                  <button type="button" class="btn-secondary btn-outline btn-small" (click)="onSeeUser(u.id)">
+                    Voir
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-block">
+      <div class="section-title-row">
+        <h2>Analytique</h2>
+        <span class="section-title-hint">Données issues des journaux et des comptes</span>
+      </div>
+      <div class="section-grid two-col">
+        <article class="chart-card">
+          <div class="chart-head-block">
+            <div class="chart-head">
+              <h3>Tendances d’activité</h3>
+            </div>
+            <p class="chart-head-meta">Répartition des entrées de journal par heure (heure locale)</p>
+          </div>
+          <div class="chart-body chart-body--chart">
+            <ng-container *ngIf="hasActivityHourChart; else noActivityChart">
+              <canvas #activityHourCanvas></canvas>
+            </ng-container>
+            <ng-template #noActivityChart>
+              <div class="chart-empty">
+                Aucune entrée de journal — le graphique s’affichera dès qu’il y aura de l’activité enregistrée.
+              </div>
+            </ng-template>
+          </div>
+        </article>
+
+        <article class="chart-card">
+          <div class="chart-head-block">
+            <div class="chart-head">
+              <h3>Répartition des rôles</h3>
+            </div>
+            <p class="chart-head-meta">Utilisateurs au statut actif</p>
+          </div>
+          <div class="chart-body chart-body--chart">
+            <canvas #rolesActiveCanvas></canvas>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+</app-sidebar-admin>

@@ -1,0 +1,100 @@
+<div class="modal-backdrop" (click)="!submitting && cancel()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header-band">
+      <div class="modal-header-left">
+        <div class="modal-header-icon">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M8 2v4"/><path d="M16 2v4"/>
+            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/>
+          </svg>
+        </div>
+        <div class="modal-header-title">Nouvelle demande de congé</div>
+      </div>
+      <button type="button" class="modal-close-btn" [disabled]="submitting" (click)="cancel()" aria-label="Fermer">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Collaborateur</label>
+        <div class="autocomplete-wrap">
+          <input type="text" class="form-input" placeholder="Rechercher un collaborateur..."
+                 [(ngModel)]="employeeSearch"
+                 (input)="onEmployeeSearch()"
+                 (focus)="showEmployeeDropdown = true"
+                 (blur)="closeEmployeeDropdownDelayed()" />
+          <div class="autocomplete-dropdown" *ngIf="showEmployeeDropdown && filteredEmployees.length > 0">
+            <div class="autocomplete-item" *ngFor="let emp of filteredEmployees" (click)="selectEmployee(emp)">
+              <span class="emp-avatar">{{ emp.avatar }}</span>
+              <div>
+                <div class="emp-name">{{ emp.fullName }}</div>
+                <small class="emp-dept">{{ emp.department }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Type de congé</label>
+        <select class="form-input" [(ngModel)]="form.type" (ngModelChange)="onTypeChanged()">
+          <option value="">-- Sélectionner --</option>
+          <option *ngFor="let policy of activePolicies" [value]="policy.type">
+            {{ policy.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date de début</label>
+          <input type="date" class="form-input" [(ngModel)]="form.startDate" (ngModelChange)="onDatesChanged()" />
+        </div>
+        <div class="form-group">
+          <label>Date de fin</label>
+          <input type="date" class="form-input" [(ngModel)]="form.endDate" (ngModelChange)="onDatesChanged()" />
+        </div>
+      </div>
+
+      <div class="balance-summary" *ngIf="form.requestedDays > 0">
+        <div class="summary-item">
+          <span class="summary-label">Jours demandés</span>
+          <strong>{{ form.requestedDays }}</strong>
+        </div>
+        <div class="summary-item" *ngIf="form.balanceAfter !== null">
+          <span class="summary-label">Solde après</span>
+          <strong [class.critical]="form.balanceAfter < 0" [class.warning]="form.balanceAfter >= 0 && form.balanceAfter < 5">
+            {{ form.balanceAfter }}
+          </strong>
+        </div>
+      </div>
+
+      <div class="alert alert-danger" *ngIf="insufficientBalance">
+        Solde insuffisant. La demande ne peut pas être soumise.
+      </div>
+
+      <div class="alert alert-warning" *ngIf="conflicts.length > 0">
+        <strong>Conflits détectés :</strong>
+        <div *ngFor="let conflict of conflicts" class="conflict-item">
+          {{ conflict.department }} — {{ conflict.absenceCount }}/{{ conflict.departmentHeadcount }} absents ({{ conflict.absenceRate | number:'1.0-0' }}%)
+          <span class="conflict-badge" *ngIf="conflict.exceedsThreshold">Seuil dépassé</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Notes (optionnel)</label>
+        <textarea class="form-input form-textarea" [(ngModel)]="form.notes" rows="3" placeholder="Commentaire..."></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" (click)="cancel()">{{ submitting ? 'Annuler la soumission' : 'Annuler' }}</button>
+      <button type="button" class="btn-primary" (click)="submit()" [disabled]="!isFormValid || submitting">
+        {{ submitting ? 'Soumission...' : 'Soumettre' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,1002 @@
+﻿  <aside class="sidebar">
+    <div class="sidebar-brand"><h2>HRScope</h2><p>Portail Manager</p></div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" [routerLink]="dashboardRoute" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>Tableau de bord
+      </a>
+      <a class="nav-item" routerLink="/manager/equipe" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-3-3.8A4 4 0 0 0 9 13H7a4 4 0 0 0-3.9 3.2L3 19v2"/>
+          <circle cx="9" cy="7" r="3.5"/>
+          <path d="M21 21v-2a4 4 0 0 0-3-3.8"/><circle cx="18" cy="8" r="3"/>
+        </svg>Mon Équipe
+      </a>
+      <a class="nav-item" routerLink="/manager/absences-avancees" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/>
+          <path d="M3 10h18"/><path d="M9 15l2 2 4-4"/>
+        </svg>Absences avancé
+      </a>
+      <a class="nav-item" routerLink="/manager/okr" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <circle cx="12" cy="12" r="6"/>
+          <circle cx="12" cy="12" r="2"/>
+          <line x1="12" y1="2" x2="12" y2="6"/>
+          <line x1="12" y1="18" x2="12" y2="22"/>
+          <line x1="2" y1="12" x2="6" y2="12"/>
+          <line x1="18" y1="12" x2="22" y2="12"/>
+        </svg>Objectifs
+      </a>
+      <a class="nav-item" routerLink="/manager/evaluations" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+          <rect x="9" y="3" width="6" height="4" rx="1"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>Évaluations
+      </a>
+      <a class="nav-item" routerLink="/manager/rapports" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 17v-6"/><path d="M12 17V7"/><path d="M15 17v-4"/>
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2z"/>
+        </svg>Rapports
+      </a>
+      <a class="nav-item" routerLink="/manager/calendrier" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>Calendrier
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-logout" (click)="onDeconnexion()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>Déconnexion
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-actions">
+        <app-notifications-panel></app-notifications-panel>
+        <div class="user-info">
+          <div class="user-info-text">
+            <div class="name">{{ utilisateur?.prenom }} {{ utilisateur?.nom }}</div>
+            <div class="role">{{ utilisateur?.role }}</div>
+          </div>
+          <div class="avatar" (click)="onProfil()" title="Mon profil">{{ utilisateur?.initiales }}</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+
+      <!-- Sticky header: page title + tab bar -->
+      <div class="page-sticky-top">
+
+      <!-- Page header -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>Objectifs</h1>
+          <p>Suivre l'avancement des objectifs équipe/individuels, détecter les risques et arbitrer rapidement.</p>
+          <small *ngIf="isLoading" class="mock-hint">Chargement des objectifs…</small>
+          <small *ngIf="loadError" class="mock-hint error">{{ loadError }}</small>
+        </div>
+        <div class="page-header-actions">
+          <button type="button" class="btn-success" (click)="openImportModal()">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Importer
+          </button>
+          <button type="button" class="btn-primary" (click)="setTab('actions'); setActionTab('create')">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Nouvel objectif
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="tab-bar">
+        <button type="button" class="tab" [class.active]="activeTab === 'portefeuille'" (click)="setTab('portefeuille')">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          Portefeuille
+        </button>
+        <button type="button" class="tab" [class.active]="activeTab === 'analyse'" (click)="setTab('analyse')">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M9 17v-6"/><path d="M12 17V7"/><path d="M15 17v-4"/>
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2z"/>
+          </svg>
+          Analyse &amp; Risques
+        </button>
+
+        <button type="button" class="tab" [class.active]="activeTab === 'actions'" (click)="setTab('actions')">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/>
+          </svg>
+          Actions clés
+        </button>
+      </div>
+
+      </div><!-- /page-sticky-top -->
+
+      <!-- Tab panels -->
+      <div class="tab-panels">
+
+        <!-- TAB: Portefeuille -->
+        <div class="tab-panel" [class.active]="activeTab === 'portefeuille'">
+
+          <section class="kpi-grid">
+            <article class="kpi-card">
+              <div class="kpi-card-head"><span class="kpi-label">On track</span></div>
+              <strong class="kpi-value green">{{ onTrackPercent }}%</strong>
+              <span class="kpi-subvalue">objectifs dans les temps</span>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-head"><span class="kpi-label">At risk</span></div>
+              <strong class="kpi-value orange">{{ atRiskPercent }}%</strong>
+              <span class="kpi-subvalue">nécessitent une attention</span>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-head"><span class="kpi-label">Off track</span></div>
+              <strong class="kpi-value red">{{ offTrackPercent }}%</strong>
+              <span class="kpi-subvalue">action requise</span>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-card-head"><span class="kpi-label">Échus non atteints</span></div>
+              <strong class="kpi-value red">{{ overdueMissedCount }}</strong>
+              <span class="kpi-subvalue">à traiter en priorité</span>
+            </article>
+          </section>
+
+          <section class="portfolio-card">
+            <div class="section-title-row">
+              <h2>Portefeuille d'objectifs</h2>
+              <div class="filters">
+                <select [(ngModel)]="selectedScope">
+                  <option value="all">Toutes les portées</option>
+                  <option value="Équipe">Équipe</option>
+                  <option value="Individuel">Individuel</option>
+                </select>
+                <select [(ngModel)]="selectedRisk">
+                  <option value="all">Tous les statuts</option>
+                  <option value="on_track">On track</option>
+                  <option value="at_risk">At risk</option>
+                  <option value="off_track">Off track</option>
+                </select>
+                <button class="btn-reset-icon" type="button" (click)="resetPortfolioFilters()" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres">×</button>
+                <button class="btn-export-excel" type="button" (click)="exportPortfolioExcel()" title="Exporter le portefeuille en Excel">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/>
+                    <polyline points="9 15 12 18 15 15"/>
+                  </svg>
+                  Exporter en Excel
+                </button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Propriétaire</th>
+                    <th>Horizon</th>
+                    <th>Progression %</th>
+                    <th>Statut risque</th>
+                    <th class="th-alertes">Alertes</th>
+                    <th>Dépendances</th>
+                    <th>Dernière mise à jour</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let objective of sortedObjectives">
+                    <td>
+                      <div class="owner-cell">
+                        <strong>{{ ownerLabel(objective) }}</strong>
+                        <span>{{ objective.code }} - {{ objective.titre }}</span>
+                      </div>
+                    </td>
+                    <td>{{ objective.horizon }}</td>
+                    <td>
+                      <div class="progress-cell">
+                        <div class="progress-track">
+                          <div class="progress-fill" [style.width.%]="objective.progress"></div>
+                        </div>
+                        <span>{{ objective.progress }}%</span>
+                      </div>
+                    </td>
+                    <td><span [class]="riskClass(objective.risk)">{{ riskLabel(objective.risk) }}</span></td>
+                    <td class="alertes-cell">
+                      <span
+                        *ngIf="hasAbsenceImpact(objective.id)"
+                        class="alert-dot-wrap"
+                        title="Absence détectée dans les 15j avant l'échéance — voir Analyse & Risques"
+                        (click)="setTab('analyse'); highlightedObjectiveId = objective.id"
+                      >
+                        <span class="alert-dot"></span>
+                      </span>
+                    </td>
+                    <td class="deps">{{ dependencyLabel(objective) }}</td>
+                    <td>{{ fmtDate(objective.lastUpdate) }}</td>
+                    <td class="obj-actions-cell">
+                      <button type="button" class="obj-btn-view" title="Afficher" (click)="onOpenViewObjective(objective)">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                      </button>
+                      <button type="button" class="obj-btn-edit" title="Modifier" (click)="onOpenEditObjective(objective)">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </button>
+                      <button type="button" class="obj-btn-del" title="Supprimer" (click)="onDeleteObjective(objective)">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                          <path d="M10 11v6"/><path d="M14 11v6"/>
+                          <path d="M9 6V4h6v2"/>
+                        </svg>
+                      </button>
+                    </td>
+                  <tr *ngIf="!sortedObjectives.length">
+                    <td colspan="8" class="empty">Aucun objectif trouvé</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <!-- TAB: Analyse & Risques -->
+        <div class="tab-panel" [class.active]="activeTab === 'analyse'">
+
+          <section class="grid-2">
+            <article class="card">
+              <h2>Heatmap retard / risque</h2>
+              <p class="hint">Axes : proximité échéance × niveau de retard. Drilldown équipe/collaborateur via filtres.</p>
+              <div class="heatmap">
+                <div class="heat-head"></div>
+                <div class="heat-head">Élevé</div>
+                <div class="heat-head">Moyen</div>
+                <div class="heat-head">Faible</div>
+                <ng-container *ngFor="let prox of ['<= 14 jours', '15-30 jours', '> 30 jours']">
+                  <div class="axis">{{ prox }}</div>
+                  <ng-container *ngFor="let delay of ['Élevé', 'Moyen', 'Faible']">
+                    <div [class]="heatLevelClass((heatmapCells.find(c => c.proximity === prox && c.delay === delay)?.count ?? 0))">
+                      {{ heatmapCells.find(c => c.proximity === prox && c.delay === delay)?.count ?? 0 }}
+                    </div>
+                  </ng-container>
+                </ng-container>
+              </div>
+            </article>
+
+            <article class="card">
+              <h2>Timeline des jalons</h2>
+              <div class="timeline">
+                <div class="timeline-item" *ngFor="let milestone of milestoneTimeline">
+                  <div class="dot" [class.future]="milestone.state === 'a_venir'"></div>
+                  <div class="timeline-content">
+                    <div class="row">
+                      <strong>{{ milestone.label }}</strong>
+                      <span class="gap" [class.bad]="milestone.gapLabel.includes('retard') || milestone.gapLabel.startsWith('+')">{{ milestone.gapLabel }}</span>
+                    </div>
+                    <div class="meta">{{ milestone.owner }} - planifié : {{ fmtDate(milestone.plannedDate) }} <span *ngIf="milestone.actualDate">- réalisé : {{ fmtDate(milestone.actualDate) }}</span></div>
+                  </div>
+                </div>
+                <div *ngIf="!milestoneTimeline.length" class="empty">Aucun jalon à afficher.</div>
+              </div>
+            </article>
+          </section>
+
+          <section class="grid-2">
+            <article class="card">
+              <h2>Dépendances bloquantes</h2>
+              <div class="dependency-list" *ngIf="blockingDependencies.length; else noDeps">
+                <div class="dependency-item" *ngFor="let objective of blockingDependencies">
+                  <div>
+                    <strong>{{ objective.id }} - {{ objective.titre }}</strong>
+                    <p>Impacté par : {{ dependencyLabel(objective) }}</p>
+                  </div>
+                  <span [class]="riskClass(objective.risk)">{{ riskLabel(objective.risk) }}</span>
+                </div>
+              </div>
+              <ng-template #noDeps>
+                <div class="empty">Aucune dépendance bloquante en cours.</div>
+              </ng-template>
+            </article>
+
+            <article class="card">
+              <h2>Actions recommandées</h2>
+              <div class="reco-list" *ngIf="recommendedActions.length; else noReco">
+                <div class="reco-row" *ngFor="let action of recommendedActions">
+                  <span class="reco-badge" [class.reco-replan]="action.type === 'Replanifier'" [class.reco-escalade]="action.type === 'Escalader'" [class.reco-renfort]="action.type === 'Renforcer capacité'">{{ action.type }}</span>
+                  <div class="reco-text">
+                    <span class="reco-title">{{ action.objectiveId }} — {{ action.objectiveTitle }}</span>
+                    <span class="reco-reason">{{ action.reason }}</span>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noReco>
+                <div class="empty">Pas d'action recommandée actuellement.</div>
+              </ng-template>
+            </article>
+          </section>
+
+          <!-- ══ Absences & Capacité — cross-module panel ══ -->
+          <section class="card cross-absence-panel" id="absences-capacite-panel">
+            <div class="cross-absence-header">
+              <div class="cross-absence-title">
+                <svg width="16" height="16" fill="none" stroke="#7c3aed" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <span>Absences &amp; Capacité</span>
+              </div>
+              <span class="cross-badge" *ngIf="crossImpacts.length">{{ crossImpacts.length }} objectif(s) concerné(s)</span>
+              <span class="cross-hint" *ngIf="!crossImpacts.length">Aucune absence planifiée dans les 15 jours avant une échéance</span>
+            </div>
+
+            <div class="cross-absence-empty" *ngIf="!crossImpacts.length">
+              <svg width="32" height="32" fill="none" stroke="#94a3b8" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+              <p>Tous les objectifs ont une capacité nominale sur leur fenêtre d'échéance.</p>
+            </div>
+
+            <div class="cross-absence-list" *ngIf="crossImpacts.length">
+              <div
+                class="impact-item"
+                *ngFor="let impact of sortedCrossImpacts"
+                [class.highlighted]="highlightedObjectiveId && impact.objectiveId === highlightedObjectiveId"
+                [class.impact-item--at-risk]="!isCrossImpactTreated(impact)"
+                [class.treated]="isCrossImpactTreated(impact)"
+              >
+                <div class="impact-row-top">
+                  <div class="impact-main">
+                    <div class="impact-meta">{{ impact.objectiveCode }} — {{ impact.objectiveTitle }}</div>
+                    <div class="impact-sub">
+                      {{ crossImpactOwnerLabel(impact) }} · {{ crossImpactTypeLabel(impact) }} · {{ crossImpactReason(impact) }}
+                    </div>
+                    <div class="impact-date" *ngIf="crossImpactAbsenceStart(impact)">
+                      {{ fmtDate(crossImpactAbsenceStart(impact)) }} → {{ fmtDate(crossImpactAbsenceEnd(impact)) }}
+                    </div>
+                  </div>
+                  <span [class]="riskClass(impact.riskStatus.toLowerCase())">{{ riskLabel(impact.riskStatus.toLowerCase()) }}</span>
+                </div>
+
+                <div class="impact-chips">
+                  <span class="chip chip-progress" *ngIf="impact.progressPercent !== undefined">
+                    Progression : {{ impact.progressPercent }}%
+                  </span>
+                  <span
+                    class="chip chip-capacity"
+                    *ngIf="impact.capacityRiskPercent !== undefined && !isCrossImpactTreated(impact)"
+                    [class.chip-danger]="impact.capacityRiskPercent >= 50"
+                    [class.chip-warn]="impact.capacityRiskPercent > 0 && impact.capacityRiskPercent < 50"
+                  >
+                    {{ impact.capacityRiskPercent }}% capacité à risque
+                  </span>
+                  <span class="chip chip-treated" *ngIf="isCrossImpactTreated(impact)">
+                    Backup assigné<ng-container *ngIf="getImpactBackupName(impact)"> : {{ getImpactBackupName(impact) }}</ng-container>
+                  </span>
+                  <span class="chip chip-members" *ngIf="impact.totalMembers > 1">
+                    {{ impact.affectedMembersCount }}/{{ impact.totalMembers }} membres absents
+                  </span>
+                  <span class="chip chip-delay" *ngIf="impact.delayDays > 0">
+                    +{{ impact.delayDays }}j retard
+                  </span>
+                  <span class="chip chip-due" *ngIf="impact.dueDate">
+                    Échéance : {{ fmtDate(impact.dueDate) }}
+                  </span>
+                </div>
+
+                <div class="impact-members" *ngIf="(impact.affectedMembers?.length ?? 0) > 1">
+                  <div class="member-row" *ngFor="let m of impact.affectedMembers">
+                    <svg width="12" height="12" fill="none" stroke="#64748b" stroke-width="2" viewBox="0 0 24 24">
+                      <circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    </svg>
+                    <span class="member-name">{{ m.employeeName }}</span>
+                    <span class="member-dates">{{ fmtDate(m.absenceStart) }} → {{ fmtDate(m.absenceEnd) }}</span>
+                  </div>
+                </div>
+
+                <div class="impact-actions" *ngIf="!isCrossImpactTreated(impact)">
+                  <button class="link-btn" *ngIf="getPrimaryRequestId(impact) && !isImpactBackupAssigned(impact)" type="button" (click)="navigateToAbsencePlan(impact); $event.stopPropagation()">Créer un backup</button>
+                  <button class="link-btn" *ngIf="getPrimaryRequestId(impact)" type="button" (click)="navigateToAbsenceAlt(impact); $event.stopPropagation()">Proposer alternatives</button>
+                  <button class="link-btn link-btn-okr" type="button" (click)="viewImpactObjective(impact); $event.stopPropagation()">Voir dans OKR</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="tab-panel" [class.active]="activeTab === 'actions'">
+          <div class="card">
+
+            <div class="actions-tab-bar">
+              <button type="button" class="actions-tab" [class.active]="activeActionTab === 'create'" (click)="setActionTab('create')">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Créer un objectif
+              </button>
+              <button type="button" class="actions-tab" [class.active]="activeActionTab === 'progress'" (click)="setActionTab('progress')">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                </svg>
+                Mise à jour progression
+              </button>
+              <button type="button" class="actions-tab" [class.active]="activeActionTab === 'risk'" (click)="setActionTab('risk')">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                Risque &amp; Motif
+              </button>
+              <button type="button" class="actions-tab" [class.active]="activeActionTab === 'plan'" (click)="setActionTab('plan')">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                Plan d'action
+              </button>
+            </div>
+
+            <!-- Sub-panel: Créer un objectif -->
+            <div class="action-sub-panel" [class.active]="activeActionTab === 'create'">
+              <div class="form-split">
+                <div class="form-split-col">
+                  <div class="form-group">
+                    <label class="form-label">Titre de l'objectif *</label>
+                    <input class="form-input" type="text" [(ngModel)]="newObjectiveTitle" placeholder="Ex : Améliorer le NPS équipe à 75+"/>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label">Horizon *</label>
+                      <input class="form-input" type="text" [(ngModel)]="newObjectiveHorizon" placeholder="Ex : Q2 2026"/>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Portée</label>
+                      <select class="form-select" [(ngModel)]="newObjectiveScope">
+                        <option value="TEAM">Équipe</option>
+                        <option value="INDIVIDUAL">Individuel</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Employee assignment — contextual on scope -->
+                  <div class="form-group" *ngIf="newObjectiveScope === 'INDIVIDUAL'">
+                    <label class="form-label">Collaborateur concerné *</label>
+                    <div class="backup-combobox">
+                      <div class="backup-input-wrap">
+                        <input
+                          type="text"
+                          class="backup-search-input"
+                          placeholder="Rechercher un collaborateur…"
+                          [(ngModel)]="ownerSearch"
+                          (focus)="ownerDropdownOpen = true"
+                          (input)="ownerDropdownOpen = true; newObjectiveOwnerEmployeeId = null"
+                          (blur)="closeOwnerDropdown()"
+                          autocomplete="off"
+                        />
+                        <button *ngIf="newObjectiveOwnerEmployeeId" class="backup-clear-btn" type="button" (click)="clearOwner()" title="Effacer">✕</button>
+                      </div>
+                      <ul class="backup-dropdown" *ngIf="ownerDropdownOpen && filteredOwnerMembers.length">
+                        <li *ngFor="let m of filteredOwnerMembers" (mousedown)="selectOwner(m.employeeId, m.firstName ?? '', m.lastName ?? '')">
+                          <span class="bd-name">{{ m.firstName }} {{ m.lastName }}</span>
+                        </li>
+                      </ul>
+                      <div class="backup-no-result" *ngIf="ownerDropdownOpen && ownerSearch && !filteredOwnerMembers.length">Aucun résultat</div>
+                    </div>
+                  </div>
+
+                  <div class="form-group" *ngIf="newObjectiveScope === 'TEAM'">
+                    <label class="form-label">Membres de l'équipe *</label>
+                    <div class="team-picker">
+                      <div class="team-picker-tags" *ngIf="newObjectiveTeamMemberIds.length">
+                        <span class="team-tag" *ngFor="let id of newObjectiveTeamMemberIds">
+                          {{ getMemberName(id) }}
+                          <button type="button" (click)="removeTeamMember(id)">×</button>
+                        </span>
+                      </div>
+                      <div class="team-picker-input-wrap">
+                        <input type="text" class="form-input team-picker-input"
+                          [(ngModel)]="teamMemberSearch"
+                          placeholder="Rechercher un collaborateur…"
+                          (focus)="teamPickerOpen = true"
+                          (blur)="onTeamPickerBlur()"
+                          (input)="teamPickerOpen = true"
+                          autocomplete="off" />
+                        <div class="team-picker-dropdown" *ngIf="teamPickerOpen && filteredTeamMembers.length">
+                          <div class="team-picker-item"
+                            *ngFor="let member of filteredTeamMembers"
+                            [class.selected]="newObjectiveTeamMemberIds.includes(member.employeeId)"
+                            (mousedown)="onToggleTeamMember(member.employeeId)">
+                            <span>{{ member.firstName }} {{ member.lastName }}</span>
+                            <svg *ngIf="newObjectiveTeamMemberIds.includes(member.employeeId)" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                              <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Date d'échéance</label>
+                    <input class="form-input" type="date" [(ngModel)]="newObjectiveDueDate"/>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Dépendances (séparées par virgule)</label>
+                    <input class="form-input" type="text" [(ngModel)]="newObjectiveDependencies" placeholder="OKR-05, OKR-03"/>
+                  </div>
+                </div>
+                <div class="form-split-col">
+                  <div class="form-group">
+                    <label class="form-label">Description / contexte</label>
+                    <textarea class="form-textarea" [(ngModel)]="newObjectiveDescription" placeholder="Décrivez l'objectif, les indicateurs clés de succès…"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Risque initial</label>
+                    <div class="risk-options">
+                      <div class="risk-opt on-track-opt" [class.selected]="newObjectiveInitialRisk === 'ON_TRACK'" (click)="newObjectiveInitialRisk = 'ON_TRACK'">On Track</div>
+                      <div class="risk-opt at-risk-opt" [class.selected]="newObjectiveInitialRisk === 'AT_RISK'" (click)="newObjectiveInitialRisk = 'AT_RISK'">At Risk</div>
+                      <div class="risk-opt off-track-opt" [class.selected]="newObjectiveInitialRisk === 'OFF_TRACK'" (click)="newObjectiveInitialRisk = 'OFF_TRACK'">Off Track</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn-secondary" (click)="resetCreateForm()" [disabled]="isCreating">Réinitialiser</button>
+                <button type="button" class="btn-primary" (click)="onCreateObjective()" [disabled]="isCreating">
+                  <svg *ngIf="!isCreating" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  {{ isCreating ? 'Création…' : "Créer l'objectif" }}
+                </button>
+              </div>
+              <div class="create-validation-error" *ngIf="createValidationError">⚠ {{ createValidationError }}</div>
+              <div class="create-success" *ngIf="createSuccess">✓ {{ createSuccess }}</div>
+              <div class="create-error" *ngIf="createError">✕ {{ createError }}</div>
+            </div>
+
+            <!-- Sub-panel: Mise à jour progression -->
+            <div class="action-sub-panel" [class.active]="activeActionTab === 'progress'">
+              <div class="form-split">
+                <div class="form-split-col">
+                  <div class="form-group">
+                    <label class="form-label">Sélectionner un objectif *</label>
+                    <select class="form-select" [ngModel]="selectedObjectiveId" (ngModelChange)="onSelectProgressObjective($event)">
+                      <option [ngValue]="null">— Choisir —</option>
+                      <option *ngFor="let objective of objectives" [ngValue]="objective.id">{{ objective.code }} — {{ objective.titre }}</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Nouvelle progression : <strong>{{ quickProgress }}%</strong></label>
+                    <div class="range-row">
+                      <input type="range" class="range-input" min="0" max="100" [(ngModel)]="quickProgress" style="flex:1"/>
+                      <span class="range-value">{{ quickProgress }}%</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Commentaire</label>
+                    <textarea class="form-textarea" [(ngModel)]="quickComment" placeholder="Décrivez l'avancement, les blocages ou les points d'attention…"></textarea>
+                  </div>
+                </div>
+                <div class="form-split-col">
+                  <div class="progress-preview-box">
+                    <ng-container *ngIf="progressPreviewObjective; else noProgressPreview">
+                      <strong>{{ progressPreviewObjective.code }}</strong> — {{ progressPreviewObjective.titre }}<br/>
+                      <span style="font-size:.78rem;color:#6b7280;">Progression actuelle : {{ progressPreviewObjective.progress }}%</span>
+                      <div class="progress-cell" style="margin-top:8px;">
+                        <div class="progress-track">
+                          <div class="progress-fill" [style.width.%]="progressPreviewObjective.progress"></div>
+                        </div>
+                        <span>{{ progressPreviewObjective.progress }}%</span>
+                      </div>
+                    </ng-container>
+                    <ng-template #noProgressPreview>Sélectionnez un objectif pour voir l'aperçu.</ng-template>
+                  </div>
+                  <div class="alert-box-warning">
+                    <div class="alert-title">⚠ Alerte seuil</div>
+                    <div class="alert-text">Si progression &lt; 50% à J-30 de l'échéance, une alerte sera automatiquement générée.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn-secondary" (click)="onCancelProgressUpdate()">Annuler</button>
+                <button type="button" class="btn-primary" (click)="onSaveProgressComment()">Enregistrer la progression</button>
+              </div>
+              <div *ngIf="progressSuccessMessage" class="plan-feedback plan-feedback--success">{{ progressSuccessMessage }}</div>
+              <div *ngIf="progressErrorMessage" class="plan-feedback plan-feedback--error">{{ progressErrorMessage }}</div>
+            </div>
+
+            <!-- Sub-panel: Risque & Motif -->
+            <div class="action-sub-panel" [class.active]="activeActionTab === 'risk'">
+              <div class="form-split">
+                <div class="form-split-col">
+                  <div class="form-group">
+                    <label class="form-label">Objectif concerné *</label>
+                    <select class="form-select" [(ngModel)]="riskObjectiveId">
+                      <option [ngValue]="null">— Choisir —</option>
+                      <option *ngFor="let objective of objectives" [ngValue]="objective.id">{{ objective.code }} — {{ objective.titre }}</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Nouveau statut de risque *</label>
+                    <div class="risk-options">
+                      <div class="risk-opt on-track-opt" [class.selected]="quickRiskStatus === 'ON_TRACK'" (click)="quickRiskStatus = 'ON_TRACK'">On Track</div>
+                      <div class="risk-opt at-risk-opt" [class.selected]="quickRiskStatus === 'AT_RISK'" (click)="quickRiskStatus = 'AT_RISK'">At Risk</div>
+                      <div class="risk-opt off-track-opt" [class.selected]="quickRiskStatus === 'OFF_TRACK'" (click)="quickRiskStatus = 'OFF_TRACK'">Off Track</div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Motif du changement *</label>
+                    <textarea class="form-textarea" [(ngModel)]="quickRiskReason" placeholder="Justifiez le changement de statut : blocage, retard fournisseur, ressources insuffisantes…"></textarea>
+                  </div>
+                </div>
+                <div class="form-split-col">
+                  <div class="risk-guide-box">
+                    <div class="risk-guide-title">Guide des statuts</div>
+                    <div class="risk-guide-items">
+                      <div class="risk-guide-item">
+                        <span class="risk-pill on-track" style="min-width:72px;font-size:.7rem;flex-shrink:0;">On Track</span>
+                        <span>Progression conforme aux jalons planifiés.</span>
+                      </div>
+                      <div class="risk-guide-item">
+                        <span class="risk-pill at-risk" style="min-width:72px;font-size:.7rem;flex-shrink:0;">At Risk</span>
+                        <span>Risque identifié, plan de mitigation en place ou requis.</span>
+                      </div>
+                      <div class="risk-guide-item">
+                        <span class="risk-pill off-track" style="min-width:72px;font-size:.7rem;flex-shrink:0;">Off Track</span>
+                        <span>Objectif compromis. Escalade ou replanification nécessaire.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn-secondary" (click)="quickRiskReason = ''; riskObjectiveId = null">Annuler</button>
+                <button type="button" class="btn-primary" (click)="onUpdateRiskStatus()">Enregistrer le statut</button>
+              </div>
+              <div *ngIf="riskSuccessMessage" class="plan-feedback plan-feedback--success">{{ riskSuccessMessage }}</div>
+              <div *ngIf="riskErrorMessage" class="plan-feedback plan-feedback--error">{{ riskErrorMessage }}</div>
+            </div>
+
+            <!-- Sub-panel: Plan d'action -->
+            <div class="action-sub-panel" [class.active]="activeActionTab === 'plan'">
+              <div class="form-split">
+                <div class="form-split-col">
+                  <div class="form-group">
+                    <label class="form-label">Objectif concerné *</label>
+                    <select class="form-select" [(ngModel)]="planObjectiveId">
+                      <option [ngValue]="null">— Choisir —</option>
+                      <option *ngFor="let objective of objectives" [ngValue]="objective.id">{{ objective.code }} — {{ objective.titre }}</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Type de plan d'action *</label>
+                    <div class="plan-type-grid">
+                      <div class="plan-type-card" [class.selected]="actionPlanType === 'REPLAN'" (click)="actionPlanType = 'REPLAN'">
+                        <div class="plan-icon">
+                          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <polyline points="23 4 23 10 17 10"/>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                          </svg>
+                        </div>
+                        <strong>Replanifier</strong>
+                        <small>Réviser l'échéance ou les jalons</small>
+                      </div>
+                      <div class="plan-type-card" [class.selected]="actionPlanType === 'ESCALATE'" (click)="actionPlanType = 'ESCALATE'">
+                        <div class="plan-icon">
+                          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                          </svg>
+                        </div>
+                        <strong>Escalader</strong>
+                        <small>Remonter à la hiérarchie</small>
+                      </div>
+                      <div class="plan-type-card" [class.selected]="actionPlanType === 'CAPACITY_REINFORCEMENT'" (click)="actionPlanType = 'CAPACITY_REINFORCEMENT'">
+                        <div class="plan-icon">
+                          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                          </svg>
+                        </div>
+                        <strong>Renforcement</strong>
+                        <small>Allouer plus de capacité</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-split-col">
+                  <div class="form-group">
+                    <label class="form-label">Description du plan</label>
+                    <textarea class="form-textarea" style="min-height:100px;" [(ngModel)]="planDescription" placeholder="Décrivez les actions à entreprendre, les responsables, les délais…"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Date de revue</label>
+                    <input class="form-input" type="date" [(ngModel)]="planDueDate"/>
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn-secondary" (click)="planDescription = ''; planObjectiveId = null; planSuccessMessage = ''; planErrorMessage = ''">Annuler</button>
+                <button type="button" class="btn-primary" (click)="onCreateActionPlan()">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                  </svg>
+                  Créer le plan d'action
+                </button>
+              </div>
+              <div *ngIf="planSuccessMessage" class="plan-feedback plan-feedback--success">{{ planSuccessMessage }}</div>
+              <div *ngIf="planErrorMessage" class="plan-feedback plan-feedback--error">{{ planErrorMessage }}</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     Modal: Confirmer la suppression
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<div class="obj-edit-overlay" *ngIf="confirmDeleteObjective" (click)="onCancelDelete()">
+  <div class="obj-confirm-modal" (click)="$event.stopPropagation()">
+
+    <div class="obj-confirm-icon">
+      <svg width="32" height="32" fill="none" stroke="#dc2626" stroke-width="2" viewBox="0 0 24 24">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M10 11v6"/><path d="M14 11v6"/>
+        <path d="M9 6V4h6v2"/>
+      </svg>
+    </div>
+
+    <h3 class="obj-confirm-title">Supprimer l'objectif ?</h3>
+    <p class="obj-confirm-body">
+      <strong>« {{ confirmDeleteObjective.titre }} »</strong><br/>
+      Cette action est irréversible. Toutes les données associées (jalons, plans d'action, dépendances) seront définitivement supprimées.
+    </p>
+
+    <div class="obj-edit-error" *ngIf="deleteError">{{ deleteError }}</div>
+
+    <div class="obj-confirm-footer">
+      <button type="button" class="btn-secondary" [disabled]="deleteLoading" (click)="onCancelDelete()">Annuler</button>
+      <button type="button" class="btn-danger" [disabled]="deleteLoading" (click)="onConfirmDelete()">
+        <svg *ngIf="!deleteLoading" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+        {{ deleteLoading ? 'Suppression…' : 'Oui, supprimer' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<div class="obj-edit-overlay" *ngIf="editingObjective" (click)="onCloseEditObjective()">
+  <div class="obj-modal" (click)="$event.stopPropagation()">
+
+    <div class="obj-modal-hd">
+      <div>
+        <span class="obj-modal-code">{{ editingObjective.code }}</span>
+        <h3 class="obj-modal-title">Modifier l'objectif</h3>
+      </div>
+      <button type="button" class="obj-modal-close" (click)="onCloseEditObjective()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="obj-modal-bd">
+
+      <div class="edit-grp edit-grp--full">
+        <label>Titre</label>
+        <input type="text" [(ngModel)]="editTitle" placeholder="Titre de l'objectif" />
+      </div>
+
+      <div class="edit-row">
+        <div class="edit-grp">
+          <label>Portée</label>
+          <select [(ngModel)]="editScope">
+            <option value="TEAM">Équipe</option>
+            <option value="INDIVIDUAL">Individuel</option>
+          </select>
+        </div>
+        <div class="edit-grp">
+          <label>Propriétaire</label>
+          <select [(ngModel)]="editOwnerId">
+            <option *ngFor="let member of teamMembers" [ngValue]="member.employeeId">
+              {{ member.firstName }} {{ member.lastName }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="edit-row">
+        <div class="edit-grp">
+          <label>Horizon</label>
+          <input type="text" [(ngModel)]="editHorizon" placeholder="ex. Q2 2026" />
+        </div>
+        <div class="edit-grp">
+          <label>Échéance</label>
+          <input type="date" [(ngModel)]="editDueDate" />
+        </div>
+      </div>
+
+      <div class="edit-grp edit-grp--full">
+        <label>Progression : <strong>{{ editProgress }}%</strong></label>
+        <div class="range-row">
+          <input type="range" class="range-input" min="0" max="100" [(ngModel)]="editProgress" />
+          <span class="range-value">{{ editProgress }}%</span>
+        </div>
+      </div>
+
+      <div class="edit-grp edit-grp--full">
+        <label>Statut risque</label>
+        <div class="risk-options">
+          <div class="risk-opt on-track-opt" [class.selected]="editRisk === 'ON_TRACK'" (click)="editRisk = 'ON_TRACK'">On Track</div>
+          <div class="risk-opt at-risk-opt" [class.selected]="editRisk === 'AT_RISK'" (click)="editRisk = 'AT_RISK'">At Risk</div>
+          <div class="risk-opt off-track-opt" [class.selected]="editRisk === 'OFF_TRACK'" (click)="editRisk = 'OFF_TRACK'">Off Track</div>
+        </div>
+      </div>
+
+      <div class="edit-grp edit-grp--full">
+        <label>Motif risque <span class="optional">(optionnel)</span></label>
+        <input type="text" [(ngModel)]="editRiskReason" placeholder="Décrivez le risque…" />
+      </div>
+
+      <div class="edit-grp edit-grp--full">
+        <label>Dépendances <span class="optional">(séparées par virgule)</span></label>
+        <input type="text" [(ngModel)]="editDependencies" placeholder="ex. OKR-02, OKR-05" />
+      </div>
+
+    </div>
+
+    <div class="obj-edit-error" *ngIf="editError">{{ editError }}</div>
+
+    <div class="obj-modal-ft">
+      <button type="button" class="btn-secondary" (click)="onCloseEditObjective()">Annuler</button>
+      <button type="button" class="btn-primary" [disabled]="editLoading" (click)="onSaveEditObjective()">
+        <svg *ngIf="!editLoading" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+        </svg>
+        {{ editLoading ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: Afficher un objectif -->
+<div class="obj-edit-overlay" *ngIf="viewingObjective" (click)="onCloseViewObjective()">
+  <div class="obj-modal" (click)="$event.stopPropagation()">
+
+    <div class="obj-modal-hd">
+      <div>
+        <span class="obj-modal-code">{{ viewingObjective.code }}</span>
+        <h3 class="obj-modal-title">{{ viewingObjective.titre }}</h3>
+      </div>
+      <button type="button" class="obj-modal-close" (click)="onCloseViewObjective()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="obj-modal-bd">
+
+      <div class="detail-rows">
+        <div class="detail-row">
+          <span class="detail-lbl">Portée</span>
+          <span class="detail-val">{{ viewingObjective.scope }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-lbl">Propriétaire(s)</span>
+          <span class="detail-val">{{ viewingObjective.memberNames.join(', ') || viewingObjective.proprietaire }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-lbl">Horizon</span>
+          <span class="detail-val">{{ viewingObjective.horizon }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-lbl">Échéance</span>
+          <span class="detail-val">{{ fmtDate(viewingObjective.dueDate) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-lbl">Dernière MAJ</span>
+          <span class="detail-val">{{ fmtDate(viewingObjective.lastUpdate) || '—' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-lbl">Dépendances</span>
+          <span class="detail-val">{{ dependencyLabel(viewingObjective) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-lbl">Progression</span>
+          <span class="detail-val">{{ viewingObjective.progress }}%</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-lbl">Statut risque</span>
+          <span class="detail-val">
+            <span [class]="riskClass(viewingObjective.risk)">{{ riskLabel(viewingObjective.risk) }}</span>
+            <span *ngIf="viewingObjective.note" class="detail-risk-reason">— {{ viewingObjective.note }}</span>
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="obj-modal-ft">
+      <button type="button" class="btn-secondary" (click)="onCloseViewObjective()">Fermer</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: Import objectifs -->
+<div class="obj-edit-overlay" *ngIf="isImportModalOpen" (click)="closeImportModal()">
+  <div class="import-modal" (click)="$event.stopPropagation()">
+
+    <div class="obj-edit-header">
+      <h3>Importer fichier Objectifs</h3>
+      <button type="button" class="obj-modal-close" (click)="closeImportModal()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="import-modal-body">
+
+      <button type="button" class="btn-download-template" (click)="onDownloadCsvTemplate()">⬇ Télécharger le modèle</button>
+
+      <div class="import-file-zone">
+        <input type="file" accept=".csv,.xlsx,.xls" (change)="onCsvFileChange($event)" [disabled]="importLoading"/>
+        <span class="import-file-name" *ngIf="csvFileName">{{ csvFileName }}</span>
+      </div>
+
+      <div *ngIf="importError" class="import-feedback import-feedback--error">{{ importError }}</div>
+      <div *ngIf="importSuccess" class="import-feedback import-feedback--success">{{ importSuccess }}</div>
+
+    </div>
+
+    <div class="obj-edit-footer">
+      <button type="button" class="btn-secondary" (click)="closeImportModal()">Annuler</button>
+      <button type="button" class="btn-primary" [disabled]="!csvFileName || importLoading" (click)="onDirectImport()">
+        {{ importLoading ? 'Import en cours...' : 'Valider' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast notification: fixed top-right, always visible regardless of scroll -->
+<div class="okr-toast" [class.okr-toast--visible]="toastVisible" [class.okr-toast--success]="toastType === 'success'" [class.okr-toast--error]="toastType === 'error'" role="alert" aria-live="polite">
+  <span class="okr-toast-msg">{{ toastMessage }}</span>
+  <button class="okr-toast-close" type="button" (click)="toastVisible = false" aria-label="Fermer">×</button>
+</div>

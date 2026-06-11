@@ -1,0 +1,96 @@
+$success: #22c55e;
+$error: #ef4444;
+$warning: #f59e0b;
+$info: #2563eb;
+$border: #e5e7eb;
+
+.toast-container {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+}
+
+.toast {
+  min-width: 260px;
+  max-width: 360px;
+  border: 1px solid $border;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.12);
+  padding: 12px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  padding-right: 38px;
+}
+
+.toast-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.toast.success {
+  border-color: rgba($success, 0.35);
+}
+.toast.success .toast-icon {
+  background: rgba($success, 0.12);
+  color: $success;
+}
+
+.toast.error {
+  border-color: rgba($error, 0.35);
+}
+.toast.error .toast-icon {
+  background: rgba($error, 0.12);
+  color: $error;
+}
+
+.toast.warning {
+  border-color: rgba($warning, 0.35);
+}
+.toast.warning .toast-icon {
+  background: rgba($warning, 0.12);
+  color: $warning;
+}
+
+.toast.info {
+  border-color: rgba($info, 0.35);
+}
+.toast.info .toast-icon {
+  background: rgba($info, 0.12);
+  color: $info;
+}
+
+.toast-message {
+  color: #111827;
+  font-weight: 500;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.toast-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #4b5563;
+  cursor: pointer;
+  line-height: 1;
+  font-size: 0.95rem;
+}
+

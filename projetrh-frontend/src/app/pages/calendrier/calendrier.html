@@ -1,0 +1,435 @@
+﻿<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <h2>HRScope</h2>
+      <p>{{ isAdmin ? 'Portail Admin' : (isManager ? 'Portail Manager' : 'Portail Responsable RH') }}</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a
+        class="nav-item"
+        [routerLink]="isAdmin ? adminDashboardRoute : dashboardRoute"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>Tableau de bord
+      </a>
+
+      <a class="nav-item" *ngIf="isAdmin" routerLink="/admin/vue-responsables" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>Vue Responsables
+      </a>
+      <a class="nav-item" *ngIf="isAdmin" routerLink="/admin/vue-managers" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+        </svg>Vue Managers
+      </a>
+      <a class="nav-item" *ngIf="isAdmin" routerLink="/admin/utilisateurs" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>Utilisateurs
+      </a>
+
+      <a class="nav-item" *ngIf="isAdmin" routerLink="/admin/logs" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M3 12h18"/><path d="M7 12l-2 2 2 2"/><path d="M17 12l2-2-2-2"/>
+          <path d="M14 6h7v12h-7"/><path d="M3 6h7v12H3z"/>
+        </svg>Activités
+      </a>
+
+      <a class="nav-item" *ngIf="isManager" [routerLink]="monEquipeRoute" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-3-3.8A4 4 0 0 0 9 13H7a4 4 0 0 0-3.9 3.2L3 19v2"/>
+          <circle cx="9" cy="7" r="3.5"/>
+          <path d="M21 21v-2a4 4 0 0 0-3-3.8"/><circle cx="18" cy="8" r="3"/>
+        </svg>Mon Équipe
+      </a>
+      <a class="nav-item" *ngIf="isManager" routerLink="/manager/absences-avancees" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/>
+          <path d="M3 10h18"/><path d="M9 15l2 2 4-4"/>
+        </svg>Absences avancé
+      </a>
+      <a class="nav-item" *ngIf="isManager" routerLink="/manager/okr" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <circle cx="12" cy="12" r="6"/>
+          <circle cx="12" cy="12" r="2"/>
+          <line x1="12" y1="2" x2="12" y2="6"/>
+          <line x1="12" y1="18" x2="12" y2="22"/>
+          <line x1="2" y1="12" x2="6" y2="12"/>
+          <line x1="18" y1="12" x2="22" y2="12"/>
+        </svg>Objectifs
+      </a>
+      <a class="nav-item" *ngIf="isManager" routerLink="/manager/evaluations" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+          <rect x="9" y="3" width="6" height="4" rx="1"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>Évaluations
+      </a>
+      <a class="nav-item" *ngIf="isManager" routerLink="/manager/rapports" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 17v-6"/><path d="M12 17V7"/><path d="M15 17v-4"/>
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2z"/>
+        </svg>Rapports
+      </a>
+
+      <a class="nav-item" *ngIf="!isManager && !isAdmin" routerLink="/employes" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>Collaborateurs
+      </a>
+      <a class="nav-item" *ngIf="!isManager && !isAdmin" routerLink="/departements" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+          <line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>
+        </svg>Départements
+      </a>
+      <a class="nav-item" *ngIf="!isManager && !isAdmin" routerLink="/performances-evaluations" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+          <polyline points="16 7 22 7 22 13"></polyline>
+        </svg>Performances &amp; Évaluations
+      </a>
+      <a class="nav-item" *ngIf="!isManager && !isAdmin" routerLink="/absences-conges" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M8 2v4"></path><path d="M16 2v4"></path>
+          <rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M3 10h18"></path>
+          <path d="M9 15l6 6"></path><path d="M15 15l-6 6"></path>
+        </svg>Absences &amp; Congés
+      </a>
+      <a class="nav-item" *ngIf="!isManager && !isAdmin" routerLink="/rh/rapports" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/>
+        </svg>Rapports
+      </a>
+      <a class="nav-item" *ngIf="!isManager && !isAdmin" routerLink="/resp/notes" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>Mes notes
+      </a>
+      <a class="nav-item" [routerLink]="isManager ? '/manager/calendrier' : '/calendrier'" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>Calendrier
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-logout" (click)="onDeconnexion()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>Déconnexion
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="mois-titre">{{ titreMois }}</h1>
+        <div class="nav-mois">
+          <button class="nav-btn" (click)="moisPrecedent()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="btn-today" (click)="aujourdhui()">Aujourd'hui</button>
+          <button class="nav-btn" (click)="moisSuivant()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <app-notifications-panel></app-notifications-panel>
+        <div class="user-info">
+          <div class="user-info-text">
+            <div class="name">{{ utilisateur?.prenom }} {{ utilisateur?.nom }}</div>
+            <div class="role">{{ displayRole }}</div>
+          </div>
+          <div class="avatar" (click)="onProfil()">{{ avatarText }}</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- CALENDRIER -->
+    <div class="cal-container">
+      <div class="calendar-feedback" *ngIf="isLoadingEvents || eventLoadError">
+        <span *ngIf="isLoadingEvents">Chargement des événements...</span>
+        <span *ngIf="!isLoadingEvents && eventLoadError">{{ eventLoadError }}</span>
+      </div>
+
+      <!-- En-têtes jours -->
+      <div class="cal-header">
+        <div class="cal-header-cell" *ngFor="let j of JOURS_SEMAINE">{{ j }}</div>
+      </div>
+
+      <!-- Grille -->
+      <div class="cal-grid">
+        <div
+          class="cal-cell"
+          *ngFor="let jour of jours"
+          [class.other-month]="!jour.moisCourant"
+          [class.today]="jour.aujd"
+          [class.selected]="jourSelectionne === jour"
+          [class.has-events]="jour.evenements.length > 0"
+          (click)="selectionner(jour)"
+          (mouseenter)="onCellMouseEnter(jour, $event)"
+          (mouseleave)="onCellMouseLeave()"
+          (mousemove)="onCellMouseMove($event)"
+        >
+          <div class="cell-num">{{ jour.date.getDate() }}</div>
+          <div class="cell-dots">
+            <span class="event-dot dot-leave" *ngIf="hasLeave(jour.evenements)"></span>
+            <span class="event-dot dot-event" *ngIf="hasNonLeaveEvent(jour.evenements)"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating hover tooltip -->
+    <div class="hover-tooltip"
+         *ngIf="hoveredJour && hoveredJour.evenements.length > 0"
+         [style.left.px]="tooltipX"
+         [style.top.px]="tooltipY">
+      <div class="tooltip-ev-row" *ngFor="let ev of hoveredJour.evenements.slice(0, 5)">
+        <span class="tdot" [class.tdot-leave]="ev.isLeave" [class.tdot-event]="!ev.isLeave"></span>
+        <span class="tooltip-ev-name">{{ ev.titre }}</span>
+        <span class="tooltip-ev-time" *ngIf="ev.heure">{{ ev.heure }}</span>
+      </div>
+      <div class="tooltip-more" *ngIf="hoveredJour.evenements.length > 5">+{{ hoveredJour.evenements.length - 5 }} autres</div>
+      <div class="tooltip-hint">Cliquez pour les détails</div>
+    </div>
+
+    <!-- PANNEAU DÉTAIL (si jour sélectionné) -->
+    <div class="detail-panel" *ngIf="jourSelectionne" (click)="jourSelectionne = null">
+      <div class="detail-card" (click)="$event.stopPropagation()">
+        <div class="detail-header">
+          <div>
+            <div class="detail-num">{{ jourSelectionne.date.getDate() }}</div>
+            <div class="detail-mois">{{ MOIS[jourSelectionne.date.getMonth()] }} {{ jourSelectionne.date.getFullYear() }}</div>
+          </div>
+          <button class="detail-close" (click)="jourSelectionne = null">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="detail-body" *ngIf="jourSelectionne.evenements.length > 0">
+          <div class="detail-ev" *ngFor="let ev of jourSelectionne.evenements" [class.detail-ev-leave]="ev.isLeave" [class.detail-ev-event]="!ev.isLeave">
+            <span class="detail-ev-dot" [class.dot-leave]="ev.isLeave" [class.dot-event]="!ev.isLeave"></span>
+            <div class="detail-ev-main">
+              <div class="detail-ev-top">
+                <div class="detail-ev-title" [title]="ev.titre">{{ ev.titre }}</div>
+                <span class="detail-tag">{{ leaveEventTypeLabel(ev) }}</span>
+              </div>
+              <div class="detail-ev-sub" *ngIf="ev.isLeave">{{ ev.plannedBy || 'Collaborateur' }}</div>
+              <div class="detail-meta-grid" *ngIf="!ev.isLeave">
+                <div class="detail-meta-item">
+                  <div class="meta-text">
+                    <div class="meta-label">Heure</div>
+                    <div class="meta-value">{{ ev.heure || '—' }}</div>
+                  </div>
+                </div>
+                <div class="detail-meta-item">
+                  <div class="meta-text">
+                    <div class="meta-label">Planifié par</div>
+                    <div class="meta-value">{{ ev.plannedBy || '—' }}</div>
+                  </div>
+                </div>
+              </div>
+              <p class="detail-ev-note-compact" *ngIf="ev.description">{{ ev.description }}</p>
+              <div class="detail-actions" *ngIf="!ev.isLeave && canManageEvent(ev) && ev.id">
+                <button type="button" class="detail-btn detail-btn-outline" (click)="supprimerEvenement(ev); $event.stopPropagation()">Supprimer</button>
+                <button type="button" class="detail-btn detail-btn-primary" (click)="openEditModal(ev); $event.stopPropagation()">Modifier</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="detail-empty" *ngIf="jourSelectionne.evenements.length === 0">
+          <svg width="28" height="28" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <p>Aucun événement ce jour.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="modal-backdrop" *ngIf="showAddModal" (click)="closeAddModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <form [formGroup]="addForm" (ngSubmit)="submitAddEvent()" novalidate>
+          <div class="modal-header-band">
+            <div class="modal-header-left">
+              <div class="modal-header-icon">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </div>
+              <div class="modal-header-title">{{ editingEventId ? 'Modifier l’événement' : 'Nouvel événement' }}</div>
+            </div>
+            <button type="button" class="modal-close-btn" (click)="closeAddModal()" aria-label="Fermer">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <div class="submit-error-banner" *ngIf="submitErrorMessage">{{ submitErrorMessage }}</div>
+
+            <div class="modal-grid">
+              <div class="modal-col">
+                <div class="form-group">
+                  <label for="event-titre">Titre</label>
+                  <input id="event-titre" type="text" class="form-control" formControlName="titre" placeholder="Titre.." />
+                  <div class="error-msg" *ngIf="submitted && addForm.get('titre')?.invalid">Le titre est requis</div>
+                </div>
+
+                <div class="modal-date-time">
+                  <div class="form-group">
+                    <label for="event-date">Date</label>
+                    <div class="picker-field" (click)="eventDateInput.showPicker(); eventDateInput.focus()">
+                      <input #eventDateInput id="event-date" type="date" class="picker-native-input" formControlName="date" />
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                      <span class="picker-text">{{ (addForm.get('date')?.value | date:'dd/MM/yyyy') || 'JJ/MM/AAAA' }}</span>
+                    </div>
+                    <div class="error-msg" *ngIf="submitted && addForm.get('date')?.invalid">La date est requise</div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="event-heure">Heure</label>
+                    <div class="picker-field" (click)="eventTimeInput.showPicker(); eventTimeInput.focus()">
+                      <input #eventTimeInput id="event-heure" type="time" class="picker-native-input" formControlName="heure" />
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <path d="M12 7v5l3 2"></path>
+                      </svg>
+                      <span class="picker-text">{{ addForm.get('heure')?.value ? (addForm.get('heure')?.value | slice:0:5) : 'HH:mm' }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Type d'événement</label>
+                  <div class="type-chips">
+                    <button type="button" class="type-chip reunion" [class.active]="addForm.get('type')?.value === 'reunion'" (click)="addForm.get('type')?.setValue('reunion')">Réunion</button>
+                    <button type="button" class="type-chip formation" [class.active]="addForm.get('type')?.value === 'formation'" (click)="addForm.get('type')?.setValue('formation')">Formation</button>
+                    <button type="button" class="type-chip entretien" [class.active]="addForm.get('type')?.value === 'rappel'" (click)="addForm.get('type')?.setValue('rappel')">Rappel</button>
+                    <button type="button" class="type-chip evenement" [class.active]="addForm.get('type')?.value === 'tache'" (click)="addForm.get('type')?.setValue('tache')">Événement</button>
+                    <button type="button" class="type-chip autre" [class.active]="addForm.get('type')?.value === 'autre'" (click)="addForm.get('type')?.setValue('autre')">Autre</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-col">
+                <div class="form-group">
+                  <label>{{ displayTargetLabel }}</label>
+                  <select class="form-control" formControlName="visibilityMode">
+                    <ng-container *ngIf="isManager; else rhVisibilityOptions">
+                      <option value="manager_team">Toute l’équipe</option>
+                      <option value="manager_specific">Membres spécifiques</option>
+                    </ng-container>
+                    <ng-template #rhVisibilityOptions>
+                      <option value="rh_company">Toute l’entreprise</option>
+                      <option value="rh_department">Par département</option>
+                      <option value="rh_job_title">Par poste (job title)</option>
+                      <option value="rh_specific">Collaborateurs spécifiques</option>
+                    </ng-template>
+                  </select>
+                </div>
+
+                <div class="form-group" *ngIf="isRhDepartmentMode || isRhJobTitleMode">
+                  <label for="event-target-department">Département</label>
+                  <select id="event-target-department" class="form-control" formControlName="targetDepartmentId">
+                    <option [ngValue]="null">Sélectionner un département</option>
+                    <option *ngFor="let dept of departments" [ngValue]="dept.departmentId">{{ dept.departmentName }}</option>
+                  </select>
+                  <div class="error-msg" *ngIf="submitted && addForm.get('targetDepartmentId')?.invalid">
+                    Le département est requis.
+                  </div>
+                </div>
+
+                <div class="form-group" *ngIf="isRhJobTitleMode">
+                  <label for="event-target-job-title">Poste</label>
+                  <select id="event-target-job-title" class="form-control" formControlName="targetJobTitle">
+                    <option value="">Sélectionner un poste</option>
+                    <option *ngFor="let jobTitle of jobTitles" [value]="jobTitle">{{ jobTitle }}</option>
+                  </select>
+                  <div class="error-msg" *ngIf="submitted && addForm.get('targetJobTitle')?.invalid">Le poste est requis.</div>
+                </div>
+
+                <div class="form-group" *ngIf="isSpecificTargetMode">
+                  <label for="event-target-employees">Collaborateurs spécifiques</label>
+                  <div class="chips-input-wrap">
+                    <div class="chips-list" *ngIf="selectedEmployees.length > 0">
+                      <span class="selection-chip" *ngFor="let employee of selectedEmployees">
+                        {{ displayEmployeeName(employee) }}
+                        <button type="button" (click)="removeSpecificEmployee(employee.employeeId)">×</button>
+                      </span>
+                    </div>
+                    <input
+                      id="event-target-employees"
+                      type="text"
+                      class="form-control"
+                      [(ngModel)]="employeeSearchTerm"
+                      [ngModelOptions]="{ standalone: true }"
+                      (input)="onSearchSpecificEmployees()"
+                      placeholder="Tapez le nom d’un collaborateur..."
+                    />
+                    <div class="autocomplete-results" *ngIf="filteredEmployees.length > 0">
+                      <button type="button" class="autocomplete-item" *ngFor="let employee of filteredEmployees" (click)="addSpecificEmployee(employee)">
+                        <span>{{ displayEmployeeName(employee) }}</span>
+                        <small>{{ employee.jobTitle }} - {{ employee.departmentName }}</small>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="error-msg" *ngIf="submitted && addForm.get('targetEmployeeIds')?.invalid">
+                    Sélectionnez au moins un collaborateur.
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="event-description">Description <span class="optional-label">(optionnel)</span></label>
+                  <textarea id="event-description" rows="6" class="form-control" formControlName="description" placeholder="Ajouter des détails, participants, lieu..."></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="modal-btn-cancel" (click)="closeAddModal()">Annuler</button>
+            <button type="submit" class="modal-btn-add" [disabled]="isSaving">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              {{ isSaving ? 'En cours...' : (editingEventId ? 'Enregistrer' : 'Ajouter') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- FLOATING ACTION BUTTON -->
+    <button class="fab" *ngIf="canAddEvent" (click)="openAddModal()" title="Ajouter un événement">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    </button>
+  </div>
+</div>

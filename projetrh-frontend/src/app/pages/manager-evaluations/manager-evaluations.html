@@ -1,0 +1,624 @@
+﻿<div class="layout">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand"><h2>HRScope</h2><p>Portail Manager</p></div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" [routerLink]="dashboardRoute" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>Tableau de bord
+      </a>
+      <a class="nav-item" routerLink="/manager/equipe" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-3-3.8A4 4 0 0 0 9 13H7a4 4 0 0 0-3.9 3.2L3 19v2"/>
+          <circle cx="9" cy="7" r="3.5"/>
+          <path d="M21 21v-2a4 4 0 0 0-3-3.8"/><circle cx="18" cy="8" r="3"/>
+        </svg>Mon Équipe
+      </a>
+      <a class="nav-item" routerLink="/manager/absences-avancees" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/>
+          <path d="M3 10h18"/><path d="M9 15l2 2 4-4"/>
+        </svg>Absences avancé
+      </a>
+      <a class="nav-item" routerLink="/manager/okr" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+          <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+          <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+        </svg>Objectifs
+      </a>
+      <a class="nav-item" routerLink="/manager/evaluations" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+          <rect x="9" y="3" width="6" height="4" rx="1"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>Évaluations
+      </a>
+      <a class="nav-item" routerLink="/manager/rapports" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 17v-6"/><path d="M12 17V7"/><path d="M15 17v-4"/>
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2z"/>
+        </svg>Rapports
+      </a>
+      <a class="nav-item" routerLink="/manager/calendrier" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>Calendrier
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-logout" (click)="onDeconnexion()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>Déconnexion
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main wrapper ──────────────────────────────────────────────────── -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-actions">
+        <app-notifications-panel></app-notifications-panel>
+        <div class="user-info">
+          <div class="user-info-text">
+            <div class="name">{{ utilisateur?.prenom }} {{ utilisateur?.nom }}</div>
+            <div class="role">{{ utilisateur?.role }}</div>
+          </div>
+          <div class="avatar" (click)="onProfil()" title="Mon profil">{{ utilisateur?.initiales }}</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+
+      <!-- ── Sticky header + tabs ─────────────────────────────────────── -->
+      <div class="page-sticky-top">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1>Évaluations de l'équipe</h1>
+            <p>Gérez les évaluations de performance de vos collaborateurs.</p>
+          </div>
+          <div class="page-header-actions">
+            <button type="button" class="btn-header-action btn-header-import" (click)="openImportModal()">
+              Saisir évaluations
+            </button>
+            <button type="button" class="btn-header-action btn-header-create" (click)="openCreateModal()">
+              Nouvelle évaluation
+            </button>
+          </div>
+        </div>
+
+        <div class="tab-bar">
+          <button type="button" class="tab" [class.active]="activeTab === 'overview'" (click)="switchTab('overview')">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            Vue d'ensemble
+          </button>
+          <button type="button" class="tab" [class.active]="activeTab === 'history'" (click)="switchTab('history')">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Historique par collaborateur
+          </button>
+        </div>
+      </div>
+
+      <div class="tab-panels">
+
+        <!-- ══════════════════ TAB: VUE D'ENSEMBLE ══════════════════════ -->
+        <div class="tab-panel" [class.active]="activeTab === 'overview'">
+
+          @if (isLoading) {
+            <section class="kpi-grid">
+              @for (_ of [1,2,3,4]; track $index) {
+                <article class="kpi-card skeleton-card"></article>
+              }
+            </section>
+            <div class="skeleton-rows">
+              @for (_ of [1,2,3,4,5]; track $index) { <div class="skeleton-row"></div> }
+            </div>
+          } @else {
+
+            <!-- KPI cards -->
+            <section class="kpi-grid">
+
+              <article class="kpi-card">
+                <div class="kpi-card-head"><span class="kpi-label">Moyenne équipe</span></div>
+                @if (avgTeamRating !== null) {
+                  <strong class="kpi-value" [class]="ratingToneClass(avgTeamRating)">{{ avgTeamRating }}<span class="kpi-unit">/100</span></strong>
+                  <div class="kpi-bar-track">
+                    <div class="kpi-bar-fill" [class]="ratingToneClass(avgTeamRating)" [style.width.%]="avgTeamRating"></div>
+                  </div>
+                  <span class="kpi-subvalue">{{ ratingLabel(avgTeamRating) }}</span>
+                } @else {
+                  <strong class="kpi-value">—</strong>
+                  <span class="kpi-subvalue">Aucune donnée</span>
+                }
+              </article>
+
+              <article class="kpi-card">
+                <div class="kpi-card-head"><span class="kpi-label">Évalués ce trimestre</span></div>
+                <strong class="kpi-value" [class]="evaluatedThisQuarter > 0 ? 'green' : ''">{{ evaluatedThisQuarter }}</strong>
+                <span class="kpi-subvalue">sur {{ teamRows.length }} membre{{ teamRows.length !== 1 ? 's' : '' }}</span>
+              </article>
+
+              <article class="kpi-card">
+                <div class="kpi-card-head"><span class="kpi-label">Non évalués</span></div>
+                <strong class="kpi-value" [class]="unratedCount > 0 ? 'red' : 'green'">{{ unratedCount }}</strong>
+                @if (unratedCount > 0) {
+                  <span class="kpi-subvalue red">Attention requise</span>
+                } @else {
+                  <span class="kpi-subvalue">Équipe complète</span>
+                }
+              </article>
+
+              <article class="kpi-card">
+                <div class="kpi-card-head"><span class="kpi-label">Top collaborateur</span></div>
+                @if (topPerformer) {
+                  <strong class="kpi-value kpi-top-name">{{ topPerformer.member.name }}</strong>
+                  <span class="kpi-subvalue" [class]="ratingToneClass(topPerformer.latestEval!.rating)">
+                    {{ topPerformer.latestEval!.rating }}/100 · {{ ratingLabel(topPerformer.latestEval!.rating) }}
+                  </span>
+                } @else {
+                  <strong class="kpi-value">—</strong>
+                  <span class="kpi-subvalue">Aucune évaluation</span>
+                }
+              </article>
+
+            </section>
+
+            <!-- Filters toolbar -->
+            <div class="table-toolbar">
+              <div class="table-search">
+                <svg width="15" height="15" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" placeholder="Rechercher par nom…" [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()"/>
+              </div>
+              <div class="table-filter">
+                <svg width="15" height="15" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <select [(ngModel)]="filterPeriod" (ngModelChange)="onFilterChange()">
+                  <option value="all">Toutes les périodes</option>
+                  <option value="month">Ce mois</option>
+                  <option value="quarter">Ce trimestre</option>
+                  <option value="year">Cette année</option>
+                </select>
+              </div>
+              <div class="table-filter">
+                <svg width="15" height="15" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M3 4h18l-7 8v6l-4 2v-8L3 4z"/>
+                </svg>
+                <select [(ngModel)]="filterStatus" (ngModelChange)="onFilterChange()">
+                  <option value="">Tous les statuts</option>
+                  <option value="excellent">Excellent</option>
+                  <option value="good">Bien</option>
+                  <option value="needs-improvement">À améliorer</option>
+                  <option value="unrated">Non évalué</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Collaborateur</th>
+                    <th class="th-sortable" (click)="toggleDateSort()">
+                      Dernière évaluation
+                      <span class="sort-icon">
+                        @if (sortDir === 'asc') { ↑ }
+                        @else if (sortDir === 'desc') { ↓ }
+                        @else { ⇅ }
+                      </span>
+                    </th>
+                    <th>Période</th>
+                    <th>Note</th>
+                    <th>Statut</th>
+                    <th>Tendance</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of paginatedRows; track row.member.id) {
+                    <tr>
+                      <td>
+                        <div class="employee-cell">
+                          <div class="emp-avatar">{{ initiales(row.member.name) }}</div>
+                          <div class="emp-info">
+                            <span class="emp-name">{{ row.member.name }}</span>
+                            <span class="emp-job">{{ row.member.job_title || '—' }}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>{{ formatDate(row.latestEval?.evaluatedAt) }}</td>
+                      <td>{{ row.latestEval?.period || '—' }}</td>
+                      <td>
+                        @if (row.latestEval?.rating != null) {
+                          <div class="rating-cell">
+                            <div class="rating-bar-track">
+                              <div class="rating-bar-fill" [class]="ratingToneClass(row.latestEval!.rating)" [style.width.%]="row.latestEval!.rating"></div>
+                            </div>
+                            <span class="rating-value" [class]="ratingToneClass(row.latestEval!.rating)">{{ row.latestEval!.rating }}/100</span>
+                          </div>
+                        } @else {
+                          <span class="text-muted">—</span>
+                        }
+                      </td>
+                      <td>
+                        <span class="status-badge status-{{ row.status }}">{{ statusLabel(row.status) }}</span>
+                      </td>
+                      <td>
+                        <span class="trend-icon trend-{{ row.trend }}">
+                          @if (row.trend === 'up') { ↑ }
+                          @else if (row.trend === 'down') { ↓ }
+                          @else if (row.trend === 'stable') { → }
+                          @else { — }
+                        </span>
+                      </td>
+                      <td>
+                        <div class="actions">
+                          <button class="icon-btn" type="button" title="Nouvelle évaluation" (click)="openCreateModal(+row.member.id)">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                          </button>
+                          <button class="icon-btn" type="button" title="Voir l'historique" (click)="viewHistory(row)">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                          </button>
+                          @if (row.latestEval) {
+                            <button class="icon-btn danger" type="button" title="Supprimer" (click)="confirmDelete(+row.member.id, row.latestEval!)">
+                              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                <path d="M10 11v6"/><path d="M14 11v6"/>
+                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                              </svg>
+                            </button>
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                  @if (filteredRows.length === 0) {
+                    <tr>
+                      <td colspan="7">
+                        <div class="empty-inline">Aucun membre correspondant aux filtres.</div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="table-toolbar pagination-toolbar">
+              <div class="toolbar-search pagination-status">
+                <span>Page {{ currentPage }} / {{ totalPages }}</span>
+              </div>
+              <div class="toolbar-filter pagination-controls">
+                <button type="button" class="page-nav-btn" (click)="previousPage()" [disabled]="!canGoPrevious">Précédent</button>
+                <button type="button" class="page-nav-btn" (click)="nextPage()" [disabled]="!canGoNext">Suivant</button>
+              </div>
+            </div>
+
+          } <!-- /not loading -->
+        </div>
+
+        <!-- ══════════════════ TAB: HISTORIQUE ══════════════════════════ -->
+        <div class="tab-panel" [class.active]="activeTab === 'history'">
+
+          @if (isLoading) {
+            <div class="skeleton-rows">
+              @for (_ of [1,2,3]; track $index) { <div class="skeleton-row"></div> }
+            </div>
+          } @else {
+
+            <div class="history-toolbar">
+              <div class="history-search-wrap">
+                <div class="table-search" [class.focused]="historySearchFocused">
+                  <svg width="15" height="15" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Rechercher un collaborateur…"
+                    [(ngModel)]="historySearchTerm"
+                    (focus)="historySearchFocused = true"
+                    (blur)="historySearchFocused = false"
+                    autocomplete="off"
+                  />
+                  @if (historySearchTerm) {
+                    <button class="clear-btn" type="button" (click)="clearHistorySearch()" tabindex="-1">✕</button>
+                  }
+                </div>
+                @if (historySearchFocused && historySearchTerm && !selectedEmployeeId) {
+                  <div class="history-search-results">
+                    @for (row of historyFilteredRows; track row.member.id) {
+                      <div class="history-search-item" (mousedown)="selectHistoryMember(row)">
+                        <div class="emp-avatar sm">{{ initiales(row.member.name) }}</div>
+                        <span class="history-item-name">{{ row.member.name }}</span>
+                        <span class="eval-count-chip">{{ row.evaluations.length }}</span>
+                      </div>
+                    }
+                    @if (historyFilteredRows.length === 0) {
+                      <div class="history-search-empty">Aucun résultat</div>
+                    }
+                  </div>
+                }
+              </div>
+              @if (selectedMemberRow) {
+                <button class="btn-primary" type="button" (click)="openCreateModal(+selectedMemberRow.member.id)">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  Nouvelle évaluation
+                </button>
+              }
+            </div>
+
+            @if (!selectedEmployeeId) {
+              <div class="empty-state">
+                <svg width="48" height="48" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24">
+                  <path d="M17 21v-2a4 4 0 0 0-3-3.8A4 4 0 0 0 9 13H7a4 4 0 0 0-3.9 3.2L3 19v2"/>
+                  <circle cx="9" cy="7" r="3.5"/>
+                </svg>
+                <p>Saisissez un nom pour rechercher un collaborateur et voir son historique.</p>
+              </div>
+            }
+
+            @if (selectedMemberRow) {
+
+              <div class="profile-card">
+                <div class="emp-avatar lg">{{ initiales(selectedMemberRow.member.name) }}</div>
+                <div class="emp-info">
+                  <div class="emp-name lg">{{ selectedMemberRow.member.name }}</div>
+                  <div class="emp-job">
+                    {{ selectedMemberRow.member.job_title || '—' }}
+                    @if (selectedMemberRow.member.department) { · {{ selectedMemberRow.member.department }} }
+                  </div>
+                </div>
+                <div class="profile-stats">
+                  <div class="profile-stat">
+                    <span class="stat-val">{{ selectedMemberRow.evaluations.length }}</span>
+                    <span class="stat-lbl">évaluation{{ selectedMemberRow.evaluations.length !== 1 ? 's' : '' }}</span>
+                  </div>
+                  @if (selectedMemberRow.latestEval?.rating != null) {
+                    <div class="profile-stat">
+                      <span class="stat-val" [class]="ratingToneClass(selectedMemberRow.latestEval!.rating)">{{ selectedMemberRow.latestEval!.rating }}/100</span>
+                      <span class="stat-lbl">dernière note</span>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              @if (selectedMemberRow.evaluations.length === 0) {
+                <div class="empty-state">
+                  <p>Aucune évaluation enregistrée pour {{ selectedMemberRow.member.name.split(' ')[0] }}.</p>
+                </div>
+              }
+
+              @if (selectedMemberRow.evaluations.length > 0) {
+                <div class="eval-timeline">
+                  @for (eval_ of selectedMemberRow.evaluations; track eval_.evaluationId) {
+                    <div class="eval-entry">
+                      <div class="eval-entry-dot" [class]="ratingToneClass(eval_.rating)"></div>
+                      <div class="eval-entry-card">
+                        <div class="eval-entry-header">
+                          <div class="eval-entry-meta">
+                            <span class="eval-date">{{ formatDate(eval_.evaluatedAt) }}</span>
+                            @if (eval_.period) {
+                              <span class="eval-period-badge">{{ eval_.period }}</span>
+                            }
+                            @if (eval_.rating != null) {
+                              <span class="status-badge status-{{ computeStatusPublic(eval_.rating) }}">
+                                {{ eval_.rating }}/100 · {{ ratingLabel(eval_.rating) }}
+                              </span>
+                            } @else {
+                              <span class="status-badge status-unrated">Sans note</span>
+                            }
+                          </div>
+                          <div class="actions">
+                            <button class="icon-btn" type="button" title="Modifier" (click)="openEditModal(selectedMemberRow!, eval_)">
+                              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                              </svg>
+                            </button>
+                            <button class="icon-btn danger" type="button" title="Supprimer" (click)="confirmDelete(+selectedMemberRow!.member.id, eval_)">
+                              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                <path d="M10 11v6"/><path d="M14 11v6"/>
+                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                        @if (eval_.objectifs) {
+                          <div class="eval-field">
+                            <span class="eval-field-label">Objectifs</span>
+                            <p class="eval-field-value">{{ eval_.objectifs }}</p>
+                          </div>
+                        }
+                        @if (eval_.comments) {
+                          <div class="eval-field">
+                            <span class="eval-field-label">Commentaires</span>
+                            <p class="eval-field-value">{{ eval_.comments }}</p>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            }
+
+          } <!-- /not loading -->
+        </div>
+
+      </div><!-- /tab-panels -->
+    </main>
+  </div><!-- /main-wrapper -->
+</div><!-- /layout -->
+
+<!-- ══ MODAL: Nouvelle / Modifier évaluation ════════════════════════════ -->
+@if (showEvalModal) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal-card sm eval-modal-card" (click)="$event.stopPropagation()">
+      <div class="eval-modal-header-band">
+        <div class="eval-modal-header-left">
+          <div class="eval-modal-header-icon">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M9 11l3 3L22 4"/>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+          </div>
+          <div class="eval-modal-header-title">{{ editingEval ? 'Modifier l\'évaluation' : 'Nouvelle évaluation' }}</div>
+        </div>
+        <button class="eval-modal-close-btn" type="button" (click)="closeModal()" aria-label="Fermer">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body eval-modal-body">
+        <div class="form-grid">
+          <label class="full eval-form-group">
+            Employé
+            <div class="modal-emp-search-wrap">
+              <div class="eval-form-control modal-emp-input-row" [class.focused]="modalEmpSearchFocused">
+                <svg width="13" height="13" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Rechercher un collaborateur…"
+                  [(ngModel)]="modalEmpSearchTerm"
+                  (focus)="modalEmpSearchFocused = true"
+                  (blur)="modalEmpSearchFocused = false"
+                  [disabled]="!!editingEval"
+                  autocomplete="off"
+                />
+              </div>
+              @if (modalEmpSearchFocused && !editingEval) {
+                <div class="modal-emp-results">
+                  @for (row of modalEmpFilteredRows; track row.member.id) {
+                    <div class="modal-emp-item" (mousedown)="selectModalEmployee(row)">
+                      <div class="emp-avatar sm">{{ initiales(row.member.name) }}</div>
+                      <span class="modal-emp-name">{{ row.member.name }}</span>
+                    </div>
+                  }
+                  @if (modalEmpFilteredRows.length === 0) {
+                    <div class="history-search-empty">Aucun résultat</div>
+                  }
+                </div>
+              }
+            </div>
+          </label>
+          <label class="eval-form-group">
+            Période
+            <input class="eval-form-control" type="text" [(ngModel)]="evalForm.period" placeholder="ex. Q2 2026"/>
+          </label>
+          <label class="full eval-form-group">
+            Score (0-100)*
+            <input class="eval-form-control" type="number" min="0" max="100" [(ngModel)]="evalForm.rating"/>
+          </label>
+          <label class="full eval-form-group">
+            Objectifs
+            <textarea class="eval-form-control" [(ngModel)]="evalForm.objectifs" maxlength="4000" placeholder="Objectifs définis pour cette période…"></textarea>
+          </label>
+          <label class="full eval-form-group">
+            Commentaires
+            <textarea class="eval-form-control" [(ngModel)]="evalForm.comments" maxlength="4000" placeholder="Commentaires du manager…"></textarea>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer eval-modal-footer">
+        <button class="eval-modal-btn-cancel" type="button" (click)="closeModal()" [disabled]="isSaving">Annuler</button>
+        <button class="eval-modal-btn-add" type="button" (click)="saveEval()" [disabled]="isSaving">
+          {{ isSaving ? 'Enregistrement...' : (editingEval ? 'Enregistrer les modifications' : 'Enregistrer l\'évaluation') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══ DIALOG: Confirmer suppression ════════════════════════════════════ -->
+@if (showDeleteConfirm) {
+  <div class="modal-backdrop" (click)="cancelDelete()">
+    <div class="modal-card sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">Supprimer l'évaluation</div>
+        <button class="modal-close" type="button" (click)="cancelDelete()" [disabled]="isDeleting">✕</button>
+      </div>
+      <div class="modal-body">
+        Êtes-vous sûr de vouloir supprimer l'évaluation du <b>{{ deleteTarget?.label }}</b> ?<br>
+        <small>Cette action est irréversible.</small>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" type="button" (click)="cancelDelete()" [disabled]="isDeleting">Annuler</button>
+        <button class="btn-danger" type="button" (click)="executeDelete()" [disabled]="isDeleting">
+          {{ isDeleting ? 'Suppression...' : 'Supprimer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══ Import Excel modal ═══════════════════════════════════════════════ -->
+@if (showImportModal) {
+  <div class="modal-backdrop" (click)="closeImportModal()">
+    <div class="modal-card import-modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3>Importer des évaluations</h3>
+        <button type="button" class="modal-close" (click)="closeImportModal()">×</button>
+      </div>
+
+      <p class="import-modal-hint">Une ligne = une évaluation. Le même fichier peut contenir plusieurs évaluations par collaborateur (membres de votre équipe uniquement).</p>
+
+      <button type="button" class="btn-download-template" (click)="downloadEvaluationTemplate()">⬇ Télécharger le modèle</button>
+
+      <div class="import-file-zone">
+        <label class="import-file-label">
+          Choisir un fichier
+          <input type="file" accept=".xlsx" (change)="onImportFileSelected($event)" [disabled]="importInProgress" />
+        </label>
+        @if (selectedImportFile) {
+          <span class="import-file-name">{{ selectedImportFile.name }}</span>
+        }
+      </div>
+
+      @if (importFileError) {
+        <p class="error-text">{{ importFileError }}</p>
+      }
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeImportModal()" [disabled]="importInProgress">Annuler</button>
+        <button type="button" class="btn-primary" (click)="submitEvaluationImport()" [disabled]="importInProgress">
+          {{ importInProgress ? 'Import en cours…' : 'Valider' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══ Toast ════════════════════════════════════════════════════════════ -->
+@if (toastVisible) {
+  <div class="toast" [class]="'toast-' + toastType">{{ toastMsg }}</div>
+}
+

@@ -1,0 +1,136 @@
+﻿<section class="card-section">
+  <div class="card-head">
+    <div class="table-title-group">
+      <h3>Tableau détaillé par collaborateur</h3>
+      <span class="emp-count">{{ matchCount }} collaborateur(s){{ searchQuery ? ' trouvé(s)' : '' }}</span>
+    </div>
+    <div class="search-wrap">
+      <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Rechercher un collaborateur…"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchChange()"
+      />
+      <button *ngIf="searchQuery" type="button" class="search-clear" (click)="searchQuery = ''; onSearchChange()" aria-label="Effacer">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <table class="data-table">
+      <colgroup>
+        <col style="width:17%"><!-- Employé -->
+        <col style="width:14%"><!-- Département / Poste -->
+        <col style="width:5%"> <!-- Jours -->
+        <col style="width:14%"><!-- Répartition -->
+        <col style="width:11%"><!-- Taux -->
+        <col style="width:13%"><!-- Tendance -->
+        <col style="width:11%"><!-- Alerte -->
+        <col style="width:15%"><!-- Récidive -->
+      </colgroup>
+      <thead>
+        <tr>
+          <th><button type="button" (click)="toggleSort('employeeName')">Collaborateur {{ sortArrow('employeeName') }}</button></th>
+          <th><button type="button" (click)="toggleSort('department')">Département / Poste {{ sortArrow('department') }}</button></th>
+          <th><button type="button" (click)="toggleSort('absenceDays')">Jours {{ sortArrow('absenceDays') }}</button></th>
+          <th>Répartition</th>
+          <th><button type="button" (click)="toggleSort('presenceRate')">Taux présence {{ sortArrow('presenceRate') }}</button></th>
+          <th><button type="button" (click)="toggleSort('trend')">Tendance {{ sortArrow('trend') }}</button></th>
+          <th>Alerte</th>
+          <th>Récidive</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="clickable-row" *ngFor="let row of pagedRows" (click)="selectRow(row)">
+          <td>
+            <div class="employee-cell">
+              <span class="avatar">{{ row.employeeAvatar }}</span>
+              <span>{{ row.employeeName }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="stacked-cell">
+              <span>{{ row.department }}</span>
+              <small>{{ row.jobTitle }}</small>
+            </div>
+          </td>
+          <td>{{ row.absenceDays }}</td>
+          <td>
+            <div class="types-cell">
+              <span class="type-badge" *ngFor="let item of row.typeBreakdown" [style.background]="typeColors[item.type].bg" [style.color]="typeColors[item.type].text">
+                {{ typeColors[item.type].label }} · {{ item.days }}j
+              </span>
+            </div>
+          </td>
+          <td>
+            <div class="rate-cell">
+              <span>{{ row.presenceRate | number:'1.1-1' }}%</span>
+              <div class="mini-bar-track">
+                <div class="mini-bar-fill" [style.width.%]="row.presenceRate" [ngClass]="presenceBarClass(row.presenceRate)"></div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="trend-pill" [class]="trendClass(row)">
+              {{ trendDelta(row) > 0 ? '↑' : '↓' }} {{ trendDelta(row) | number:'1.1-1' }}%
+            </span>
+          </td>
+          <td>
+            <span class="alert-icon" *ngIf="row.alert">●</span>
+            <span *ngIf="!row.alert">-</span>
+          </td>
+          <td>
+            <span class="recidive-badge" *ngIf="row.recidive">Récidive</span>
+            <span *ngIf="!row.recidive">-</span>
+          </td>
+        </tr>
+        <tr *ngIf="!pagedRows.length">
+          <td colspan="9" class="empty-cell">
+            {{ searchQuery ? 'Aucun collaborateur ne correspond à « ' + searchQuery + ' ».' : 'Aucune donnée correspondant aux filtres.' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination-bar">
+    <span class="page-info">Page <strong>{{ currentPage }}</strong> / {{ totalPages }}</span>
+    <div class="pagination-actions">
+      <button type="button" class="page-btn page-btn--edge" title="Première page"
+              (click)="firstPage()" [disabled]="currentPage <= 1">&laquo;</button>
+      <button type="button" class="page-btn" title="Page précédente"
+              (click)="previousPage()" [disabled]="currentPage <= 1">Précédent</button>
+      <button type="button" class="page-btn" title="Page suivante"
+              (click)="nextPage()" [disabled]="currentPage >= totalPages">Suivant</button>
+      <button type="button" class="page-btn page-btn--edge" title="Dernière page"
+              (click)="lastPage()" [disabled]="currentPage >= totalPages">&raquo;</button>
+    </div>
+  </div>
+</section>
+
+<div class="drawer-backdrop" *ngIf="selectedRow" (click)="closeDrawer()">
+  <aside class="drawer" (click)="$event.stopPropagation()">
+    <div class="drawer-head">
+      <div>
+        <h4>{{ selectedRow.employeeName }}</h4>
+        <p>{{ selectedRow.department }} · {{ selectedRow.jobTitle }}</p>
+      </div>
+      <button type="button" (click)="closeDrawer()">×</button>
+    </div>
+
+    <div class="drawer-history">
+      <div class="history-row" *ngFor="let item of selectedRow.history">
+        <div>
+          <strong>{{ item.startDate | date:'dd/MM/yyyy' }} - {{ item.endDate | date:'dd/MM/yyyy' }}</strong>
+          <small>{{ item.reason || 'Absence déclarée' }}</small>
+        </div>
+        <span class="type-badge" [style.background]="typeColors[item.type].bg" [style.color]="typeColors[item.type].text">
+          {{ typeColors[item.type].label }}
+        </span>
+      </div>
+    </div>
+  </aside>
+</div>

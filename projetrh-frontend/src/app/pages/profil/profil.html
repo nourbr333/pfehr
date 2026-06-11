@@ -1,0 +1,397 @@
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <h2>HRScope</h2>
+      <p>{{ portalLabel }}</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item" [routerLink]="dashboardRoute" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+          <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+          <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+          <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+        </svg>
+        Tableau de bord
+      </a>
+
+      <a class="nav-item" *ngIf="isAdmin" routerLink="/admin/vue-responsables" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+        Vue Responsables
+      </a>
+      <a class="nav-item" *ngIf="isAdmin" routerLink="/admin/vue-managers" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+        </svg>
+        Vue Managers
+      </a>
+      <a class="nav-item" *ngIf="isAdmin" routerLink="/admin/utilisateurs" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        Utilisateurs
+      </a>
+
+      <a class="nav-item" *ngIf="isAdmin" routerLink="/admin/logs" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M3 12h18"></path>
+          <path d="M7 12l-2 2 2 2"></path>
+          <path d="M17 12l2-2-2-2"></path>
+          <path d="M14 6h7v12h-7"></path>
+          <path d="M3 6h7v12H3z"></path>
+        </svg>
+        Activités
+      </a>
+
+      <a class="nav-item" *ngIf="isManager" routerLink="/manager/equipe" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-3-3.8A4 4 0 0 0 9 13H7a4 4 0 0 0-3.9 3.2L3 19v2"></path>
+          <circle cx="9" cy="7" r="3.5"></circle>
+          <path d="M21 21v-2a4 4 0 0 0-3-3.8"></path>
+          <circle cx="18" cy="8" r="3"></circle>
+        </svg>
+        Mon Équipe
+      </a>
+
+      <a class="nav-item" *ngIf="isManager" routerLink="/manager/absences-avancees" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M8 2v4"></path><path d="M16 2v4"></path><rect x="3" y="4" width="18" height="18" rx="2"></rect>
+          <path d="M3 10h18"></path><path d="M9 15l2 2 4-4"></path>
+        </svg>
+        Absences avancé
+      </a>
+
+      <a class="nav-item" *ngIf="isManager" routerLink="/manager/okr" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <circle cx="12" cy="12" r="6"/>
+          <circle cx="12" cy="12" r="2"/>
+          <line x1="12" y1="2" x2="12" y2="6"/>
+          <line x1="12" y1="18" x2="12" y2="22"/>
+          <line x1="2" y1="12" x2="6" y2="12"/>
+          <line x1="18" y1="12" x2="22" y2="12"/>
+        </svg>
+        Objectifs
+      </a>
+
+      <a class="nav-item" *ngIf="isManager" routerLink="/manager/rapports" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 17v-6"></path>
+          <path d="M12 17V7"></path>
+          <path d="M15 17v-4"></path>
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2z"></path>
+        </svg>
+        Rapports
+      </a>
+
+      <a class="nav-item" *ngIf="isResponsableRh" routerLink="/employes" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        Collaborateurs
+      </a>
+
+      <a class="nav-item" *ngIf="isResponsableRh" routerLink="/departements" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="7" width="20" height="14" rx="2"></rect>
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"></path>
+          <line x1="12" y1="12" x2="12" y2="16"></line>
+          <line x1="10" y1="14" x2="14" y2="14"></line>
+        </svg>
+        Départements
+      </a>
+
+      <a class="nav-item" *ngIf="isResponsableRh" routerLink="/performances-evaluations" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+          <polyline points="16 7 22 7 22 13"></polyline>
+        </svg>
+        Performances &amp; Évaluations
+      </a>
+
+      <a class="nav-item" *ngIf="isResponsableRh" routerLink="/absences-conges" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M8 2v4"></path><path d="M16 2v4"></path>
+          <rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M3 10h18"></path>
+          <path d="M9 15l6 6"></path><path d="M15 15l-6 6"></path>
+        </svg>
+        Absences &amp; Congés
+      </a>
+
+      <a class="nav-item" *ngIf="isResponsableRh" routerLink="/rh/rapports" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M4 20V10"></path>
+          <path d="M10 20V4"></path>
+          <path d="M16 20v-7"></path>
+          <path d="M22 20H2"></path>
+        </svg>
+        Rapports
+      </a>
+
+      <a class="nav-item" [routerLink]="isManager ? '/manager/calendrier' : '/calendrier'" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        Calendrier
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="nav-logout" (click)="onDeconnexion()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        Déconnexion
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="page-intro">
+          <h1>Mon Profil</h1>
+          <p>Gérez vos informations et la sécurité de votre compte</p>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <app-notifications-panel></app-notifications-panel>
+
+        <div class="user-info">
+          <div class="user-info-text">
+            <div class="name">{{ utilisateur?.prenom }} {{ utilisateur?.nom }}</div>
+            <div class="role">{{ getRoleLabel() }}</div>
+          </div>
+          <div class="avatar">{{ utilisateur?.initiales }}</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="profile-layout">
+        <section class="profile-card profile-card--side">
+          <div class="profile-avatar">{{ utilisateur?.initiales }}</div>
+          <div class="profile-name">{{ utilisateur?.prenom }} {{ utilisateur?.nom }}</div>
+          <div class="profile-email">{{ utilisateur?.email }}</div>
+          <div [class]="getBadgeClass()">{{ getRoleLabel() }}</div>
+
+          <div class="profile-divider"></div>
+
+          <div class="profile-stats">
+            <div class="stat-row">
+              <span class="stat-label">Rôle</span>
+              <span class="stat-value">{{ getRoleLabel() }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Statut</span>
+              <span class="stat-value stat-value--status"><span class="status-dot"></span>Actif</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="profile-main">
+          <section class="profile-card profile-card--content">
+            <div class="section-head">
+              <div class="section-title-wrap">
+                <span class="section-icon">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M20 21a8 8 0 0 0-16 0"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </span>
+                <div>
+                  <h2>Informations personnelles</h2>
+                  <p>Modifiez vos informations de base</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-list">
+              <div class="info-row editable">
+                <div class="field-icon">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M20 21a8 8 0 0 0-16 0"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
+
+                <div class="field-main">
+                  <div class="field-label">NOM</div>
+
+                  <ng-container *ngIf="editingField === 'nom'; else nameView">
+                    <div class="field-edit-line">
+                      <input class="form-control" type="text" [(ngModel)]="editValue" (keydown.enter)="saveEdit('nom')" />
+                      <button type="button" class="field-action field-action--confirm" (click)="saveEdit('nom')">✓</button>
+                      <button type="button" class="field-action field-action--cancel" (click)="cancelEdit()">✕</button>
+                    </div>
+                  </ng-container>
+
+                  <ng-template #nameView>
+                    <div class="field-value">{{ utilisateur?.nom }}</div>
+                  </ng-template>
+
+                  <div class="field-feedback field-feedback--success" *ngIf="fieldStatusField === 'nom' && fieldSuccess">{{ fieldSuccess }}</div>
+                  <div class="field-feedback field-feedback--error" *ngIf="fieldStatusField === 'nom' && fieldError">{{ fieldError }}</div>
+                </div>
+
+                <button *ngIf="editingField !== 'nom'" type="button" class="icon-edit" (click)="startEdit('nom')" aria-label="Modifier le nom">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="info-row editable">
+                <div class="field-icon">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M20 21a8 8 0 0 0-16 0"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
+
+                <div class="field-main">
+                  <div class="field-label">PRÉNOM</div>
+
+                  <ng-container *ngIf="editingField === 'prenom'; else firstNameView">
+                    <div class="field-edit-line">
+                      <input class="form-control" type="text" [(ngModel)]="editValue" (keydown.enter)="saveEdit('prenom')" />
+                      <button type="button" class="field-action field-action--confirm" (click)="saveEdit('prenom')">✓</button>
+                      <button type="button" class="field-action field-action--cancel" (click)="cancelEdit()">✕</button>
+                    </div>
+                  </ng-container>
+
+                  <ng-template #firstNameView>
+                    <div class="field-value">{{ utilisateur?.prenom }}</div>
+                  </ng-template>
+
+                  <div class="field-feedback field-feedback--success" *ngIf="fieldStatusField === 'prenom' && fieldSuccess">{{ fieldSuccess }}</div>
+                  <div class="field-feedback field-feedback--error" *ngIf="fieldStatusField === 'prenom' && fieldError">{{ fieldError }}</div>
+                </div>
+
+                <button *ngIf="editingField !== 'prenom'" type="button" class="icon-edit" (click)="startEdit('prenom')" aria-label="Modifier le prénom">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="info-row editable">
+                <div class="field-icon">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M4 4h16v16H4z"></path>
+                    <path d="M22 6l-10 7L2 6"></path>
+                  </svg>
+                </div>
+
+                <div class="field-main">
+                  <div class="field-label">EMAIL</div>
+
+                  <ng-container *ngIf="editingField === 'email'; else emailView">
+                    <div class="field-edit-line">
+                      <input class="form-control" type="email" [(ngModel)]="editValue" (keydown.enter)="saveEdit('email')" />
+                      <button type="button" class="field-action field-action--confirm" (click)="saveEdit('email')">✓</button>
+                      <button type="button" class="field-action field-action--cancel" (click)="cancelEdit()">✕</button>
+                    </div>
+                  </ng-container>
+
+                  <ng-template #emailView>
+                    <div class="field-value">{{ utilisateur?.email }}</div>
+                  </ng-template>
+
+                  <div class="field-feedback field-feedback--success" *ngIf="fieldStatusField === 'email' && fieldSuccess">{{ fieldSuccess }}</div>
+                  <div class="field-feedback field-feedback--error" *ngIf="fieldStatusField === 'email' && fieldError">{{ fieldError }}</div>
+                </div>
+
+                <button *ngIf="editingField !== 'email'" type="button" class="icon-edit" (click)="startEdit('email')" aria-label="Modifier l’email">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+                  </svg>
+                </button>
+              </div>
+
+            </div>
+          </section>
+
+          <section class="profile-card profile-card--content">
+            <div class="section-head">
+              <div class="section-title-wrap">
+                <span class="section-icon">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  </svg>
+                </span>
+                <div>
+                  <h2>Sécurité</h2>
+                  <p>Changez votre mot de passe</p>
+                </div>
+              </div>
+            </div>
+
+            <form class="security-form" [formGroup]="passwordForm" (ngSubmit)="onChangePassword()">
+              <div class="password-grid">
+                <div class="password-col">
+                  <label class="password-label">Mot de passe actuel</label>
+                  <div class="input-password-wrapper">
+                    <input class="form-control" [type]="showCurrentPw ? 'text' : 'password'" formControlName="currentPw" placeholder="••••••••" [class.invalid]="getPasswordError('currentPw')" />
+                    <button type="button" class="toggle-password" (click)="showCurrentPw = !showCurrentPw">👁</button>
+                  </div>
+                  <div class="field-feedback field-feedback--error" *ngIf="getPasswordError('currentPw')">{{ getPasswordError('currentPw') }}</div>
+                </div>
+
+                <div class="password-col">
+                  <label class="password-label">Nouveau mot de passe</label>
+                  <div class="input-password-wrapper">
+                    <input class="form-control" [type]="showNewPw ? 'text' : 'password'" formControlName="newPw" placeholder="••••••••" [class.invalid]="getPasswordError('newPw')" />
+                    <button type="button" class="toggle-password" (click)="showNewPw = !showNewPw">👁</button>
+                  </div>
+
+                  <div class="strength-bar" *ngIf="passwordForm.get('newPw')?.value">
+                    <div class="strength-bar__segments">
+                      <div *ngFor="let s of [1, 2, 3, 4]" class="strength-bar__seg" [style.background]="passwordStrength >= s ? strengthColor : '#E5E7EB'"></div>
+                    </div>
+                    <span class="strength-bar__label" [style.color]="strengthColor">{{ strengthLabel }}</span>
+                  </div>
+
+                  <div class="field-feedback field-feedback--error" *ngIf="getPasswordError('newPw')">{{ getPasswordError('newPw') }}</div>
+                </div>
+
+                <div class="password-col">
+                  <label class="password-label">Confirmer</label>
+                  <div class="input-password-wrapper">
+                    <input class="form-control" [type]="showConfirmPw ? 'text' : 'password'" formControlName="confirmPw" placeholder="••••••••" [class.invalid]="getPasswordError('confirmPw')" />
+                    <button type="button" class="toggle-password" (click)="showConfirmPw = !showConfirmPw">👁</button>
+                  </div>
+                  <div class="field-feedback field-feedback--error" *ngIf="getPasswordError('confirmPw')">{{ getPasswordError('confirmPw') }}</div>
+                </div>
+              </div>
+
+              <div class="security-actions">
+                <button type="submit" class="btn btn-primary">Changer le mot de passe</button>
+                <div class="field-feedback field-feedback--success" *ngIf="passwordSuccess">Mot de passe mis à jour ✓</div>
+              </div>
+            </form>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

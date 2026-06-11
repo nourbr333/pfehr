@@ -1,0 +1,128 @@
+﻿<!-- Alert banner -->
+<div class="pending-alert" *ngIf="pendingRequests.length > 0">
+  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+  <span><strong>{{ pendingRequests.length }}</strong> demande(s) en attente de validation</span>
+  <button class="btn-primary btn-sm" (click)="newRequest.emit()">+ Demande congé</button>
+</div>
+
+<!-- Empty state when no requests exist -->
+<section class="card-section empty-welcome" *ngIf="leaveRequests.length === 0">
+  <div class="empty-icon">📋</div>
+  <h3>Aucune demande de congé</h3>
+  <p>Les demandes soumises par les collaborateurs apparaîtront ici. Cliquez sur "Nouvelle demande" pour en créer une.</p>
+  <button class="btn-primary" (click)="newRequest.emit()">+ Demande congé</button>
+</section>
+
+<!-- Filters -->
+<div class="section-filters">
+  <select [(ngModel)]="filterDepartment" (ngModelChange)="resetHistoryDisplay()">
+    <option value="">Tous les départements</option>
+    <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+  </select>
+  <select [(ngModel)]="filterStatus" (ngModelChange)="resetHistoryDisplay()">
+    <option value="">Tous les statuts</option>
+    <option value="pending">En attente</option>
+    <option value="approved">Approuvé</option>
+    <option value="rejected">Rejeté</option>
+    <option value="cancelled">Annulé</option>
+    <option value="expired">Arrivé à échéance</option>
+  </select>
+</div>
+
+<!-- Pending requests -->
+<section id="conges-section-pending" class="card-section">
+  <div class="card-head">
+    <h3>Demandes en attente</h3>
+  </div>
+  <div class="empty-state" *ngIf="sortedPendingRequests.length === 0">Aucune demande en attente.</div>
+  <div class="requests-list" *ngIf="sortedPendingRequests.length > 0">
+    <div class="request-card" *ngFor="let req of sortedPendingRequests" [class.urgent]="isUrgent(req)">
+      <div class="request-left">
+        <span class="req-avatar">{{ req.employeeAvatar || '??' }}</span>
+        <div class="req-info">
+          <strong>{{ req.employeeName || 'Collaborateur #' + req.employeeId }}</strong>
+          <small>{{ req.department }}</small>
+        </div>
+      </div>
+      <div class="request-meta">
+        <span class="type-badge" [style.background]="typeColors[req.type]?.bg" [style.color]="typeColors[req.type]?.text">
+          {{ typeColors[req.type]?.label }}
+        </span>
+        <span class="req-dates">{{ req.startDate }} → {{ req.endDate }}</span>
+        <span class="req-days">{{ req.requestedDays }}j</span>
+        <span class="req-balance" *ngIf="getEmployeeBalance(req) !== null">
+          Solde: {{ getEmployeeBalance(req) }}j
+        </span>
+      </div>
+      <div class="request-actions">
+        <span class="urgent-badge" *ngIf="isUrgent(req)">URGENT</span>
+        <span class="expired-badge" *ngIf="isExpired(req)">Expiré</span>
+        <ng-container *ngIf="!isExpired(req)">
+          <button class="btn-approve" (click)="approve(req)">Approuver</button>
+          <button class="btn-reject" (click)="showRejectInput(req)" *ngIf="showRejectInputFor !== req.id">Refuser</button>
+          <button class="btn-cancel" (click)="cancel(req)" *ngIf="showRejectInputFor !== req.id">Annuler</button>
+        </ng-container>
+      </div>
+      <!-- Inline rejection reason -->
+      <div class="reject-inline" *ngIf="showRejectInputFor === req.id">
+        <input type="text" placeholder="Motif de refus (obligatoire)" [(ngModel)]="rejectionReasonMap[req.id]" />
+        <button class="btn-reject-confirm" (click)="confirmReject(req)" [disabled]="!rejectionReasonMap[req.id]?.trim()">Confirmer</button>
+        <button class="btn-cancel-sm" (click)="cancelReject()">Annuler</button>
+      </div>
+      <!-- Conflicts -->
+      <div class="conflicts-section" *ngIf="req.conflictsDetected && req.conflictDetails?.length">
+        <small class="conflict-warning">⚠ Conflits détectés :</small>
+        <div class="conflict-line" *ngFor="let c of req.conflictDetails">
+          {{ c.department }} — {{ c.absenceCount }}/{{ c.departmentHeadcount }} ({{ c.absenceRate | number:'1.0-0' }}%)
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- History -->
+<section id="conges-section-history" class="card-section">
+  <div class="card-head">
+    <h3>Historique</h3>
+  </div>
+  <div class="history-list" *ngIf="historyRequests.length > 0; else noHistory">
+    <div class="history-month-group" *ngFor="let group of historyGroupedByMonth">
+      <div class="history-month-separator">
+        <span class="history-month-label">{{ group.monthLabel }}</span>
+        <span class="history-month-count">{{ group.requests.length }} demande{{ group.requests.length > 1 ? 's' : '' }}</span>
+      </div>
+      <div class="history-item" *ngFor="let req of group.requests">
+        <span class="status-dot" [ngClass]="getStatusClass(effectiveStatus(req))"></span>
+        <div class="history-info">
+          <strong>{{ req.employeeName || 'Collaborateur #' + req.employeeId }}</strong>
+          <span class="type-badge-sm" [style.background]="typeColors[req.type]?.bg" [style.color]="typeColors[req.type]?.text">
+            {{ typeColors[req.type]?.label }}
+          </span>
+          <span>{{ req.requestedDays }}j — {{ req.startDate }} → {{ req.endDate }}</span>
+        </div>
+        <div class="history-meta">
+          <span class="status-label" [ngClass]="getStatusClass(effectiveStatus(req))">{{ getStatusLabel(effectiveStatus(req)) }}</span>
+          <small *ngIf="req.reviewedAt">{{ req.reviewedAt | date:'dd/MM/yyyy HH:mm' }}</small>
+        </div>
+      </div>
+    </div>
+    <div class="history-load-more" *ngIf="showHistoryToggle">
+      <button
+        type="button"
+        class="btn-history-toggle"
+        (click)="toggleHistoryDisplay()"
+        [attr.aria-expanded]="isHistoryExpanded">
+        <span>{{ isHistoryExpanded ? 'Afficher moins' : 'Afficher plus' }}</span>
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <polyline *ngIf="!isHistoryExpanded" points="6 9 12 15 18 9"/>
+          <polyline *ngIf="isHistoryExpanded" points="6 15 12 9 18 15"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <ng-template #noHistory>
+    <div class="empty-state">Aucun historique disponible.</div>
+  </ng-template>
+</section>

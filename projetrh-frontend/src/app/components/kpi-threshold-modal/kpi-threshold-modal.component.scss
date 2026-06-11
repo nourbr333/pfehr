@@ -1,0 +1,239 @@
+.note-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.note-modal {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22);
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.note-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.note-modal-title-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.modal-icon-wrap--target {
+  color: #2563eb;
+}
+
+.note-modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px;
+}
+
+.note-modal-kpi-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.note-modal-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #f1f5f9;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.threshold-modal-body {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 65vh;
+  overflow-y: auto;
+}
+
+.threshold-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.threshold-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.threshold-formula-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #374151;
+  font-style: italic;
+}
+
+.threshold-current-value {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.threshold-current-number {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.threshold-current-date {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.threshold-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .threshold-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+.threshold-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.threshold-field-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.threshold-field-hint {
+  font-size: 10px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.threshold-input {
+  padding: 7px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #374151;
+  background: #f8fafc;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.threshold-validation-error {
+  color: #dc2626;
+  font-size: 12px;
+  margin: 4px 0 0;
+}
+
+.threshold-phrase-box {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.threshold-phrase-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #166534;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.threshold-phrase-text {
+  font-size: 13px;
+  color: #166534;
+  line-height: 1.5;
+  margin: 0;
+  font-style: italic;
+}
+
+.note-modal-textarea {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #374151;
+  background: #f8fafc;
+  resize: vertical;
+  min-height: 80px;
+  box-sizing: border-box;
+}
+
+.note-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+.note-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.note-btn--cancel {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #6b7280;
+}
+
+.note-btn--save {
+  border: 1px solid #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.note-btn--delete {
+  border: 1px solid #fca5a5;
+  background: #fff;
+  color: #dc2626;
+  margin-right: auto;
+}

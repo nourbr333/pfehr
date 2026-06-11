@@ -1,0 +1,51 @@
+// =============================================
+// Tokens partagés du portail admin (HRScope)
+// Alignés sur le design des portails RH / Manager.
+// Usage : @use '../../../styles/admin-tokens' as *;
+// =============================================
+
+// Couleurs principales
+$primary:       #2563eb;
+$primary-light: #eff6ff;
+$bg:            #f5f7fb;
+$card-bg:       #ffffff;
+
+// Texte
+$text-dark:  #0f172a;
+$text-mid:   #4b5563;
+$text-muted: #64748b;
+$text-light: #9ca3af;
+
+// Bordures
+$border:      #e2e8f0;
+$border-soft: #e5e7eb;
+
+// Couleurs sémantiques (pills, statuts)
+$green:      #22c55e;
+$green-soft: #34d399;
+$red:        #ef4444;
+$red-deep:   #e74c3c;
+$orange:     #f59e0b;
+$gray:       #9ca3af;
+$blue:       #3b82f6;
+$blue-light: #60a5fa;
+$violet:     #8b5cf6;
+
+// Couleurs des rôles (identiques au backend roleColor)
+$role-admin:   #e74c3c;
+$role-manager: #3498db;
+$role-resp:    #27ae60;
+
+// Layout
+$sidebar-w: 240px;
+$topbar-h:  64px;
+$radius:    12px;
+
+// Ombres
+$shadow-card:       0 4px 14px rgba(15, 23, 42, 0.06);
+$shadow-card-hover: 0 8px 20px rgba(37, 99, 235, 0.14);
+
+// Typographie : DM Sans est la police unique de l'application
+// (titres, sous-titres et valeurs KPI compris).
+$font-main:    'DM Sans', sans-serif;
+$font-display: 'DM Sans', sans-serif;

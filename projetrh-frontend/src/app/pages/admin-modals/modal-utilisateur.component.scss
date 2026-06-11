@@ -1,0 +1,258 @@
+@use '../../../styles/admin-tokens' as tokens;
+
+$primary: tokens.$primary;
+$border: tokens.$border-soft;
+$text-mid: tokens.$text-mid;
+$text-light: tokens.$text-light;
+$red: #dc2626; // rouge « action destructive »
+$radius: tokens.$radius;
+$font-main: tokens.$font-main;
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+}
+
+.modal-card {
+  width: 780px;
+  max-width: 94vw;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid $border;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid $border;
+}
+
+.modal-title {
+  font-family: $font-main;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #111827;
+}
+
+.modal-close {
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: $text-mid;
+}
+
+.modal-body {
+  padding: 16px 18px;
+}
+
+.modal-footer {
+  padding: 14px 18px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid $border;
+  background: #fafafa;
+}
+
+.btn-primary,
+.btn-secondary {
+  height: 38px;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-family: $font-main;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.btn-primary {
+  background: $primary;
+  color: #fff;
+  border-color: $primary;
+}
+.btn-secondary {
+  background: #fff;
+  color: $text-mid;
+  border-color: $border;
+}
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: $text-mid;
+}
+
+input,
+select {
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: $font-main;
+  font-size: 0.85rem;
+  outline: none;
+  &:focus {
+    border-color: $primary;
+  }
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.inline-error {
+  font-size: 0.75rem;
+  color: $red;
+  font-weight: 700;
+}
+
+// Switch (copie style du projet)
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 26px;
+  flex-shrink: 0;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #e5e7eb;
+  border-radius: 999px;
+  transition: 0.2s;
+}
+.slider:before {
+  position: absolute;
+  content: '';
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  transition: 0.2s;
+}
+.switch input:checked + .slider {
+  background: $primary;
+}
+.switch input:checked + .slider:before {
+  transform: translateX(18px);
+}
+
+.toggle-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.toggle-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: $text-mid;
+  width: 90px;
+}
+
+.toggle-values {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.78rem;
+  color: $text-light;
+  font-weight: 700;
+}
+
+.toggle-value--active {
+  color: $primary;
+}
+
+.password-block {
+  width: 100%;
+  padding: 6px 0 0;
+}
+
+.password-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: $text-mid;
+  margin-bottom: 8px;
+}
+
+.password-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.password-input {
+  flex: 1;
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: $font-main;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.eye-btn {
+  height: 38px;
+  border-radius: 10px;
+  padding: 0 12px;
+  border: 1px solid $border;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 800;
+  color: $text-mid;
+}
+
+.strength-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.strength-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.checkbox-line {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: $text-mid;
+  margin-bottom: 10px;
+}
+

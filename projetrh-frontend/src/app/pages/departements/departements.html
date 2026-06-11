@@ -1,0 +1,429 @@
+﻿<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <h2>HRScope</h2>
+      <p>Portail Responsable RH</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" routerLink="/accueil-resp" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>Tableau de bord
+      </a>
+      <a class="nav-item" routerLink="/employes" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>Collaborateurs
+      </a>
+      <a class="nav-item" routerLink="/departements" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+          <line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>
+        </svg>Départements
+      </a>
+      <a class="nav-item" routerLink="/performances-evaluations" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+        </svg>Performances &amp; Évaluations
+      </a>
+      <a class="nav-item" routerLink="/absences-conges" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M8 2v4"/><path d="M16 2v4"/>
+          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/>
+          <path d="M9 15l6 6"/><path d="M15 15l-6 6"/>
+        </svg>Absences &amp; Congés
+      </a>
+      <a class="nav-item" routerLink="/rh/rapports" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/>
+        </svg>Rapports
+      </a>
+      <a class="nav-item" routerLink="/resp/notes" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>Mes notes
+      </a>
+      <a class="nav-item" routerLink="/calendrier" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>Calendrier
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-logout" (click)="onDeconnexion()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>Déconnexion
+      </div>
+    </div>
+  </aside>
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-left"></div>
+      <div class="topbar-actions">
+        <app-notifications-panel></app-notifications-panel>
+        <div class="user-info">
+          <div class="user-info-text">
+            <div class="name">{{ utilisateur?.prenom }} {{ utilisateur?.nom }}</div>
+            <div class="role">Responsable RH</div>
+          </div>
+          <div class="avatar" (click)="onProfil()">{{ utilisateur?.initiales }}</div>
+        </div>
+      </div>
+    </header>
+    <main class="page-content"><div class="page-header">
+        <h1>Départements</h1>
+        <p>Visualisez et gérez les départements de l'entreprise.</p>
+      </div>
+
+      <div class="kpi-cards-row">
+        <div class="kpi-card">
+          <div class="kpi-label">Départements actifs</div>
+          <div class="kpi-value">{{ activeDepartmentsCount }}</div>
+          <div class="kpi-sub">Avec au moins 1 employé</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Top département</div>
+          <div class="kpi-value">{{ topDepartment?.departmentName || '—' }}</div>
+          <div class="kpi-sub">Score {{ topDepartment?.score ?? 0 }}</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">À soutenir en priorité</div>
+          @if (priorityDepartment) {
+            <div class="kpi-value">{{ priorityDepartment.departmentName }}</div>
+            <div class="kpi-sub">Score {{ priorityDepartment.score }}</div>
+          } @else {
+            <div class="kpi-value kpi-value--neutral">—</div>
+            <div class="kpi-sub kpi-sub--good">Tous les départements sont performants</div>
+          }
+        </div>
+      </div>
+
+      <div class="dept-grid">
+        <div
+          *ngIf="!isLoading && !errorMessage && departments.length > 0 && filteredDepartments.length === 0"
+          class="dept-search-empty"
+        >
+          <div class="empty-inline">
+            <svg width="18" height="18" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            Aucun département ne correspond à votre recherche.
+          </div>
+        </div>
+        <div
+          class="dept-card"
+          *ngFor="let dept of filteredDepartments"
+          (click)="openDepartmentPanel(dept)"
+          (keydown.enter)="openDepartmentPanel(dept)"
+          (keydown.space)="openDepartmentPanel(dept)"
+          role="button"
+          tabindex="0"
+        >
+          <div class="dept-card-top">
+            <div>
+              <div class="dept-title">{{ dept.departmentName }}</div>
+              <div class="dept-subtitle">{{ departmentEmployeeCount(dept) }} collaborateurs</div>
+            </div>
+            <div class="dept-icon">
+              <ng-container [ngSwitch]="departmentIconKey(dept.departmentName)">
+                <svg *ngSwitchCase="'engineering'" width="18" height="18" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c0 .66.39 1.26 1 1.51.16.07.33.1.51.1H21a2 2 0 1 1 0 4h-.09c-.67 0-1.27.39-1.51 1z"/>
+                </svg>
+                <svg *ngSwitchCase="'hr'" width="18" height="18" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M17 21v-2a5 5 0 0 0-5-5H8a5 5 0 0 0-5 5v2"/><circle cx="10" cy="7" r="4"/><path d="M21 8v6"/><path d="M18 11h6"/>
+                </svg>
+                <svg *ngSwitchCase="'finance'" width="18" height="18" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/><path d="M7 14h2"/><path d="M11 14h6"/>
+                </svg>
+                <svg *ngSwitchCase="'marketing'" width="18" height="18" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M3 11v2a2 2 0 0 0 2 2h2l5 4V5l-5 4H5a2 2 0 0 0-2 2z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19 7a8 8 0 0 1 0 10"/>
+                </svg>
+                <svg *ngSwitchCase="'sales'" width="18" height="18" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24">
+                  <line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                <svg *ngSwitchCase="'operations'" width="18" height="18" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h10v10H7z"/>
+                </svg>
+                <svg *ngSwitchCase="'legal'" width="18" height="18" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M12 3v18"/><path d="M6 7h12"/><path d="M7 7 4 12h6z"/><path d="M17 7l-3 5h6z"/><path d="M9 21h6"/>
+                </svg>
+                <svg *ngSwitchDefault width="18" height="18" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </ng-container>
+            </div>
+          </div>
+
+          <div class="dept-metrics">
+            <div class="metric">
+              <div class="metric-label">Performance</div>
+              <div class="metric-value">{{ formatPerformanceScore(dept) }}</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Présence</div>
+              <div class="metric-value">{{ formatPresenceRate(dept) }}</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Évalués</div>
+              <div class="metric-value">{{ departmentEvaluatedEmployees(dept) }}</div>
+            </div>
+          </div>
+
+          <div class="dept-bar-row">
+            <div class="dept-bar-label">Score de performance</div>
+            <div class="dept-bar-score">{{ departmentPerformanceScore(dept) }}</div>
+          </div>
+          <div class="dept-bar">
+            <div
+              class="dept-bar-fill"
+              [style.width.%]="departmentPerformancePercent(dept)"
+              [ngStyle]="performanceBarStyle(dept)"
+            ></div>
+          </div>
+
+          <div class="dept-more">
+            <span *ngIf="isDepartmentEmpty(dept)" class="dept-empty-badge">Département vide</span>
+            {{ departmentEmployeeCount(dept) }} collaborateurs au total
+          </div>
+        </div>
+      </div>
+
+      <div class="table-toolbar">
+        <div class="toolbar-search">
+          <svg width="15" height="15" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" placeholder="Rechercher un département…" [(ngModel)]="searchTerm"/>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Département</th>
+              <th>NBR Employés</th>
+              <th>Performance</th>
+              <th>Présence moyenne</th>
+              <th>Évalués</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="isLoading" class="empty-row">
+              <td colspan="6">
+                <div class="empty-inline">
+                  <svg width="18" height="18" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+                  </svg>
+                  Chargement des départements...
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="!isLoading && errorMessage" class="empty-row">
+              <td colspan="6">
+                <div class="empty-inline">
+                  <svg width="18" height="18" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  {{ errorMessage }}
+                </div>
+              </td>
+            </tr>
+            <tr *ngFor="let dept of filteredDepartments">
+              <td>{{ dept.departmentId }}</td>
+              <td>{{ dept.departmentName }}</td>
+              <td>{{ departmentEmployeeCount(dept) }}</td>
+              <td>{{ departmentPerformanceScore(dept) }}</td>
+              <td>{{ departmentPresenceRate(dept) }}%</td>
+              <td>{{ departmentEvaluatedEmployees(dept) }}</td>
+            </tr>
+            <tr class="empty-row" *ngIf="!isLoading && !errorMessage && departments.length === 0">
+              <td colspan="6">
+                <div class="empty-inline">
+                  <svg width="18" height="18" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+                  </svg>
+                  Aucun département à afficher pour le moment.
+                </div>
+              </td>
+            </tr>
+            <tr class="empty-row" *ngIf="!isLoading && !errorMessage && departments.length > 0 && filteredDepartments.length === 0">
+              <td colspan="6">
+                <div class="empty-inline">
+                  <svg width="18" height="18" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  Aucun département ne correspond à votre recherche.
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    
+
+<div class="drawer-backdrop" [class.open]="isDepartmentPanelOpen" (click)="closeDepartmentPanel()">
+  <aside class="department-drawer" [class.open]="isDepartmentPanelOpen" (click)="$event.stopPropagation()">
+    <div class="drawer-header" *ngIf="selectedDepartment as dept">
+      <div class="drawer-header-main">
+        <div class="drawer-title">{{ dept.departmentName }}</div>
+        <div class="drawer-subtitle">
+          {{ getDepartmentStats(dept).employeeCount }} collaborateurs • {{ getDepartmentStats(dept).evaluatedEmployees }} évalués
+        </div>
+      </div>
+      <button type="button" class="drawer-close" (click)="closeDepartmentPanel()">✕</button>
+    </div>
+
+    <div class="drawer-content" *ngIf="selectedDepartment as dept">
+      <div class="drawer-tabs">
+        <button type="button" class="drawer-tab" [class.active]="activeDepartmentTab === 'members'" (click)="activeDepartmentTab = 'members'">
+          Membres
+        </button>
+        <button type="button" class="drawer-tab" [class.active]="activeDepartmentTab === 'kpis'" (click)="activeDepartmentTab = 'kpis'">
+          KPIs
+        </button>
+        <button type="button" class="drawer-tab" [class.active]="activeDepartmentTab === 'notes'" (click)="activeDepartmentTab = 'notes'">
+          Notes
+        </button>
+      </div>
+
+      <section class="drawer-section" *ngIf="activeDepartmentTab === 'members'">
+        <div class="drawer-search">
+          <svg width="15" height="15" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" placeholder="Rechercher un membre, poste, ID..." [(ngModel)]="membersSearchTerm" />
+        </div>
+        <p *ngIf="departmentEmployeesLoading" class="drawer-muted">Chargement des collaborateurs…</p>
+        <p *ngIf="!departmentEmployeesLoading && departmentEmployeesError" class="drawer-error">{{ departmentEmployeesError }}</p>
+        <p *ngIf="!departmentEmployeesLoading && !departmentEmployeesError && filteredDepartmentEmployees.length === 0" class="drawer-muted">
+          Aucun membre ne correspond à la recherche.
+        </p>
+        <div class="employee-list" *ngIf="!departmentEmployeesLoading && !departmentEmployeesError && filteredDepartmentEmployees.length > 0">
+          <div class="employee-row" *ngFor="let employee of filteredDepartmentEmployees">
+            <div class="employee-avatar">{{ employeeInitials(employee) }}</div>
+            <div class="employee-details">
+              <div class="employee-name">{{ employeeFullName(employee) }}</div>
+              <div class="employee-role">{{ employee.jobTitle || 'Poste non renseigné' }}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="drawer-section" *ngIf="activeDepartmentTab === 'kpis'">
+        <div class="drawer-kpis">
+          <div class="drawer-kpi-card">
+            <span>Score performance</span>
+            <strong>{{ departmentPerformanceScore(dept) }}</strong>
+          </div>
+          <div class="drawer-kpi-card">
+            <span>Présence moyenne</span>
+            <strong>{{ departmentPresenceRate(dept) }}%</strong>
+          </div>
+          <div class="drawer-kpi-card">
+            <span>Employés évalués</span>
+            <strong>{{ departmentEvaluatedEmployees(dept) }}</strong>
+          </div>
+        </div>
+        <div class="drawer-progress-block">
+          <div class="drawer-progress-row">
+            <span>Indice de performance global</span>
+            <strong>{{ departmentPerformanceScore(dept) }}</strong>
+          </div>
+          <div class="drawer-progress-track">
+            <div
+              class="drawer-progress-fill"
+              [style.width.%]="departmentPerformancePercent(dept)"
+              [ngStyle]="performanceBarStyle(dept)"
+            ></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="drawer-section" *ngIf="activeDepartmentTab === 'notes'">
+        <h3>Note personnelle du responsable</h3>
+        <p class="drawer-muted">Cette note est privée pour votre session locale de gestion.</p>
+        <textarea
+          class="note-textarea"
+          [(ngModel)]="noteDraft"
+          placeholder="Ajouter une observation sur ce département (suivi, points d'attention, actions...)"
+          rows="8"
+        ></textarea>
+        <div class="note-actions">
+          <button type="button" class="note-save-btn" (click)="saveDepartmentNote()">
+            {{ noteEditingId != null ? 'Modifier la note' : 'Enregistrer la note' }}
+          </button>
+          <button type="button" class="note-cancel-btn" *ngIf="noteEditingId != null" (click)="cancelEditNote()">
+            Annuler
+          </button>
+          <span class="note-saved" *ngIf="noteSavedMessage">{{ noteSavedMessage }}</span>
+        </div>
+
+        <div class="notes-list">
+          <div class="note-item" *ngFor="let note of selectedDepartmentNotes">
+            <div class="note-item-header">
+              <span class="note-date">{{ noteDisplayDate(note.createdAt) }}</span>
+              <div class="note-icon-actions">
+                <button type="button" class="icon-note-btn" title="Modifier" (click)="startEditNote(note)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9"/><path d="m16.5 3.5 4 4L7 21H3v-4z"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="icon-note-btn danger"
+                  title="Supprimer"
+                  *ngIf="notePendingDeleteId !== note.id"
+                  (click)="requestDeleteNote(note.id)"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                    <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="icon-note-btn confirm"
+                  title="Confirmer suppression"
+                  *ngIf="notePendingDeleteId === note.id"
+                  (click)="confirmDeleteNote(note.id)"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="icon-note-btn"
+                  title="Annuler suppression"
+                  *ngIf="notePendingDeleteId === note.id"
+                  (click)="cancelDeleteNote()"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="note-content">{{ note.content }}</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </aside>
+</div>
+    </main>
+  </div>
+</div>

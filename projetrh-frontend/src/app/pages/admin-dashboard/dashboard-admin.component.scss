@@ -1,0 +1,225 @@
+@use '../../../styles/admin-tokens' as *;
+@use '../../../styles/admin-page' as *;
+
+// En-tête, sections, KPI, cartes et pills : voir partial admin-page.
+
+// ——— Boutons ———
+.btn-primary,
+.btn-secondary {
+  height: 38px;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-family: $font-main;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: $primary;
+  border-color: $primary;
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #fff;
+  border-color: $border-soft;
+  color: $text-mid;
+}
+
+.btn-small {
+  height: 28px !important;
+  border-radius: 10px;
+  padding: 0 12px !important;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.btn-secondary.btn-outline.btn-small {
+  background: #fff;
+  border-color: $border-soft;
+  color: $text-mid;
+}
+
+// ——— Mini-onglets du journal récent ———
+.recent-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.recent-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid $border-soft;
+  background: #fff;
+  color: $text-mid;
+  font-family: $font-main;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: $primary-light;
+    border-color: #bfdbfe;
+    color: $primary;
+  }
+
+  &.active {
+    background: $primary;
+    border-color: $primary;
+    color: #fff;
+  }
+}
+
+// ——— Liste du journal récent ———
+.recent-list {
+  border-radius: 10px;
+  border: 1px solid $border;
+  background: #fff;
+  overflow: hidden;
+  flex: 1;
+}
+
+.recent-item {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid $border;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.recent-text {
+  flex: 1;
+  color: #111827;
+  font-weight: 600;
+  font-size: 0.9rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.recent-date {
+  color: $text-light;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+// Pastilles de couleur par type d'action (couleurs alignées sur les pills)
+.action-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: $text-light;
+  flex-shrink: 0;
+}
+
+.action-pill-green {
+  background: $green;
+}
+.action-pill-red {
+  background: $red;
+}
+.action-pill-orange {
+  background: $orange;
+}
+.action-pill-gray {
+  background: $gray;
+}
+.action-pill-green-light {
+  background: $green-soft;
+}
+.action-pill-blue {
+  background: $blue;
+}
+.action-pill-blue-light {
+  background: $blue-light;
+}
+.action-pill-violet {
+  background: $violet;
+}
+
+// ——— Comptes en attente ———
+.pending-list {
+  border-radius: 10px;
+  border: 1px solid $border;
+  background: #fff;
+  overflow: hidden;
+}
+
+.pending-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid $border;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.pending-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: $primary;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.pending-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pending-name {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pending-sub {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pending-created {
+  color: $text-light;
+  font-weight: 400;
+  font-size: 0.82rem;
+}
+
+.pending-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// ——— KPI cliquable « en attente » ———
+.kpi-card-pending {
+  cursor: pointer;
+  user-select: none;
+}

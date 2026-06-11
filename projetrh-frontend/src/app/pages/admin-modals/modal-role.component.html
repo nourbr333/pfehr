@@ -1,0 +1,45 @@
+<div class="modal-backdrop" (click)="cancel.emit()">
+  <div class="modal-card sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">
+        Modifier le rôle — {{ fullNameOf() }}
+      </div>
+      <button type="button" class="modal-close" (click)="cancel.emit()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="role-current">
+        <div class="role-current-label">Rôle actuel</div>
+        <span class="{{ roleBadgeClass(user.role) }}">{{ roleLabel(user.role) }}</span>
+      </div>
+
+      <div class="form-row">
+        <label>
+          Nouveau rôle :
+          <select [(ngModel)]="selectedRole" name="newRole">
+            <option value="ADMIN">Admin</option>
+            <option value="MANAGER">Manager</option>
+            <option value="RESPONSABLE_RH">Responsable RH</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="role-desc">
+        <div class="role-desc-title">Permissions du rôle sélectionné</div>
+        <div class="role-desc-text">{{ permissionsText(selectedRole) }}</div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" (click)="cancel.emit()">Annuler</button>
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="confirmRole.emit(selectedRole)"
+      >
+        Confirmer le changement
+      </button>
+    </div>
+  </div>
+</div>
+

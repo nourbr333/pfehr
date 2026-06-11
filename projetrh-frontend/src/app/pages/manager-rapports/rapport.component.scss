@@ -1,0 +1,403 @@
+$primary: #2563eb;
+$primary-light: #eff6ff;
+$bg: #f5f7fb;
+$card-bg: #ffffff;
+$text-dark: #111827;
+$text-mid: #4b5563;
+$text-light: #9ca3af;
+$border: #e5e7eb;
+$shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+$radius: 12px;
+$font: 'DM Sans', sans-serif;
+$success: #22c55e;
+
+:host {
+  font-family: $font;
+}
+
+* {
+  font-family: inherit;
+}
+
+.page-header {
+  margin-bottom: 18px;
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: $text-dark;
+    font-family: $font;
+  }
+  p {
+    margin-top: 4px;
+    color: $text-mid;
+    font-size: 0.9rem;
+    font-weight: 400;
+    font-family: $font;
+  }
+}
+
+.reports-layout {
+  display: grid;
+  grid-template-columns: 1.55fr 1fr;
+  gap: 16px;
+  align-items: start;
+
+  @media (max-width: 980px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section-card {
+  background: $card-bg;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  padding: 16px 16px;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-family: $font;
+  font-weight: 600;
+  color: $text-dark;
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+// --- Type cards ---
+.type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 650px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.type-card {
+  border: 1px solid $border;
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.type-card:hover {
+  background: #fbfdff;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.08);
+}
+
+.type-card.active {
+  border-color: rgba(37, 99, 235, 0.55);
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.type-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: $primary-light;
+  color: $primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.type-title {
+  font-family: $font;
+  font-weight: 600;
+  color: $text-dark;
+  font-size: 0.95rem;
+}
+
+.type-desc {
+  margin-top: 4px;
+  font-family: $font;
+  font-weight: 400;
+  color: $text-mid;
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+// --- Presets ---
+.preset-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.pill {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid $border;
+  background: #fff;
+  font-family: $font;
+  font-weight: 500;
+  color: $text-mid;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.pill:hover {
+  background: #f9fafb;
+}
+
+.pill.active {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.35);
+  color: $primary;
+}
+
+// --- Dates ---
+.dates-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 650px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.date-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid $border;
+  border-radius: 10px;
+  height: 40px;
+  padding: 0 12px;
+  background: #fff;
+}
+
+.date-icon {
+  color: $text-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.date-field input[type='date'] {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-family: $font;
+  color: $text-dark;
+  cursor: pointer;
+}
+
+// --- Options ---
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.option-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 10px;
+  border: 1px solid $border;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.option-row input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: $primary;
+}
+
+.option-label {
+  font-family: $font;
+  font-weight: 600;
+  color: $text-dark;
+  font-size: 0.92rem;
+}
+
+.option-desc {
+  margin-top: 3px;
+  font-family: $font;
+  font-weight: 400;
+  color: $text-mid;
+  font-size: 0.84rem;
+}
+
+// --- Preview ---
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.preview-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.k {
+  font-family: $font;
+  font-weight: 500;
+  color: $text-light;
+}
+
+.v {
+  font-family: $font;
+  font-weight: 500;
+  color: $text-dark;
+  text-align: right;
+}
+
+.includes {
+  margin-top: 10px;
+  border-top: 1px solid $border;
+  padding-top: 10px;
+}
+
+.includes-title {
+  font-family: $font;
+  font-weight: 600;
+  color: $text-dark;
+  margin-bottom: 8px;
+}
+
+.include-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: $font;
+  font-weight: 400;
+  color: $text-mid;
+  padding: 4px 0;
+}
+
+.check {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: rgba(34, 197, 94, 0.12);
+  color: $success;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.check.off {
+  background: rgba(229, 231, 235, 0.7);
+  color: $text-light;
+}
+
+// --- Export ---
+.export-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.btn-primary,
+.btn-success {
+  height: 40px;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-family: $font;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: $primary;
+  border-color: $primary;
+  color: #fff;
+}
+
+.btn-success {
+  background: $success;
+  border-color: $success;
+  color: #fff;
+}
+
+.export-note {
+  margin-top: 10px;
+  color: $text-light;
+  font-family: $font;
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+// --- Recent ---
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 12px;
+  border: 1px solid $border;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.recent-title {
+  font-family: $font;
+  font-weight: 600;
+  color: $text-dark;
+}
+
+.recent-sub {
+  margin-top: 2px;
+  font-family: $font;
+  font-weight: 400;
+  color: $text-light;
+  font-size: 0.82rem;
+}
+
+.format-pill {
+  min-width: 64px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font;
+  font-weight: 500;
+  font-size: 0.78rem;
+  border: 1px solid transparent;
+  user-select: none;
+}
+
+.format-pill.pdf {
+  background: rgba(37, 99, 235, 0.1);
+  color: $primary;
+  border-color: rgba(37, 99, 235, 0.25);
+}
+
+.format-pill.excel {
+  background: rgba(34, 197, 94, 0.12);
+  color: $success;
+  border-color: rgba(34, 197, 94, 0.25);
+}
+

@@ -1,0 +1,96 @@
+@if (open) {
+  <div class="note-modal-overlay" (click)="close()" role="dialog" aria-modal="true"
+       [attr.aria-label]="'Configurer alertes — ' + kpiLabel">
+    <div class="note-modal threshold-modal" (click)="$event.stopPropagation()">
+
+      <div class="note-modal-header">
+        <div class="note-modal-title-group">
+          <span class="modal-icon-wrap modal-icon-wrap--target">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+            </svg>
+          </span>
+          <div>
+            <h3 class="note-modal-title">Configurer les alertes</h3>
+            <span class="note-modal-kpi-badge">{{ kpiLabel }}</span>
+          </div>
+        </div>
+        <button class="note-modal-close" type="button" (click)="close()" aria-label="Fermer">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="threshold-modal-body">
+
+        <div class="threshold-section">
+          <div class="threshold-section-label">Formule</div>
+          <div class="threshold-formula-box">{{ definition?.formula ?? '—' }}</div>
+        </div>
+
+        <div class="threshold-section">
+          <div class="threshold-section-label">Valeur actuelle</div>
+          <div class="threshold-current-value">
+            <span class="threshold-current-number">{{ currentValue | number:'1.1-1' }} %</span>
+            <span class="threshold-current-date">Capturé le {{ todayDateStr }}</span>
+          </div>
+        </div>
+
+        <div class="threshold-section">
+          <div class="threshold-section-label">Configuration</div>
+          <div class="threshold-fields">
+            <div class="threshold-field">
+              <label class="threshold-field-label" for="kpiTPeriod">Période de référence</label>
+              <input id="kpiTPeriod" type="month" class="threshold-input"
+                     [value]="period"
+                     (input)="period = $any($event.target).value"/>
+            </div>
+            <div class="threshold-field">
+              <label class="threshold-field-label" for="kpiTSeuil">Seuil d'alerte (%)</label>
+              <input id="kpiTSeuil" type="number" class="threshold-input" min="0" max="100" step="0.1"
+                     placeholder="Ex : 5"
+                     [value]="seuil ?? ''"
+                     (input)="seuil = $any($event.target).value ? +$any($event.target).value : null"/>
+              <span class="threshold-field-hint">{{ definition?.thresholdHelp }}</span>
+            </div>
+            <div class="threshold-field">
+              <label class="threshold-field-label" for="kpiTCible">Objectif cible (%)</label>
+              <input id="kpiTCible" type="number" class="threshold-input" min="0" max="100" step="0.1"
+                     placeholder="Ex : 2"
+                     [value]="cible ?? ''"
+                     (input)="cible = $any($event.target).value ? +$any($event.target).value : null"/>
+              <span class="threshold-field-hint">{{ definition?.targetHelp }}</span>
+            </div>
+          </div>
+          @if (validationError) {
+            <p class="threshold-validation-error">{{ validationError }}</p>
+          }
+        </div>
+
+        @if (seuil !== null || cible !== null) {
+          <div class="threshold-phrase-box">
+            <div class="threshold-phrase-label">Phrase officielle</div>
+            <p class="threshold-phrase-text">{{ phrasePreview }}</p>
+          </div>
+        }
+
+        <div class="threshold-section">
+          <label class="threshold-field-label" for="kpiTComment">Commentaire (optionnel)</label>
+          <textarea id="kpiTComment" class="note-modal-textarea" rows="3"
+                    placeholder="Contexte ou action prévue..."
+                    [value]="comment"
+                    (input)="comment = $any($event.target).value"></textarea>
+        </div>
+      </div>
+
+      <div class="note-modal-footer">
+        @if (existingThreshold) {
+          <button class="note-btn note-btn--delete" type="button" (click)="deleteThreshold()">Supprimer</button>
+        }
+        <button class="note-btn note-btn--cancel" type="button" (click)="close()">Annuler</button>
+        <button class="note-btn note-btn--save" type="button" (click)="submit()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+}

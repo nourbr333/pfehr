@@ -1,0 +1,126 @@
+@use '../../../styles/admin-tokens' as tokens;
+
+$primary: tokens.$primary;
+$border: tokens.$border-soft;
+$text-mid: tokens.$text-mid;
+$text-light: tokens.$text-light;
+$red: #dc2626; // rouge « action destructive »
+$radius: tokens.$radius;
+$font-main: tokens.$font-main;
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+}
+
+.modal-card {
+  width: 780px;
+  max-width: 94vw;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid $border;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.modal-card.sm {
+  width: 560px;
+}
+
+.modal-header {
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid $border;
+}
+
+.modal-title {
+  font-family: $font-main;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #111827;
+}
+
+.modal-close {
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: $text-mid;
+}
+
+.modal-body {
+  padding: 16px 18px;
+}
+
+.modal-footer {
+  padding: 14px 18px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid $border;
+  background: #fafafa;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  height: 38px;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-family: $font-main;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn-secondary {
+  background: #fff;
+  color: $text-mid;
+  border-color: $border;
+}
+
+.btn-danger {
+  background: $red;
+  color: #fff;
+  border-color: $red;
+}
+
+.btn-danger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.danger-text {
+  font-weight: 800;
+  color: $text-mid;
+  margin-bottom: 14px;
+}
+
+.confirm-label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 800;
+  color: $text-mid;
+}
+
+input[type='text'] {
+  border: 1px solid $border;
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+  font-family: $font-main;
+  font-size: 0.9rem;
+}
+
+input[type='text']:focus {
+  border-color: $primary;
+}
+

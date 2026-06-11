@@ -1,0 +1,132 @@
+$primary: #2563eb;
+$border: #e2e8f0;
+$bg: #f5f7fb;
+$text-mid: #64748b;
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 16px;
+  padding: 14px 18px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid $border;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.filter-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: $text-mid;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.period-pills {
+  display: flex;
+  gap: 2px;
+  background: $bg;
+  border-radius: 8px;
+  padding: 2px;
+
+  button {
+    padding: 4px 11px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    background: transparent;
+    color: $text-mid;
+    transition: background 0.15s, color 0.15s;
+    font-family: 'DM Sans', sans-serif;
+
+    &.active {
+      background: #fff;
+      color: $primary;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      font-weight: 600;
+    }
+
+    &:hover:not(.active) {
+      background: #e8edf5;
+    }
+  }
+}
+
+.filter-select {
+  min-width: 180px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  height: 38px;
+  padding: 0 12px;
+  font-size: 0.84rem;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+
+  &:focus {
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+  }
+}
+
+.btn-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid $border;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: $text-mid;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-left: auto;
+  flex-shrink: 0;
+  font-family: 'DM Sans', sans-serif;
+
+  &:hover {
+    background: $bg;
+  }
+}
+
+.btn-export-green {
+  color: #166534;
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+
+  &:hover {
+    background: #dcfce7;
+  }
+}
+
+.btn-export-excel {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .filter-bar {
+    flex-wrap: wrap;
+  }
+
+  .btn-export {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+}

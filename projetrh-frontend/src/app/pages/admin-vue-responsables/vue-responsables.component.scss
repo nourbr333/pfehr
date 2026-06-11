@@ -1,0 +1,60 @@
+@use '../../../styles/admin-tokens' as *;
+@use '../../../styles/admin-page' as *;
+
+// ——— Liste des derniers mouvements ———
+.movement-list {
+  border-radius: 10px;
+  border: 1px solid $border;
+  background: #fff;
+  overflow: hidden;
+  flex: 1;
+}
+
+.movement-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 14px;
+  border-bottom: 1px solid $border;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.movement-main {
+  min-width: 0;
+}
+
+.movement-name {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movement-sub {
+  margin-top: 2px;
+  color: $text-muted;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movement-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.movement-date {
+  color: $text-light;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}

@@ -1,0 +1,210 @@
+﻿<!-- HEADER -->
+<header class="landing-header">
+  <div class="landing-header__logo">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="8" fill="var(--primary-color)"/>
+      <circle cx="14" cy="10" r="3.5" stroke="white" stroke-width="2"/>
+      <path d="M7 22c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span class="logo-text">HRScope</span>
+  </div>
+  <nav class="landing-header__nav">
+    <a href="#features">Fonctionnalités</a>
+    <a href="#roles">Accès</a>
+    <a href="#about">À propos</a>
+  </nav>
+  <div class="landing-header__actions">
+    <button class="btn btn-primary" routerLink="/login">Se connecter</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<main class="landing-main">
+  <section class="hero">
+    <svg class="hero__grid-bg" width="100%" height="100%" aria-hidden="true">
+      <defs>
+        <pattern id="hero-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+          <path d="M32 0H0V32" fill="none" stroke="#2563eb" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#hero-grid)"/>
+    </svg>
+    <span class="hero__badge">Plateforme RH Intelligente</span>
+    <h1 class="hero__title">
+      Gérez vos ressources humaines<br>
+      avec <span class="text-primary">intelligence</span>
+    </h1>
+    <p class="hero__subtitle">
+      Centralisez vos données RH, pilotez les performances de vos équipes et prenez de meilleures décisions stratégiques grâce à des tableaux de bord interactifs.
+    </p>
+    <div class="hero__scroll-hint">
+      <span>Défiler pour en savoir plus</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="m6 9 6 6 6-6" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </section>
+
+  <section class="stats-band">
+    <div class="stats-band__item">
+      <span class="stats-band__number">3</span>
+      <span class="stats-band__label">Niveaux d'accès</span>
+    </div>
+    <div class="stats-band__item">
+      <span class="stats-band__number">6</span>
+      <span class="stats-band__label">Modules RH</span>
+    </div>
+    <div class="stats-band__item">
+      <span class="stats-band__number">100%</span>
+      <span class="stats-band__label">Données centralisées</span>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <h2 class="section-title">Tout ce dont vous avez besoin</h2>
+    <p class="section-subtitle">Une solution complète pour les équipes RH modernes</p>
+    <div class="features__grid">
+      <div class="feature-card">
+        <div class="feature-card__icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" stroke="var(--primary-color)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 20V10"/>
+            <path d="M10 20V4"/>
+            <path d="M16 20v-7"/>
+            <path d="M22 20H2"/>
+          </svg>
+        </div>
+        <h3>Tableaux de bord</h3>
+        <p>Visualisez vos KPIs RH en temps réel grâce à des graphiques interactifs intégrés.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card__icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" stroke="var(--primary-color)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="3"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a3 3 0 0 1 0 5.74"/>
+          </svg>
+        </div>
+        <h3>Gestion des équipes</h3>
+        <p>Suivez les performances, gérez les congés et évaluez chaque membre efficacement.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card__icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" stroke="var(--primary-color)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <h3>Contrôle des accès</h3>
+        <p>Trois niveaux d'accès distincts : Administrateur, Responsable RH et Manager d'équipe.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card__icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" stroke="var(--primary-color)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 2v3M16 2v3M3 9h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>
+            <path d="m9 14 2 2 4-4"/>
+          </svg>
+        </div>
+        <h3>Gestion des congés</h3>
+        <p>Suivi des absences et validation des demandes en temps réel.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card__icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" stroke="var(--primary-color)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="9" y1="13" x2="15" y2="13"/>
+            <line x1="9" y1="17" x2="13" y2="17"/>
+          </svg>
+        </div>
+        <h3>Rapports &amp; exports</h3>
+        <p>Générez des rapports RH détaillés et exportez vos données facilement.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card__icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" stroke="var(--primary-color)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </div>
+        <h3>Notifications</h3>
+        <p>Alertes automatiques pour les événements et échéances RH importantes.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-it-works">
+    <h2 class="section-title">Comment ça marche</h2>
+    <p class="section-subtitle">Opérationnel en quelques étapes</p>
+    <div class="how-it-works__steps">
+      <div class="step">
+        <div class="step__number">1</div>
+        <h3>Créer votre espace</h3>
+        <p>Configurez votre organisation et vos paramètres</p>
+      </div>
+      <div class="step__connector"></div>
+      <div class="step">
+        <div class="step__number">2</div>
+        <h3>Inviter votre équipe</h3>
+        <p>Ajoutez vos collaborateurs et assignez les rôles</p>
+      </div>
+      <div class="step__connector"></div>
+      <div class="step">
+        <div class="step__number">3</div>
+        <h3>Piloter vos KPIs</h3>
+        <p>Analysez et prenez de meilleures décisions RH</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROLES -->
+  <section class="roles" id="roles">
+    <h2 class="section-title">Conçu pour chaque acteur RH</h2>
+    <div class="roles__grid">
+      <div class="role-pill">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+          <path d="M19.07 4.93A10 10 0 1 0 4.93 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="role-pill__label">Administrateur</span>
+        <span class="role-pill__sub">Gestion système</span>
+        <p class="role-pill__desc">Contrôle total de la configuration et des utilisateurs</p>
+      </div>
+      <div class="role-pill">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M12 3L4 7v5c0 4.418 3.582 8.418 8 9.95C19.418 20.418 20 16.418 20 12V7l-8-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span class="role-pill__label">Responsable RH</span>
+        <span class="role-pill__sub">Accès complet</span>
+        <p class="role-pill__desc">Gère collaborateurs, congés, performances et rapports</p>
+      </div>
+      <div class="role-pill">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <circle cx="9" cy="7" r="3" stroke="currentColor" stroke-width="2"/>
+          <path d="M3 20c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="17" cy="9" r="2.5" stroke="currentColor" stroke-width="2"/>
+          <path d="M17 14c2.21 0 4 1.79 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="role-pill__label">Manager</span>
+        <span class="role-pill__sub">Vue équipe</span>
+        <p class="role-pill__desc">Consulte et évalue les membres de son équipe</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- FOOTER -->
+<footer class="landing-footer" id="about">
+  <nav class="landing-footer__nav">
+    <a href="#">Accueil</a>
+    <a href="/login">Connexion</a>
+    <a href="#about">À propos</a>
+  </nav>
+  <div class="landing-footer__divider"></div>
+  <div class="landing-footer__bottom">
+    <span>© 2026 HRScope — Tous droits réservés</span>
+    <span class="landing-footer__pfe">Projet de Fin d'Études · 2025–2026</span>
+  </div>
+</footer>

@@ -1,0 +1,585 @@
+﻿<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <h2>HRScope</h2>
+      <p>Portail Responsable RH</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" routerLink="/accueil-resp" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>Tableau de bord
+      </a>
+      <a class="nav-item" routerLink="/employes" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>Collaborateurs
+      </a>
+      <a class="nav-item" routerLink="/departements" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+          <line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>
+        </svg>Départements
+      </a>
+      <a class="nav-item" routerLink="/performances-evaluations" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+        </svg>Performances &amp; Évaluations
+      </a>
+      <a class="nav-item" routerLink="/absences-conges" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M8 2v4"/><path d="M16 2v4"/>
+          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/>
+          <path d="M9 15l6 6"/><path d="M15 15l-6 6"/>
+        </svg>Absences &amp; Congés
+      </a>
+      <a class="nav-item" routerLink="/rh/rapports" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/>
+        </svg>Rapports
+      </a>
+      <a class="nav-item" routerLink="/resp/notes" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>Mes notes
+      </a>
+      <a class="nav-item" routerLink="/calendrier" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>Calendrier
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-logout" (click)="onDeconnexion()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>Déconnexion
+      </div>
+    </div>
+  </aside>
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-left"></div>
+      <div class="topbar-actions">
+        <app-notifications-panel></app-notifications-panel>
+        <div class="user-info">
+          <div class="user-info-text">
+            <div class="name">{{ utilisateur?.prenom }} {{ utilisateur?.nom }}</div>
+            <div class="role">Responsable RH</div>
+          </div>
+          <div class="avatar" (click)="onProfil()">{{ utilisateur?.initiales }}</div>
+        </div>
+      </div>
+    </header>
+    <main class="page-content"><div class="dashboard-header">
+        <div>
+          <h1>Votre tableau de bord</h1>
+          <p>Vue consolidée des équipes, de la présence et de la performance.</p>
+        </div>
+        <div class="dashboard-header-right">
+          <span class="employee-muted">{{ totalEmployeeText }}</span>
+          <span class="employee-muted period-muted">{{ currentPeriodLabel }}</span>
+        </div>
+      </div>
+
+      <div class="sticky-filters">
+        <app-dashboard-filters
+          [departments]="departments"
+          [selectedDepartmentId]="selectedDepartmentId"
+          [selectedPeriod]="selectedPeriod"
+          (periodChanged)="onPeriodChange($event)"
+          (departmentChanged)="onDepartmentFilterChange($event)"
+          (exportClicked)="exportFilteredDataExcel()"
+        />
+      </div>
+
+      @if (isLoading) {
+        <section class="section-block">
+          <div class="section-title-row"><h2>Chargement du dashboard...</h2></div>
+          <div class="kpi-grid">
+            @for (item of [1,2,3,4]; track item) {
+              <article class="kpi-card"><div class="skeleton-line"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></article>
+            }
+          </div>
+          <div class="section-grid two-col">
+            @for (item of [1,2,3,4]; track item) {
+              <article class="chart-card"><div class="skeleton-line medium"></div><div class="skeleton-chart"></div></article>
+            }
+          </div>
+        </section>
+      } @else {
+        <div [class.filter-transitioning]="isFilterTransitioning" class="dashboard-content">
+        <section class="section-block">
+          <section class="kpi-grid">
+
+            <!-- ── KPI : Effectif total ── -->
+            <article class="kpi-card kpi-card--clickable"
+                     (click)="openNoteModal('effectif', kpiDefinitions['effectif'].label)">
+              <div class="kpi-card-head">
+                <span class="kpi-label">Effectif total</span>
+                <div class="kpi-actions">
+                  <div class="kpi-info-wrap" (click)="$event.stopPropagation()">
+                    <button class="kpi-info-btn" type="button" aria-label="Informations">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    </button>
+                    <div class="kpi-tooltip" role="tooltip">
+                      <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Formule</span><span>{{ kpiDefinitions['effectif'].formula }}</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <strong class="kpi-value">{{ filteredRecords.length }} collaborateurs</strong>
+              <span class="kpi-subvalue">{{ isGlobalFilterActive ? 'Effectif filtré' : 'Effectif total' }}</span>
+            </article>
+
+            <!-- ── KPI : Attendance Rate moyen ── -->
+            <article class="kpi-card kpi-card--clickable"
+                     [class.kpi-card--breached]="isThresholdBreached('attendance')"
+                     (click)="openNoteModal('attendance', kpiDefinitions['attendance'].label)">
+              <div class="kpi-card-head">
+                <span class="kpi-label">Taux de présence moyen</span>
+                <div class="kpi-card-head-right">
+                  <div class="kpi-actions">
+                    <div class="kpi-info-wrap" (click)="$event.stopPropagation()">
+                      <button class="kpi-info-btn" type="button" aria-label="Informations">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                      </button>
+                      <div class="kpi-tooltip" role="tooltip">
+                        <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Formule</span><span>{{ kpiDefinitions['attendance'].formula }}</span></div>
+                      </div>
+                    </div>
+                    <button class="kpi-action-btn kpi-action-btn--threshold"
+                            [class.kpi-action-btn--configured]="getKpiThreshold('attendance')"
+                            [class.kpi-action-btn--breached]="isThresholdBreached('attendance')"
+                            type="button" title="Fixer seuil / cible"
+                            (click)="openThresholdModal('attendance', kpiDefinitions['attendance'].label, $event)">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              @if (isThresholdBreached('attendance')) {
+                <div class="kpi-breach-badge">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  Seuil dépassé
+                </div>
+              }
+              <strong class="kpi-value" [class]="attendanceTone">{{ attendanceRateAverage | number:'1.1-1' }}%</strong>
+              @if (hasPrevData('attendance')) {
+                <span class="kpi-trend" [ngClass]="deltaClass(true, attendanceDelta)">
+                  {{ attendanceDelta >= 0 ? '&#x2191;' : '&#x2193;' }} {{ (attendanceDelta < 0 ? -attendanceDelta : attendanceDelta) | number:'1.1-1' }}% {{ comparisonLabel }}
+                </span>
+              }
+              <span class="kpi-subvalue"></span>
+              @if (getKpiThreshold('attendance')) {
+                <div class="t-bar">
+                  @if (getKpiThreshold('attendance')?.thresholdValue !== null) {
+                    <span class="t-label">Seuil {{ getKpiThreshold('attendance')?.thresholdValue }}%</span>
+                  }
+                  <div class="t-track">
+                    <div class="t-fill" [style.width.%]="kpiProgressPct('attendance')" [style.background]="kpiBarColor('attendance')"></div>
+                    <div class="t-marks">
+                      @if (kpiThresholdMarkerPct('attendance') >= 0) {
+                        <div class="t-mark t-mark--seuil" [style.left.%]="kpiThresholdMarkerPct('attendance')"></div>
+                      }
+                      @if (kpiTargetMarkerPct('attendance') >= 0) {
+                        <div class="t-mark t-mark--cible" [style.left.%]="kpiTargetMarkerPct('attendance')"></div>
+                      }
+                    </div>
+                  </div>
+                  @if (getKpiThreshold('attendance')?.targetValue !== null) {
+                    <span class="t-label">Cible {{ getKpiThreshold('attendance')?.targetValue }}%</span>
+                  }
+                </div>
+              }
+            </article>
+
+            <!-- ── KPI : Taux d'absentéisme moyen ── -->
+            <article class="kpi-card kpi-card--clickable"
+                     [class.kpi-card--breached]="isThresholdBreached('absenteisme')"
+                     (click)="openNoteModal('absenteisme', kpiDefinitions['absenteisme'].label)">
+              <div class="kpi-card-head">
+                <span class="kpi-label">Taux d'absentéisme moyen</span>
+                <div class="kpi-card-head-right">
+                  <div class="kpi-actions">
+                    <div class="kpi-info-wrap" (click)="$event.stopPropagation()">
+                      <button class="kpi-info-btn" type="button" aria-label="Informations">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                      </button>
+                      <div class="kpi-tooltip" role="tooltip">
+                        <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Formule</span><span>{{ kpiDefinitions['absenteisme'].formula }}</span></div>
+                      </div>
+                    </div>
+                    <button class="kpi-action-btn kpi-action-btn--threshold"
+                            [class.kpi-action-btn--configured]="getKpiThreshold('absenteisme')"
+                            [class.kpi-action-btn--breached]="isThresholdBreached('absenteisme')"
+                            type="button" title="Fixer seuil / cible"
+                            (click)="openThresholdModal('absenteisme', kpiDefinitions['absenteisme'].label, $event)">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              @if (isThresholdBreached('absenteisme')) {
+                <div class="kpi-breach-badge">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  Seuil dépassé
+                </div>
+              }
+              <strong class="kpi-value" [class]="absenteeismTone">{{ absenteeismRateAverage | number:'1.1-1' }}%</strong>
+              @if (hasPrevData('absenteisme')) {
+                <span class="kpi-trend" [ngClass]="deltaClass(false, absenteeismDelta)">
+                  {{ absenteeismDelta >= 0 ? '&#x2191;' : '&#x2193;' }} {{ (absenteeismDelta < 0 ? -absenteeismDelta : absenteeismDelta) | number:'1.1-1' }}% {{ comparisonLabel }}
+                </span>
+              }
+              <span class="kpi-subvalue"></span>
+              @if (getKpiThreshold('absenteisme')) {
+                <div class="t-bar">
+                  @if (getKpiThreshold('absenteisme')?.thresholdValue !== null) {
+                    <span class="t-label">Seuil {{ getKpiThreshold('absenteisme')?.thresholdValue }}%</span>
+                  }
+                  <div class="t-track">
+                    <div class="t-fill" [style.width.%]="kpiProgressPct('absenteisme')" [style.background]="kpiBarColor('absenteisme')"></div>
+                    <div class="t-marks">
+                      @if (kpiThresholdMarkerPct('absenteisme') >= 0) {
+                        <div class="t-mark t-mark--seuil" [style.left.%]="kpiThresholdMarkerPct('absenteisme')"></div>
+                      }
+                      @if (kpiTargetMarkerPct('absenteisme') >= 0) {
+                        <div class="t-mark t-mark--cible" [style.left.%]="kpiTargetMarkerPct('absenteisme')"></div>
+                      }
+                    </div>
+                  </div>
+                  @if (getKpiThreshold('absenteisme')?.targetValue !== null) {
+                    <span class="t-label">Cible {{ getKpiThreshold('absenteisme')?.targetValue }}%</span>
+                  }
+                </div>
+              }
+            </article>
+
+            <!-- ── KPI : Taux de retard moyen ── -->
+            <article class="kpi-card kpi-card--clickable"
+                     [class.kpi-card--breached]="isThresholdBreached('retard')"
+                     (click)="openNoteModal('retard', kpiDefinitions['retard'].label)">
+              <div class="kpi-card-head">
+                <span class="kpi-label">Taux de retard moyen</span>
+                <div class="kpi-card-head-right">
+                  <div class="kpi-actions">
+                    <div class="kpi-info-wrap" (click)="$event.stopPropagation()">
+                      <button class="kpi-info-btn" type="button" aria-label="Informations">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                      </button>
+                      <div class="kpi-tooltip" role="tooltip">
+                        <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Formule</span><span>{{ kpiDefinitions['retard'].formula }}</span></div>
+                      </div>
+                    </div>
+                    <button class="kpi-action-btn kpi-action-btn--threshold"
+                            [class.kpi-action-btn--configured]="getKpiThreshold('retard')"
+                            [class.kpi-action-btn--breached]="isThresholdBreached('retard')"
+                            type="button" title="Fixer seuil / cible"
+                            (click)="openThresholdModal('retard', kpiDefinitions['retard'].label, $event)">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              @if (isThresholdBreached('retard')) {
+                <div class="kpi-breach-badge">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  Seuil dépassé
+                </div>
+              }
+              <strong class="kpi-value" [class]="lateRateTone">{{ lateRateAverage | number:'1.1-1' }}%</strong>
+              @if (hasPrevData('retard')) {
+                <span class="kpi-trend" [ngClass]="deltaClass(false, lateRateDelta)">
+                  {{ lateRateDelta >= 0 ? '&#x2191;' : '&#x2193;' }} {{ (lateRateDelta < 0 ? -lateRateDelta : lateRateDelta) | number:'1.1-1' }}% {{ comparisonLabel }}
+                </span>
+              }
+              <span class="kpi-subvalue"></span>
+              @if (getKpiThreshold('retard')) {
+                <div class="t-bar">
+                  @if (getKpiThreshold('retard')?.thresholdValue !== null) {
+                    <span class="t-label">Seuil {{ getKpiThreshold('retard')?.thresholdValue }}%</span>
+                  }
+                  <div class="t-track">
+                    <div class="t-fill" [style.width.%]="kpiProgressPct('retard')" [style.background]="kpiBarColor('retard')"></div>
+                    <div class="t-marks">
+                      @if (kpiThresholdMarkerPct('retard') >= 0) {
+                        <div class="t-mark t-mark--seuil" [style.left.%]="kpiThresholdMarkerPct('retard')"></div>
+                      }
+                      @if (kpiTargetMarkerPct('retard') >= 0) {
+                        <div class="t-mark t-mark--cible" [style.left.%]="kpiTargetMarkerPct('retard')"></div>
+                      }
+                    </div>
+                  </div>
+                  @if (getKpiThreshold('retard')?.targetValue !== null) {
+                    <span class="t-label">Cible {{ getKpiThreshold('retard')?.targetValue }}%</span>
+                  }
+                </div>
+              }
+            </article>
+
+          </section>
+        </section>
+
+        <section class="section-block">
+          <div id="section-demographie" class="section-title-row jump-target"><h2>Répartition & Démographie</h2></div>
+          <section class="section-grid three-col">
+            <article class="chart-card chart-card--clickable" (click)="openNoteModal('chart.dept', 'Répartition par département')">
+              <div class="chart-head">
+                <div class="chart-head-left"><h3>Répartition par département</h3></div>
+              </div>
+              <div class="chart-body" (click)="$event.stopPropagation()">@if (hasDepartmentData) { <canvas #departmentsCanvas></canvas> } @else { <div class="chart-empty">Aucune donnée pour cette sélection</div> }</div>
+            </article>
+            <article class="chart-card chart-card--clickable" (click)="openNoteModal('chart.age', 'Pyramide des âges')">
+              <div class="chart-head">
+                <div class="chart-head-left"><h3>Pyramide des âges</h3></div>
+              </div>
+              <div class="chart-body">@if (hasAgeData) { <canvas #ageCanvas></canvas> } @else { <div class="chart-empty">Aucune donnée pour cette sélection</div> }</div>
+            </article>
+            <article class="chart-card chart-card--clickable" (click)="openNoteModal('chart.genre', 'Répartition par genre')">
+              <div class="chart-head">
+                <div class="chart-head-left"><h3>Répartition par genre</h3></div>
+              </div>
+              <div class="chart-body">@if (hasGenderData) { <canvas #genderCanvas></canvas> } @else { <div class="chart-empty">Aucune donnée pour cette sélection</div> }</div>
+            </article>
+          </section>
+        </section>
+
+        <section class="section-block">
+          <div id="section-presence" class="section-title-row jump-target"><h2>Présence & Discipline</h2></div>
+          <section class="section-grid three-col">
+            <article class="chart-card chart-card--clickable" (click)="openNoteModal('chart.presence.dept', 'Taux de présence par département')">
+              <div class="chart-head">
+                <div class="chart-head-left"><h3>Taux de présence par département</h3></div>
+              </div>
+              <div class="chart-body">@if (hasAttendanceByDeptData) { <canvas #attendanceDeptCanvas></canvas> } @else { <div class="chart-empty">Aucune donnée pour cette sélection</div> }</div>
+            </article>
+            <article class="chart-card chart-card--clickable" (click)="openNoteModal('chart.retard.dept', 'Taux de retard par département')">
+              <div class="chart-head">
+                <div class="chart-head-left"><h3>Taux de retard par département</h3></div>
+              </div>
+              <div class="chart-body">@if (hasLateRateByDeptData) { <canvas #lateRateDeptCanvas></canvas> } @else { <div class="chart-empty">Aucune donnée pour cette sélection</div> }</div>
+            </article>
+            <article class="chart-card chart-card--clickable" (click)="openNoteModal('chart.presence.risk', 'Top 5 collaborateurs à risque')">
+              <div class="chart-head">
+                <div class="chart-head-left">
+                  <h3>Top 5 collaborateurs à risque</h3>
+                  <p>Classés par score de risque présence / discipline</p>
+                </div>
+              </div>
+              <div class="chart-body">@if (hasTop5AtRiskData) { <canvas #top5AtRiskCanvas></canvas> } @else { <div class="chart-empty">Aucune donnée de pointage pour cette sélection</div> }</div>
+            </article>
+          </section>
+        </section>
+
+        <section class="section-block">
+          <div id="section-performance" class="section-title-row jump-target"><h2>Performance</h2></div>
+          <section class="section-grid two-col">
+
+            <!-- Evaluations par departement -->
+            <article class="chart-card chart-card--clickable" (click)="openNoteModal('chart.evaluations', 'Évaluations par département')">
+              <div class="chart-head">
+                <div class="chart-head-left"><h3>Évaluations par département</h3></div>
+              </div>
+              <div class="chart-body">@if (hasEvaluationData) { <canvas #evaluationCanvas></canvas> } @else { <div class="chart-empty">Aucune donnée pour cette sélection</div> }</div>
+            </article>
+
+            <!-- OKR : Completion des objectifs par equipe -->
+            <article class="chart-card chart-card--clickable" (click)="openNoteModal('chart.okr.completion', 'Complétion des objectifs par équipe')">
+              <div class="chart-head">
+                <div class="chart-head-left"><h3>Complétion des objectifs par équipe</h3></div>
+              </div>
+              <div class="chart-body">@if (hasOkrCompletionData) { <canvas #okrCompletionCanvas></canvas> } @else { <div class="chart-empty">Aucune donnée OKR disponible</div> }</div>
+            </article>
+
+          </section>
+
+          <section class="section-grid" style="grid-template-columns: 1fr 2fr;">
+
+            <!-- OKR : Statut global des objectifs (doughnut) -->
+            <article class="chart-card chart-card--clickable" (click)="openNoteModal('chart.okr.status', 'Statut global des objectifs OKR')">
+              <div class="chart-head">
+                <div class="chart-head-left"><h3>Statut global des objectifs OKR</h3></div>
+              </div>
+              <div class="chart-body">@if (hasOkrStatusData) { <canvas #okrStatusCanvas></canvas> } @else { <div class="chart-empty">Aucune donnée OKR disponible</div> }</div>
+            </article>
+
+            <!-- OKR : Heatmap risques par manager et par mois -->
+            <article class="chart-card chart-card--clickable" (click)="openNoteModal('chart.okr.heatmap', 'Risques OKR par manager et par mois')">
+              <div class="chart-head">
+                <div class="chart-head-left"><h3>Risques OKR par manager et par mois</h3></div>
+              </div>
+              <div class="chart-body">
+                @if (filteredOkrObjectives.length > 0 && okrHeatmapManagers.length > 0) {
+                  <div class="okr-heatmap">
+                    <div class="okr-heatmap-grid" [style.grid-template-columns]="'minmax(90px, auto) repeat(' + okrHeatmapMonths.length + ', 1fr)'">
+                      <div class="hm-corner"></div>
+                      @for (month of okrHeatmapMonths; track month) {
+                        <div class="hm-col-label">{{ formatOkrMonth(month) }}</div>
+                      }
+                      @for (manager of okrHeatmapManagers; track manager) {
+                        <div class="hm-row-label" [title]="manager">{{ manager }}</div>
+                        @for (month of okrHeatmapMonths; track month) {
+                          <div class="hm-cell" [style.background]="okrHeatmapCellColor(manager, month)" [title]="okrHeatmapCellTitle(manager, month)"></div>
+                        }
+                      }
+                    </div>
+                    <div class="hm-legend">
+                      <span class="hm-swatch" style="background:#dcfce7"></span><span>Sans risque</span>
+                      <span class="hm-swatch" style="background:#fef9c3"></span><span>Modéré</span>
+                      <span class="hm-swatch" style="background:#fed7aa"></span><span>Élevé</span>
+                      <span class="hm-swatch" style="background:#fecaca"></span><span>Critique</span>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="chart-empty">Aucune donnée OKR disponible</div>
+                }
+              </div>
+            </article>
+
+          </section>
+        </section>
+
+        <section class="section-block">
+          <div id="section-anciennete" class="section-title-row jump-target"><h2>Ancienneté & Stabilité</h2></div>
+          <section class="section-grid three-col">
+            <article class="chart-card chart-card--clickable" (click)="openNoteModal('chart.seniority.dist', 'Distribution de l\'ancienneté')">
+              <div class="chart-head">
+                <div class="chart-head-left">
+                  <h3>Distribution de l'ancienneté</h3>
+                  <p>Ancienneté moyenne: {{ averageSeniorityYears | number:'1.1-1' }} ans</p>
+                </div>
+              </div>
+              <div class="chart-body">@if (hasSeniorityData) { <canvas #seniorityDistributionCanvas></canvas> } @else { <div class="chart-empty">Aucune donnée pour cette sélection</div> }</div>
+            </article>
+            <article class="chart-card chart-card--clickable" (click)="openNoteModal('chart.seniority.dept', 'Ancienneté moyenne par département')">
+              <div class="chart-head">
+                <div class="chart-head-left"><h3>Ancienneté moyenne par département</h3></div>
+              </div>
+              <div class="chart-body">@if (hasSeniorityData) { <canvas #seniorityDeptCanvas></canvas> } @else { <div class="chart-empty">Aucune donnée pour cette sélection</div> }</div>
+            </article>
+            <article class="chart-card chart-card--clickable" (click)="openNoteModal('chart.seniority.genre', 'Ancienneté par genre')">
+              <div class="chart-head">
+                <div class="chart-head-left"><h3>Ancienneté par genre</h3></div>
+              </div>
+              <div class="chart-body">@if (hasSeniorityData) { <canvas #seniorityGenderCanvas></canvas> } @else { <div class="chart-empty">Aucune donnée pour cette sélection</div> }</div>
+            </article>
+          </section>
+        </section>
+
+        <section class="section-block" *ngIf="criticalAlerts.length">
+          <div class="section-title-row"><h2>Alertes prioritaires</h2></div>
+          <div class="alerts-table-wrap">
+            <table class="alerts-table">
+              <thead>
+                <tr>
+                  <th>Collaborateur</th>
+                  <th>Département</th>
+                  <th>Attendance</th>
+                  <th>Productivity</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (alert of criticalAlerts; track alert.employeeId) {
+                  <tr>
+                    <td>{{ alert.name }}</td>
+                    <td>{{ alert.departmentName }}</td>
+                    <td class="danger">{{ alert.attendanceRate | number:'1.1-1' }}%</td>
+                    <td class="danger">{{ alert.productivityScore | number:'1.1-1' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+        </div>
+      }
+    
+
+<app-kpi-threshold-modal
+  [open]="thresholdModalOpen"
+  [kpiKey]="thresholdModalKpiKey"
+  [kpiLabel]="thresholdModalKpiLabel"
+  [currentValue]="getKpiCurrentValue(thresholdModalKpiKey)"
+  (closed)="closeThresholdModal()"
+  (saved)="onThresholdSaved()">
+</app-kpi-threshold-modal>
+
+<!-- ══════════════════════════════════════════════════════════════
+     Modal : Historique & Commentaires (💬)
+     ══════════════════════════════════════════════════════════════ -->
+@if (noteHistoryOpen) {
+  <div class="note-modal-overlay" (click)="closeHistoryModal()" role="dialog" aria-modal="true"
+       [attr.aria-label]="'Historique — ' + noteHistoryKpiLabel">
+    <div class="note-modal history-modal" (click)="$event.stopPropagation()">
+
+      <div class="note-modal-header">
+        <div class="note-modal-title-group">
+          <span class="modal-icon-wrap modal-icon-wrap--comment">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </span>
+          <div>
+            <h3 class="note-modal-title">Historique & Commentaires</h3>
+            <span class="note-modal-kpi-badge">{{ noteHistoryKpiLabel }}</span>
+          </div>
+        </div>
+        <button class="note-modal-close" type="button" (click)="closeHistoryModal()" aria-label="Fermer">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Existing notes list -->
+      <div class="history-notes-list">
+        @if (getKpiNotes(noteHistoryKpiKey).length === 0) {
+          <div class="history-empty">Aucun commentaire pour ce KPI pour l'instant.</div>
+        } @else {
+          @for (note of getKpiNotes(noteHistoryKpiKey); track note.id) {
+            <div class="history-note-item">
+              <div class="history-note-context">
+                @if (note.kpiValue) {<span class="history-note-kpi-value">{{ note.kpiValue }}</span>}
+                <span class="history-note-scope">{{ note.filterScope ?? 'Tous les départements' }}</span>
+                @if (note.periodLabel) {<span class="history-note-period">{{ note.periodLabel }}</span>}
+              </div>
+              <div class="history-note-content">{{ note.content }}</div>
+              <div class="history-note-meta">
+                <span>{{ note.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                <button type="button" class="history-note-delete" (click)="deleteNote(note.id)" title="Supprimer">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      <!-- New comment form -->
+      <div class="note-modal-body" style="border-top:1px solid #f1f5f9;padding-top:12px">
+        <label class="note-modal-label" for="historyComment">Nouveau commentaire</label>
+        <div class="history-comment-hint">
+          Contexte enregistré&nbsp;:
+          <strong>{{ getKpiCurrentValue(noteHistoryKpiKey) | number:'1.1-1' }}{{ noteHistoryKpiKey !== 'effectif' ? '%' : ' collaborateur(s)' }}</strong>
+          · {{ selectedDepartmentName ?? 'Tous les départements' }}
+          · {{ currentPeriodLabel }}
+        </div>
+        <textarea #historyTextarea id="historyComment" class="note-modal-textarea" rows="3"
+                  placeholder="Ex : Pic d'absences lié aux congés scolaires…"></textarea>
+      </div>
+
+      <div class="note-modal-footer">
+        <button type="button" class="note-btn note-btn--cancel" (click)="closeHistoryModal()">Fermer</button>
+        <button type="button" class="note-btn note-btn--save" (click)="submitComment(historyTextarea)">Enregistrer</button>
+      </div>
+
+    </div>
+  </div>
+}
+    </main>
+  </div>
+</div>

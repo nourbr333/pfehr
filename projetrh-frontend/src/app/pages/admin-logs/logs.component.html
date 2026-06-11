@@ -1,0 +1,174 @@
+<app-sidebar-admin>
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1>Activités</h1>
+      <p>{{ logs.length }} actions enregistrées au total</p>
+    </div>
+
+    <div class="page-header-actions">
+      <button class="btn-export-excel" type="button" (click)="exportExcel()" title="Exporter la sélection en Excel">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/>
+          <polyline points="9 15 12 18 15 15"/>
+        </svg>
+        Exporter en Excel
+      </button>
+    </div>
+  </div>
+
+  <div class="activity-tabs" role="tablist">
+    <button
+      *ngFor="let t of tabs"
+      type="button"
+      role="tab"
+      class="activity-tab"
+      [class.active]="activeTab === t.id"
+      [attr.aria-selected]="activeTab === t.id"
+      (click)="setTab(t.id)"
+    >
+      {{ t.label }}
+      <span class="activity-tab-count">{{ tabCount(t.id) }}</span>
+    </button>
+  </div>
+
+  <div class="filters-bar">
+    <div class="filters-row">
+      <div class="filter-search">
+      <svg width="15" height="15" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input
+        type="text"
+        placeholder="Rechercher par nom ou action..."
+        [(ngModel)]="searchTerm"
+        (input)="applyFilters()"
+      />
+      </div>
+
+      <div class="filter-select">
+        <select [(ngModel)]="userCible" (ngModelChange)="applyFilters()">
+          <option value="">Tous les utilisateurs</option>
+          <option *ngFor="let c of ciblesDisponibles" [value]="c">{{ c }}</option>
+        </select>
+      </div>
+
+      <button type="button" class="reset-btn" (click)="resetFilters()">Réinitialiser</button>
+    </div>
+
+    <div class="filters-row dates-row">
+      <div class="filter-date">
+        <span>Du</span>
+        <input type="date" [(ngModel)]="dateFrom" (ngModelChange)="applyFilters()" />
+      </div>
+
+      <div class="filter-date">
+        <span>Au</span>
+        <input type="date" [(ngModel)]="dateTo" (ngModelChange)="applyFilters()" />
+      </div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Type d'action</th>
+          <th>Utilisateur concerné</th>
+          <th>Effectué par</th>
+          <th class="date-header" (click)="onSortDate()" role="button" tabindex="0">
+            Date &amp; Heure
+            <span class="sort-indicator">{{ sortDir === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+          <th>Détails</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let l of pagedLogs">
+          <td>
+            <span class="log-type-pill" [ngClass]="actionBadgeClass(l.action)">
+              {{ actionBadgeLabel(l.action) }}
+            </span>
+          </td>
+
+          <td>
+            <div class="log-user">
+              <div class="log-user-name">{{ l.cible }}</div>
+              <div class="log-user-email">{{ emailForCible(l.cible) }}</div>
+            </div>
+          </td>
+
+          <td>
+            <div class="log-performed">
+              <div class="log-avatar">{{ initialsOf(l.effectuePar) }}</div>
+              <div class="log-performed-name">{{ l.effectuePar }}</div>
+            </div>
+          </td>
+
+          <td>
+            <div class="log-datetime">
+              <div class="log-datetime-main">{{ dateTimeLabel(l.date) }}</div>
+              <div class="log-datetime-sub">{{ relativeDate(l.date) }}</div>
+            </div>
+          </td>
+
+          <td>
+            <div class="log-details" [title]="l.details">
+              {{ truncate(l.details, 60) }}
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngIf="totalCount === 0">
+          <td colspan="5">
+            <div class="empty-row">
+              Aucun log trouvé
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination-bar" *ngIf="totalCount > 0">
+    <div class="pagination-info">
+      Affichage de {{ currentPageStart }} à {{ currentPageEnd }} sur {{ totalCount }} entrées
+    </div>
+
+    <div class="pagination-buttons">
+      <button
+        type="button"
+        class="page-btn"
+        (click)="setPage(currentPage - 1)"
+        [disabled]="currentPage === 1"
+      >
+        Précédent
+      </button>
+
+      <ng-container *ngFor="let b of pageButtons()">
+        <button
+          *ngIf="b !== 'ellipsis'"
+          type="button"
+          class="page-num"
+          [class.active]="b === currentPage"
+          (click)="setPageFromButton(b)"
+        >
+          {{ b }}
+        </button>
+        <span *ngIf="b === 'ellipsis'" class="ellipsis">...</span>
+      </ng-container>
+
+      <button
+        type="button"
+        class="page-btn"
+        (click)="setPage(currentPage + 1)"
+        [disabled]="currentPage === totalPages"
+      >
+        Suivant 
+      </button>
+    </div>
+  </div>
+</app-sidebar-admin>
+

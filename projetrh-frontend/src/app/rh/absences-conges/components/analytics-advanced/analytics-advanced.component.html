@@ -1,0 +1,517 @@
+﻿<div class="analytics-panel">
+
+  <!-- ================================================================ -->
+  <!-- 1. ALERT BANNER -->
+  <!-- ================================================================ -->
+  <div class="alert-banner" *ngIf="hasAlerts">
+    <span class="alert-pulse"></span>
+    <div class="alert-msgs">
+      <span *ngFor="let msg of alertMessages; let last = last" class="alert-msg">
+        {{ msg }}<span *ngIf="!last" class="alert-sep"> · </span>
+      </span>
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- 2. FILTER BAR -->
+  <!-- ================================================================ -->
+  <div class="filter-bar card-section">
+    <div class="filter-group">
+      <span class="filter-label">Période</span>
+      <div class="period-pills">
+        <button type="button" [class.active]="filterPeriod==='month'"   (click)="filterPeriod='month';   onFilterChange()">Mois</button>
+        <button type="button" [class.active]="filterPeriod==='quarter'" (click)="filterPeriod='quarter'; onFilterChange()">Trimestre</button>
+        <button type="button" [class.active]="filterPeriod==='year'"    (click)="filterPeriod='year';    onFilterChange()">Année</button>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Département</span>
+      <select [(ngModel)]="filterDepartment" (ngModelChange)="onFilterChange()" class="filter-select">
+        <option value="">Tous</option>
+        <option *ngFor="let d of departments" [value]="d.name">{{ d.name }}</option>
+      </select>
+    </div>
+
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- 3. KPI CARDS -->
+  <!-- ================================================================ -->
+  <div class="kpi-grid-3">
+    <div *ngFor="let card of kpiCards; let i = index"
+         class="kpi-card-new"
+         [style.animation-delay]="(i * 60) + 'ms'">
+      <div class="kpi-lbl-row">
+        <span class="kpi-lbl">{{ card.label }}</span>
+        <div class="kpi-actions">
+          <div *ngIf="card.tooltip" class="kpi-info-wrap">
+            <button class="kpi-info-btn" type="button" aria-label="Informations">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            </button>
+            <div class="kpi-tooltip" role="tooltip">
+              <div class="kpi-tooltip-row"><span>{{ card.tooltip }}</span></div>
+            </div>
+          </div>
+          <button *ngIf="card.id === 'absrate'" class="kpi-action-btn kpi-action-btn--threshold"
+                  [class.kpi-action-btn--configured]="getKpiThreshold('absenteisme')"
+                  type="button" title="Fixer seuil / cible"
+                  (click)="openThresholdModal('absenteisme', card.label, $event)">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="kpi-val">{{ card.value }}<span class="kpi-unit">{{ card.unit }}</span></div>
+      <div class="kpi-foot">
+        <ng-container *ngIf="card.delta !== null">
+          <span class="kpi-delta"
+                [class.d-up]="card.delta > 0"
+                [class.d-down]="card.delta < 0"
+                [class.d-flat]="card.delta === 0">
+            <span *ngIf="card.delta > 0">&#8593; +{{ card.delta }}{{ card.unit }}</span>
+            <span *ngIf="card.delta < 0">&#8595; {{ card.delta }}{{ card.unit }}</span>
+            <span *ngIf="card.delta === 0">&#8594; 0{{ card.unit }}</span>
+            <span class="vs-prev">vs préc.</span>
+          </span>
+        </ng-container>
+        <span *ngIf="card.actionLabel" class="kpi-action">{{ card.actionLabel }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- 4. TENDANCES TEMPORELLES -->
+  <!-- ================================================================ -->
+  <section class="analytics-section">
+    <div class="section-hd">
+      <h3 class="section-title">Tendances temporelles</h3>
+      <span class="section-badge">{{ filterPeriod === 'month' ? 'Mois' : filterPeriod === 'quarter' ? 'Trimestre' : 'Année' }}</span>
+    </div>
+
+    <!-- 4a + 4b -->
+    <div class="trend-row">
+      <div class="trend-main card-section">
+        <div class="card-head">
+          <h4>Evolution de l'absentéisme (12 mois)
+            <span class="kpi-info-wrap" style="display:inline-flex;margin-left:5px">
+              <button class="kpi-info-btn" type="button" aria-label="Informations">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+              </button>
+              <div class="kpi-tooltip" role="tooltip" style="left:0;right:auto">
+                <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Info</span><span>Taux d'absentéisme mensuel moyen sur 12 mois glissants</span></div>
+              </div>
+            </span>
+          </h4>
+        </div>
+        <div class="chart-lg"><canvas #trendCanvas></canvas></div>
+      </div>
+      <div class="trend-side card-section">
+        <div class="card-head"><h4>Retards par jour de semaine</h4></div>
+        <div class="chart-md"><canvas #lateWdCanvas></canvas></div>
+      </div>
+    </div>
+
+    <!-- 4c – Heatmap -->
+    <div class="card-section heatmap-card">
+      <div class="card-head">
+        <h4>Vue mensuelle de la présence — {{ heatmapMonthLabel }}
+          <span class="kpi-info-wrap" style="display:inline-flex;margin-left:5px">
+            <button class="kpi-info-btn" type="button" aria-label="Informations">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            </button>
+            <div class="kpi-tooltip" role="tooltip" style="left:0;right:auto">
+              <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Info</span><span>Présence/absence journalière par collaborateur sur le mois courant</span></div>
+            </div>
+          </span>
+        </h4>
+        <div class="hm-legend">
+          <span class="hm-dot hm-present"></span><span>Présent</span>
+          <span class="hm-dot hm-leave"></span><span>Congé</span>
+          <span class="hm-dot hm-absent"></span><span>Absent</span>
+          <span class="hm-dot hm-weekend"></span><span>W-E</span>
+          <span class="hm-dot hm-nodata"></span><span>N/R</span>
+        </div>
+      </div>
+      <div class="heatmap-scroll" *ngIf="heatmapRows.length > 0; else noHeatmap">
+        <table class="hm-table">
+          <thead>
+            <tr>
+              <th class="hm-name-col">Collaborateur</th>
+              <th *ngFor="let d of heatmapDays"
+                  [class.hm-th-wk]="d.isWeekend"
+                  [class.hm-th-today]="d.isToday">{{ d.label }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of heatmapRows">
+              <td class="hm-name-col">{{ row.name }}</td>
+              <td *ngFor="let cell of row.cells"
+                  [class]="'hm-cell hm-' + cell.status"
+                  [title]="cell.tooltip"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #noHeatmap>
+        <div class="empty-state">Aucune absence ce mois-ci</div>
+      </ng-template>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- 5. ANALYSE PAR DIMENSION -->
+  <!-- ================================================================ -->
+  <section class="analytics-section">
+    <div class="section-hd">
+      <h3 class="section-title">Analyse par dimension</h3>
+    </div>
+
+    <div class="dim-grid-3">
+      <!-- 5a -->
+      <div class="card-section">
+        <div class="card-head"><h4>Absentéisme par département</h4></div>
+        <div class="chart-md"><canvas #deptAbsCanvas></canvas></div>
+      </div>
+      <!-- 5b -->
+      <div class="card-section">
+        <div class="card-head"><h4>Durée des absences</h4></div>
+        <div class="chart-md"><canvas #durationCanvas></canvas></div>
+      </div>
+      <!-- 5c -->
+      <div class="card-section">
+        <div class="card-head"><h4>Heures supp. par département</h4></div>
+        <div class="chart-md"><canvas #otDeptCanvas></canvas></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- 6. GESTION DES CONGÉS -->
+  <!-- ================================================================ -->
+  <section class="analytics-section">
+    <div class="section-hd">
+      <h3 class="section-title">Gestion des congés</h3>
+    </div>
+
+    <div class="leave-grid-3">
+
+      <!-- 6a – Funnel -->
+      <div class="card-section">
+        <div class="card-head">
+          <h4>Entonnoir des demandes</h4>
+          <span *ngIf="pendingFunnelCount > 5" class="badge badge-warn">{{ pendingFunnelCount }} bloquées</span>
+        </div>
+        <div class="funnel-body" *ngIf="funnelSteps.length > 0">
+          <div *ngFor="let step of funnelSteps" class="funnel-step">
+            <div class="funnel-step-hd">
+              <span class="funnel-lbl">{{ step.label }}</span>
+              <span class="funnel-cnt">{{ step.count }}</span>
+            </div>
+            <div class="funnel-bar-bg">
+              <div class="funnel-bar" [style.width.%]="step.pct" [style.background-color]="step.color"></div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="funnelSteps.length === 0" class="empty-state">Aucune demande</div>
+      </div>
+
+      <!-- 6b – Balance list -->
+      <div class="card-section">
+        <div class="card-head"><h4>Congés payés ({{ congePayeEntitled }}j/an)</h4></div>
+        <div class="balance-kpi-grid">
+          <div class="balance-kpi-tile">
+            <span class="bk-val">{{ balanceKpi.avg | number:'1.1-1' }}j</span>
+            <span class="bk-lbl">CP moyen restant</span>
+          </div>
+          <div class="balance-kpi-tile bk-warning">
+            <span class="bk-val">{{ balanceKpi.atRiskPct }}%</span>
+            <span class="bk-lbl">À risque (≤5j)</span>
+          </div>
+          <div class="balance-kpi-tile bk-danger">
+            <span class="bk-val">{{ balanceKpi.exhaustedCount }}</span>
+            <span class="bk-lbl">Épuisés</span>
+          </div>
+        </div>
+        <div *ngIf="balanceList.length > 0; else noBalance">
+          <p class="balance-at-risk-label">Collaborateurs à risque (≤ 5 jours)</p>
+          <div class="balance-list">
+            <div *ngFor="let b of balanceList" class="balance-row" [class.balance-alert]="b.alert">
+              <div class="balance-name">
+                <span *ngIf="b.alert" class="balance-warn-icon" title="Solde épuisé">⚠</span>
+                {{ b.name }}
+              </div>
+              <div class="balance-bar-bg">
+                <div class="balance-bar" [class]="getBalanceClass(b.remaining)" [style.width.%]="b.pct > 100 ? 100 : b.pct"></div>
+              </div>
+              <span class="balance-rem" [class]="getBalanceClass(b.remaining)">{{ b.remaining }}j</span>
+            </div>
+          </div>
+        </div>
+        <ng-template #noBalance>
+          <div class="empty-state">Tous les soldes sont satisfaisants</div>
+        </ng-template>
+      </div>
+
+      <!-- 6c – Gantt timeline -->
+      <div class="card-section">
+        <div class="card-head"><h4>Planning congés — {{ ganttMonthLabel }}</h4></div>
+        <div class="gantt-wrap" *ngIf="ganttRows.length > 0; else noGantt">
+          <!-- Day ticks header -->
+          <div class="gantt-header">
+            <div class="gantt-name-col"></div>
+            <div class="gantt-timeline">
+              <span *ngFor="let d of ganttDays"
+                    class="gantt-tick"
+                    [class.gantt-tick-show]="d.label !== ''">{{ d.label }}</span>
+            </div>
+          </div>
+          <!-- Employee rows -->
+          <div *ngFor="let row of ganttRows" class="gantt-row-wrap">
+            <div class="gantt-name-col" [title]="row.name">{{ row.name | slice:0:14 }}{{ row.name.length > 14 ? '…' : '' }}</div>
+            <div class="gantt-timeline">
+              <div *ngFor="let block of row.blocks"
+                   class="gantt-block"
+                   [class.gantt-overlap]="block.overlap"
+                   [class.gantt-pending]="block.type === 'pending'"
+                   [ngStyle]="getGanttBlockStyle(block, ganttMonthDaysCount)"
+                   [title]="block.label + ' · ' + block.type">
+                {{ block.label }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noGantt>
+          <div class="empty-state">Aucun congé ce mois-ci</div>
+        </ng-template>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- 7. INSIGHTS AVANCÉS -->
+  <!-- ================================================================ -->
+  <section class="analytics-section">
+    <div class="section-hd">
+      <h3 class="section-title">Insights avancés</h3>
+    </div>
+
+    <div class="insights-grid-2">
+      <!-- 7a – Scatter -->
+      <div class="card-section">
+        <div class="card-head">
+          <h4>Heures supp. vs Taux d'absentéisme
+            <span class="kpi-info-wrap" style="display:inline-flex;margin-left:5px">
+              <button class="kpi-info-btn" type="button" aria-label="Informations">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+              </button>
+              <div class="kpi-tooltip" role="tooltip" style="left:0;right:auto">
+                <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Info</span><span>Corrélation burn-out par collaborateur — Axe X : heures supplémentaires, Axe Y : taux d'absences</span></div>
+              </div>
+            </span>
+          </h4>
+        </div>
+        <div class="chart-lg"><canvas #scatterCanvas></canvas></div>
+        <div class="scatter-corr" *ngIf="scatterCorrelation.label" [style.color]="scatterCorrelation.color">
+          r = {{ scatterCorrelation.r | number:'1.2-2' }} — {{ scatterCorrelation.label }}
+        </div>      </div>
+      <!-- 7b – Recidivism -->      <div class="card-section">
+        <div class="card-head">
+          <h4>Récidivisme des absences</h4>
+          <span *ngIf="chronicsCount > 0" class="badge badge-danger">
+            {{ chronicsCount }} profil{{ chronicsCount > 1 ? 's' : '' }} chronique{{ chronicsCount > 1 ? 's' : '' }}
+          </span>
+        </div>
+        <div class="chart-lg"><canvas #recidCanvas></canvas></div>
+      </div>
+    </div>
+
+    <!-- 7c – Prévision saisonnière -->
+    <div class="card-section">
+      <div class="card-head">
+        <h4>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:5px">
+            <path d="M3 3v18h18"/><path d="M7 16l4-6 4 4 4-8"/>
+          </svg>
+          Prévision saisonnière des absences
+        </h4>
+        <div class="seasonal-legend-hint">
+          <span class="hint-dot blue"></span><span>Réel {{ seasonalForecastData.forecastYear }}</span>
+          <span class="hint-dot orange"></span><span>Prévision</span>
+          <span class="hint-bar"></span><span>Moy. historique</span>
+        </div>
+      </div>
+      <div class="seasonal-chart-body">
+        <canvas #seasonalCanvas></canvas>
+      </div>
+      <p class="seasonal-note">
+        La prévision est calculée à partir de la moyenne mensuelle des années précédentes (référence saisonnière).
+        Les barres représentent la baseline historique ; la ligne pleine les absences réelles de l'année en cours ;
+        la ligne pointillée la prévision pour les mois restants.
+      </p>
+    </div>
+
+    <!-- 7e – Indice de tension RH -->
+    <div class="card-section hr-tension-card">
+      <div class="card-head">
+        <h4>Indice de tension RH
+          <span class="kpi-info-wrap" style="display:inline-flex;margin-left:5px">
+            <button class="kpi-info-btn" type="button" aria-label="Informations">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            </button>
+            <div class="kpi-tooltip" role="tooltip" style="left:0;right:auto">
+              <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Formule</span><span>score = (Absentéisme / seuil × 40) + (Congés refusés / soumis × 30) + (Moy. heures supp. / seuil × 30)</span></div>
+              <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Seuils</span><span>Absentéisme : configuré ou 10 % · Heures sup. : 15 h/sem</span></div>
+            </div>
+          </span>
+        </h4>
+      </div>
+      <div class="hr-tension-body">
+        <!-- Score global -->
+        <div class="hr-tension-left">
+          <div class="hr-tension-score" [style.color]="getTensionColor(hrTensionScore)">
+            {{ hrTensionScore }}
+          </div>
+          <div class="hr-tension-score-lbl">Score global / 100</div>
+          <span class="hr-tension-badge" [ngClass]="getTensionLevelClass(hrTensionScore)">
+            <span *ngIf="hrTensionScore >= 34">&#9888;&nbsp;</span>{{ getTensionLevelLabel(hrTensionScore) }}
+          </span>
+          <div class="kpi-delta hr-tension-delta"
+               *ngIf="hrTensionDelta !== null"
+               [class.d-up]="hrTensionDelta > 0"
+               [class.d-down]="hrTensionDelta < 0"
+               [class.d-flat]="hrTensionDelta === 0">
+            <span *ngIf="hrTensionDelta > 0">&#8593; +{{ hrTensionDelta }}</span>
+            <span *ngIf="hrTensionDelta < 0">&#8595; {{ hrTensionDelta }}</span>
+            <span *ngIf="hrTensionDelta === 0">&#8594; 0</span>
+            <span class="vs-prev">vs préc.</span>
+          </div>
+        </div>
+        <!-- Département bars -->
+        <div class="hr-tension-dept-list" *ngIf="hrTensionDeptScores.length > 0">
+          <div *ngFor="let d of hrTensionDeptScores" class="hr-tension-dept-row">
+            <span class="hr-tension-dept-name">{{ d.name }}</span>
+            <div class="hr-tension-bar-bg">
+              <div class="hr-tension-bar"
+                   [style.width.%]="d.score"
+                   [style.background-color]="getTensionBarColor(d.score)"></div>
+            </div>
+            <span class="hr-tension-dept-val" [style.color]="getTensionBarColor(d.score)">{{ d.score }}</span>
+            <span class="hr-tension-level-badge" [ngClass]="getTensionLevelClass(d.score)">
+              {{ getTensionLevelLabel(d.score) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7f – Profil santé RH par département (Radar) -->
+    <div class="card-section">
+      <div class="card-head">
+        <h4>Profil santé RH — par département
+          <span class="kpi-info-wrap" style="display:inline-flex;margin-left:5px">
+            <button class="kpi-info-btn" type="button" aria-label="Informations">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            </button>
+            <div class="kpi-tooltip" role="tooltip" style="left:0;right:auto;min-width:320px">
+              <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Absentéisme</span><span>taux / 20 % × 10</span></div>
+              <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Retards</span><span>relatif au département max × 10</span></div>
+              <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">H. supp.</span><span>moyenne / 15 h × 10</span></div>
+              <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Congés utilisés</span><span>pris / acquis × 10</span></div>
+              <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Bradford</span><span>moyenne / 500 × 10</span></div>
+            </div>
+          </span>
+        </h4>
+      </div>
+      <div class="radar-rh-body">
+        <div class="chart-lg"><canvas #radarRhCanvas></canvas></div>
+        <div class="radar-rh-legend">
+          <span *ngFor="let item of radarRhLegendItems"
+                class="radar-legend-item"
+                [class.radar-legend-selected]="radarSelectedDepts.has(item.label)"
+                [class.radar-legend-dimmed]="!item.active"
+                [style.--pill-color]="item.color"
+                (click)="toggleRadarDept(item.label)">
+            <span class="radar-legend-dot" [style.background-color]="item.color"></span><span class="radar-legend-label">{{ item.label }}</span>
+          </span>
+        </div>
+      </div>
+      <p class="seasonal-note">Plus l'aire est grande, plus le signal d'alerte est fort.</p>
+    </div>
+
+    <!-- 7d – Indice Bradford -->
+    <div class="card-section">
+      <div class="card-head">
+        <h4>Indice Bradford
+          <span class="kpi-info-wrap" style="display:inline-flex;margin-left:5px">
+            <button class="kpi-info-btn" type="button" aria-label="Informations">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            </button>
+            <div class="kpi-tooltip" role="tooltip" style="left:0;right:auto;min-width:280px">
+              <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Formule</span><span>Score = S² × D &nbsp;·&nbsp; S = nb d'épisodes distincts, D = nb total de jours d'absence (fenêtre 52 semaines)</span></div>
+              <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Faible</span><span>Score &lt; 50</span></div>
+              <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Modéré</span><span>50 ≤ Score &lt; 175</span></div>
+              <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Élevé</span><span>175 ≤ Score &lt; 400</span></div>
+              <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Critique</span><span>Score ≥ 400</span></div>
+            </div>
+          </span>
+        </h4>
+      </div>
+      <div class="table-wrap">
+        <table class="bradford-table">
+          <thead>
+            <tr>
+              <th>Collaborateur</th>
+              <th>Département</th>
+              <th>Occurrences (S)</th>
+              <th>Jours totaux (D)</th>
+              <th>Score (S²×D)</th>
+              <th>Risque</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let score of pagedBradfordScores">
+              <td>{{ score.employeeName }}</td>
+              <td>{{ score.department }}</td>
+              <td>{{ score.occurrences }}</td>
+              <td>{{ score.totalDays }}</td>
+              <td><strong>{{ score.score }}</strong></td>
+              <td>
+                <span class="risk-badge" [ngClass]="getRiskClass(score.riskLevel)">
+                  {{ getRiskLabel(score.riskLevel) }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="bradfordScores.length === 0">
+              <td colspan="6" class="empty-state">Aucune donnée Bradford disponible.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-bar" *ngIf="bradfordTotalPages > 1">
+        <span class="page-info">Page {{ bradfordPage }} / {{ bradfordTotalPages }} &nbsp;·&nbsp; {{ bradfordScores.length }} collaborateurs</span>
+        <div class="pagination-actions">
+          <button type="button" (click)="bradfordPage = 1"                   [disabled]="bradfordPage === 1">«</button>
+          <button type="button" (click)="bradfordPage = bradfordPage - 1"    [disabled]="bradfordPage <= 1">Précédent</button>
+          <button type="button" (click)="bradfordPage = bradfordPage + 1"    [disabled]="bradfordPage >= bradfordTotalPages">Suivant</button>
+          <button type="button" (click)="bradfordPage = bradfordTotalPages"  [disabled]="bradfordPage === bradfordTotalPages">»</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Modal seuils KPI -->
+  <app-kpi-threshold-modal
+    [open]="showThresholdModal"
+    [kpiKey]="thresholdModalKpiKey"
+    [kpiLabel]="thresholdModalKpiLabel"
+    [currentValue]="getKpiCurrentValue(thresholdModalKpiKey)"
+    (closed)="closeThresholdModal()"
+    (saved)="onThresholdSaved()">
+  </app-kpi-threshold-modal>
+
+</div>
+

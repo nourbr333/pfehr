@@ -1,0 +1,401 @@
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <h2>HRScope</h2>
+      <p>Portail Responsable RH</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" routerLink="/accueil-resp" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>Tableau de bord
+      </a>
+      <a class="nav-item" routerLink="/employes" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>Collaborateurs
+      </a>
+      <a class="nav-item" routerLink="/departements" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+          <line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>
+        </svg>Départements
+      </a>
+      <a class="nav-item" routerLink="/performances-evaluations" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+        </svg>Performances &amp; Évaluations
+      </a>
+      <a class="nav-item" routerLink="/absences-conges" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M8 2v4"/><path d="M16 2v4"/>
+          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/>
+          <path d="M9 15l6 6"/><path d="M15 15l-6 6"/>
+        </svg>Absences &amp; Congés
+      </a>
+      <a class="nav-item" routerLink="/rh/rapports" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/>
+        </svg>Rapports
+      </a>
+      <a class="nav-item" routerLink="/resp/notes" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>Mes notes
+      </a>
+      <a class="nav-item" routerLink="/calendrier" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>Calendrier
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-logout" (click)="onDeconnexion()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>Déconnexion
+      </div>
+    </div>
+  </aside>
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="search-box">
+          <svg width="15" height="15" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" placeholder="Rechercher…" [(ngModel)]="selectedEmployee" (ngModelChange)="onFiltersChanged()"/>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <app-notifications-panel></app-notifications-panel>
+        <div class="user-info">
+          <div class="user-info-text">
+            <div class="name">{{ utilisateur?.prenom }} {{ utilisateur?.nom }}</div>
+            <div class="role">Responsable RH</div>
+          </div>
+          <div class="avatar" (click)="onProfil()">{{ utilisateur?.initiales }}</div>
+        </div>
+      </div>
+    </header>
+    <main class="page-content"><div class="page-header">
+        <div>
+          <h1>Absences &amp; Congés</h1>
+          <p>Suivi consolidé des absences, tensions d'effectif et tendances d'absentéisme.</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn-primary" type="button" (click)="openImportModal()">Saisir absences</button>
+          <button class="btn-secondary" type="button" (click)="openLeaveRequestModal()">Saisir congés</button>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <button type="button" class="tab" [class.active]="activeTab === 'absences'" (click)="setTab('absences')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/>
+          </svg>
+          Vue absences
+        </button>
+        <button type="button" class="tab" [class.active]="activeTab === 'conges'" (click)="setTab('conges')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/>
+          </svg>
+          Gestion des congés
+        </button>
+        <button type="button" class="tab" [class.active]="activeTab === 'soldes'" (click)="setTab('soldes')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+          </svg>
+          Soldes &amp; Politiques
+        </button>
+        <button type="button" class="tab" [class.active]="activeTab === 'analytiques'" (click)="setTab('analytiques')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/>
+          </svg>
+          Analytiques
+        </button>
+      </div>
+
+      <!-- TAB: Vue absences -->
+      <div class="tab-absences-content" [hidden]="activeTab !== 'absences'">
+
+      <!-- Bandeau données indisponibles pour le mois courant -->
+      <div class="data-unavailable-banner" *ngIf="!hasDataForCurrentMonth && !attendanceLoading && !attendanceError">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="currentColor"/>
+        </svg>
+        Données des absences indisponibles pour {{ currentMonthLabel }}.
+      </div>
+
+      <!-- ── Barre de filtres (en haut, s'applique à tout le contenu) ── -->
+      <div class="filter-bar card-section">
+        <div class="filter-group">
+          <span class="filter-label">Période</span>
+          <div class="period-pills">
+            <button type="button" [class.active]="selectedPeriod==='month'"   (click)="selectedPeriod='month';   onFiltersChanged()">Mois</button>
+            <button type="button" [class.active]="selectedPeriod==='quarter'" (click)="selectedPeriod='quarter'; onFiltersChanged()">Trimestre</button>
+            <button type="button" [class.active]="selectedPeriod==='year'"    (click)="selectedPeriod='year';    onFiltersChanged()">Année</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Département</span>
+          <select class="filter-select" [(ngModel)]="selectedDepartment" (ngModelChange)="onFiltersChanged()">
+            <option value="">Tous</option>
+            <option *ngFor="let dept of mockData.departments" [value]="dept.name">{{ dept.name }}</option>
+          </select>
+        </div>
+        <button class="btn-export-excel" type="button" (click)="exportExcel()" title="Exporter en Excel" style="margin-left:auto;flex-shrink:0">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/>
+            <polyline points="9 15 12 18 15 15"/>
+          </svg>
+          Exporter en Excel
+        </button>
+      </div>
+
+      <!-- ── KPI cards ── -->
+      <section class="kpi-grid">
+
+        <!-- Taux d'absentéisme -->
+        <article class="kpi-card" [class.kpi-card--breached]="isThresholdBreached('absenteisme')">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Taux d'absentéisme</span>
+            <div class="kpi-actions">
+              <div class="kpi-info-wrap" (click)="$event.stopPropagation()">
+                <button class="kpi-info-btn" type="button" aria-label="Informations">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </button>
+                <div class="kpi-tooltip" role="tooltip">
+                  <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Formule</span><span>{{ kpiDefinitions['absenteisme'].formula }}</span></div>
+                  <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Cible</span><span>{{ kpiDefinitions['absenteisme'].target }}</span></div>
+                  <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Période</span><span>{{ kpiPeriodLabel }}</span></div>
+                </div>
+              </div>
+              <button class="kpi-action-btn kpi-action-btn--threshold"
+                      [class.kpi-action-btn--configured]="getKpiThreshold('absenteisme')"
+                      [class.kpi-action-btn--breached]="isThresholdBreached('absenteisme')"
+                      type="button" title="Fixer seuil / cible"
+                      (click)="openThresholdModal('absenteisme', kpiDefinitions['absenteisme'].label, $event)">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+              </button>
+            </div>
+          </div>
+          <div *ngIf="isThresholdBreached('absenteisme')" class="kpi-breach-badge">Seuil dépassé</div>
+          <strong class="kpi-value">{{ absenteeismRateKpi | number:'1.1-1' }}%</strong>
+          <ng-container *ngIf="isKpiDeltaMeaningful; else absentDeltaNA">
+            <span class="kpi-delta"
+              [class.delta-up]="absenteeismDeltaKpi > 0"
+              [class.delta-down]="absenteeismDeltaKpi < 0"
+              [class.delta-neutral]="absenteeismDeltaKpi === 0">
+              <span class="delta-arrow">{{ absenteeismDeltaKpi > 0 ? '↑' : absenteeismDeltaKpi < 0 ? '↓' : '→' }}</span>
+              {{ formatDeltaAbs(absenteeismDeltaKpi) }}
+              <span *ngIf="kpiDeltaPeriodsLabel" class="delta-period-hint">{{ kpiDeltaPeriodsLabel }}</span>
+            </span>
+          </ng-container>
+          <ng-template #absentDeltaNA>
+            <span class="kpi-delta delta-neutral">— import période unique</span>
+          </ng-template>
+          <span class="kpi-period-badge">{{ kpiPeriodLabel }}</span>
+        </article>
+
+        <!-- Taux de retard -->
+        <article class="kpi-card" [class.kpi-card--breached]="isThresholdBreached('retard')">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Taux de retard moyen</span>
+            <div class="kpi-actions">
+              <div class="kpi-info-wrap" (click)="$event.stopPropagation()">
+                <button class="kpi-info-btn" type="button" aria-label="Informations">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </button>
+                <div class="kpi-tooltip" role="tooltip">
+                  <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Formule</span><span>{{ kpiDefinitions['retard'].formula }}</span></div>
+                  <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Cible</span><span>{{ kpiDefinitions['retard'].target }}</span></div>
+                  <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Période</span><span>{{ kpiPeriodLabel }}</span></div>
+                </div>
+              </div>
+              <button class="kpi-action-btn kpi-action-btn--threshold"
+                      [class.kpi-action-btn--configured]="getKpiThreshold('retard')"
+                      [class.kpi-action-btn--breached]="isThresholdBreached('retard')"
+                      type="button" title="Fixer seuil / cible"
+                      (click)="openThresholdModal('retard', kpiDefinitions['retard'].label, $event)">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+              </button>
+            </div>
+          </div>
+          <div *ngIf="isThresholdBreached('retard')" class="kpi-breach-badge">Seuil dépassé</div>
+          <strong class="kpi-value">{{ lateRateKpi | number:'1.1-1' }}%</strong>
+          <ng-container *ngIf="isKpiDeltaMeaningful; else lateDeltaNA">
+            <span class="kpi-delta"
+              [class.delta-up]="lateRateDeltaKpi > 0"
+              [class.delta-down]="lateRateDeltaKpi < 0"
+              [class.delta-neutral]="lateRateDeltaKpi === 0">
+              <span class="delta-arrow">{{ lateRateDeltaKpi > 0 ? '↑' : lateRateDeltaKpi < 0 ? '↓' : '→' }}</span>
+              {{ formatDeltaAbs(lateRateDeltaKpi) }}
+              <span *ngIf="kpiDeltaPeriodsLabel" class="delta-period-hint">{{ kpiDeltaPeriodsLabel }}</span>
+            </span>
+          </ng-container>
+          <ng-template #lateDeltaNA>
+            <span class="kpi-delta delta-neutral">— import période unique</span>
+          </ng-template>
+          <span class="kpi-period-badge">{{ kpiPeriodLabel }}</span>
+        </article>
+
+        <!-- Congés en cours -->
+        <article class="kpi-card" style="cursor:pointer" (click)="goToCongesSection('history')">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Congés en cours (ce mois)</span>
+            <div class="kpi-actions">
+              <div class="kpi-info-wrap" (click)="$event.stopPropagation()">
+                <button class="kpi-info-btn" type="button" aria-label="Informations">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </button>
+                <div class="kpi-tooltip" role="tooltip">
+                  <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Formule</span><span>Demandes de congé approuvées chevauchant le mois courant</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <strong class="kpi-value">{{ ongoingLeavesThisMonthKpi }}</strong>
+          <span class="kpi-unavailable-hint" *ngIf="ongoingLeavesThisMonthKpi === 0 && leaveDataUnavailable" title="Données congés indisponibles (API)">⚠</span>
+        </article>
+
+        <!-- En attente d'approbation -->
+        <article class="kpi-card" style="cursor:pointer"
+          [class.kpi-card-alert]="pendingLeaveApprovalsKpi > 0"
+          (click)="goToCongesSection('pending')">
+          <div class="kpi-card-head">
+            <span class="kpi-label">En attente d'approbation</span>
+            <div class="kpi-actions">
+              <div class="kpi-info-wrap" (click)="$event.stopPropagation()">
+                <button class="kpi-info-btn" type="button" aria-label="Informations">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </button>
+                <div class="kpi-tooltip" role="tooltip">
+                  <div class="kpi-tooltip-row"><span class="kpi-tooltip-label">Formule</span><span>Demandes au statut "pending" dont la date de début n'est pas encore passée</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <strong class="kpi-value">{{ pendingLeaveApprovalsKpi }}</strong>
+          <span class="kpi-unavailable-hint" *ngIf="pendingLeaveApprovalsKpi === 0 && leaveDataUnavailable" title="Données congés indisponibles">⚠</span>
+        </article>
+      </section>
+
+      <!-- Tableau détaillé des absences -->
+      <app-tableau-absences [rows]="tableRows" [typeColors]="typeColors"></app-tableau-absences>
+
+      <!-- Top 5 absents -->
+      <section class="card-section">
+        <div class="card-head">
+          <h3>Top 5 absents</h3>
+          <span class="chart-period-badge">{{ currentRangeLabel }}</span>
+        </div>
+        <div class="top-list" *ngIf="top5Absents.length > 0; else noTopData">
+          <div class="top-item" *ngFor="let emp of top5Absents; let i = index">
+            <span class="top-rank">{{ i + 1 }}</span>
+            <span class="employee-avatar">{{ emp.avatar }}</span>
+            <div class="top-info">
+              <span class="top-name">{{ emp.name }}</span>
+              <small>{{ emp.department }}</small>
+            </div>
+            <strong class="top-days">{{ emp.totalDays }}j</strong>
+          </div>
+        </div>
+        <ng-template #noTopData>
+          <div class="empty-state">Aucune donnée</div>
+        </ng-template>
+      </section>
+
+      </div><!-- end TAB absences -->
+
+<!-- Modal seuils KPI -->
+<app-kpi-threshold-modal
+  [open]="thresholdModalOpen"
+  [kpiKey]="thresholdModalKpiKey"
+  [kpiLabel]="thresholdModalKpiLabel"
+  [currentValue]="getKpiCurrentValue(thresholdModalKpiKey)"
+  (closed)="closeThresholdModal()"
+  (saved)="onThresholdSaved()">
+</app-kpi-threshold-modal>
+
+      <!-- TAB: Gestion des congés -->
+      <div [hidden]="activeTab !== 'conges'">
+        <app-conges-requests
+          [employees]="mockData.employees"
+          [typeColors]="typeColors"
+          [leaveRequests]="leaveRequests"
+          [leaveBalances]="leaveBalances"
+          (requestApproved)="onRequestStatusChange($event)"
+          (requestRejected)="onRequestStatusChange($event)"
+          (requestCancelled)="onRequestStatusChange($event)"
+          (newRequest)="openLeaveRequestModal()">
+        </app-conges-requests>
+      </div>
+
+      <!-- TAB: Soldes & Politiques -->
+      <div class="tab-content-panel" [hidden]="activeTab !== 'soldes'">
+        <app-leave-balance [employees]="mockData.employees" [typeColors]="typeColors" [balances]="leaveBalances" [congePayeEntitled]="congePayeEntitled"></app-leave-balance>
+        <app-leave-policies [policies]="leavePolicies" (policySaved)="onPolicySaved($event)"></app-leave-policies>
+      </div>
+
+      <!-- TAB: Analytiques -->
+      <div [hidden]="activeTab !== 'analytiques'">
+      <div class="analytics-tab-body">
+        <app-analytics-advanced
+          [enrichedAbsences]="enrichedAbsences"
+          [employees]="mockData.employees"
+          [departments]="mockData.departments"
+          [typeColors]="typeColors"
+          [attendanceRows]="attendanceRows"
+          [leaveRequests]="leaveRequests"
+          [leaveBalances]="leaveBalances"
+          [congePayeEntitled]="congePayeEntitled">
+        </app-analytics-advanced>
+      </div>
+      </div>
+    
+
+<div class="modal-backdrop" *ngIf="showImportModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Importer fichier Pointage</h3>
+      <button type="button" class="modal-close" (click)="closeImportModal()">×</button>
+    </div>
+
+    <button type="button" class="btn-download-template" (click)="downloadAttendanceTemplate()">⬇ Télécharger le modèle</button>
+
+    <div class="import-file-zone">
+      <input type="file" accept=".xlsx" (change)="onImportFileSelected($event)" [disabled]="importInProgress" />
+      <span class="import-file-name" *ngIf="selectedImportFile">{{ selectedImportFile.name }}</span>
+    </div>
+
+    <p class="error-text" *ngIf="importFileError">{{ importFileError }}</p>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" (click)="closeImportModal()">Annuler</button>
+      <button type="button" class="btn-primary" (click)="submitAttendanceImport()" [disabled]="importInProgress">
+        {{ importInProgress ? 'Import en cours...' : 'Valider' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-leave-request-modal
+  *ngIf="showLeaveRequestModal"
+  [employees]="mockData.employees"
+  [typeColors]="typeColors"
+  [policies]="leavePolicies"
+  [balances]="leaveBalances"
+  (submitted)="onLeaveRequestSubmitted($event)"
+  (closed)="showLeaveRequestModal = false">
+</app-leave-request-modal>
+    </main>
+  </div>
+</div>

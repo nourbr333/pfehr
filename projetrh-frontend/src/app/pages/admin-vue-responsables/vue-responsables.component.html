@@ -1,0 +1,135 @@
+<app-sidebar-admin>
+  <div class="dashboard-header">
+    <div>
+      <h1>Vue Responsables</h1>
+      <p>Récap de l’activité RH : effectif, congés, présence et évaluations gérés par les Responsables RH.</p>
+    </div>
+    <div class="dashboard-header-right">
+      <span class="employee-muted">Mise à jour · {{ todayLabel }}</span>
+    </div>
+  </div>
+
+  <div class="dashboard-content">
+    <section class="section-block">
+      <div class="section-title-row">
+        <h2>Indicateurs RH</h2>
+      </div>
+      <div class="kpi-grid">
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Effectif total</span>
+            <div class="kpi-icon" aria-hidden="true">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+          </div>
+          <strong class="kpi-value">{{ overview?.effectifTotal ?? 0 }}</strong>
+          <span class="kpi-subvalue">{{ overview?.embauches30Jours ?? 0 }} embauche(s) sur 30 jours</span>
+        </article>
+
+        <article class="kpi-card" [class.kpi-card-alert]="(overview?.congesEnAttente ?? 0) > 0">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Congés en attente</span>
+            <div class="kpi-icon kpi-icon-orange" aria-hidden="true">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </div>
+          </div>
+          <strong class="kpi-value">{{ overview?.congesEnAttente ?? 0 }}</strong>
+          <span class="kpi-subvalue">
+            {{ overview?.congesApprouvesAnnee ?? 0 }} approuvés · {{ overview?.congesRefusesAnnee ?? 0 }} refusés cette année
+          </span>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Taux de présence</span>
+            <div class="kpi-icon kpi-icon-green" aria-hidden="true">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+            </div>
+          </div>
+          <strong class="kpi-value">{{ overview?.tauxPresence30Jours ?? 0 }}%</strong>
+          <span class="kpi-subvalue">Sur les 30 derniers jours</span>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Évaluations cette année</span>
+            <div class="kpi-icon" aria-hidden="true">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="9" y1="15" x2="15" y2="15" />
+              </svg>
+            </div>
+          </div>
+          <strong class="kpi-value">{{ overview?.evaluationsAnnee ?? 0 }}</strong>
+          <span class="kpi-subvalue">{{ overview?.seuilsKpiConfigures ?? 0 }} seuil(s) KPI configuré(s)</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-block">
+      <div class="section-title-row">
+        <h2>Activité congés</h2>
+        <span class="section-title-hint">Données issues des demandes de congés</span>
+      </div>
+      <div class="section-grid two-col">
+        <article class="chart-card">
+          <div class="chart-head-block">
+            <div class="chart-head">
+              <h3>Demandes de congés par mois</h3>
+            </div>
+            <p class="chart-head-meta">Volume des demandes sur les 6 derniers mois</p>
+          </div>
+          <div class="chart-body chart-body--chart">
+            <ng-container *ngIf="hasMonthlyChart; else noMonthlyChart">
+              <canvas #leavesMonthlyCanvas></canvas>
+            </ng-container>
+            <ng-template #noMonthlyChart>
+              <div class="chart-empty">
+                Aucune demande de congé sur les 6 derniers mois.
+              </div>
+            </ng-template>
+          </div>
+        </article>
+
+        <article class="chart-card">
+          <div class="chart-head-block">
+            <div class="chart-head">
+              <h3>Derniers mouvements</h3>
+            </div>
+            <p class="chart-head-meta">Dernières demandes de congés enregistrées</p>
+          </div>
+          <div class="chart-body chart-body--list">
+            <div class="movement-list" *ngIf="(overview?.derniersMouvements ?? []).length > 0; else noMovements">
+              <div class="movement-item" *ngFor="let m of overview?.derniersMouvements">
+                <div class="movement-main">
+                  <div class="movement-name">{{ m.employe || '—' }}</div>
+                  <div class="movement-sub">{{ typeLabel(m.type) }} · {{ periodeLabel(m) }}</div>
+                </div>
+                <div class="movement-side">
+                  <span [class]="statutPillClass(m.statut)">{{ statutLabel(m.statut) }}</span>
+                  <span class="movement-date">{{ relativeDate(m.demandeLe) }}</span>
+                </div>
+              </div>
+            </div>
+            <ng-template #noMovements>
+              <div class="empty-state-mini">
+                <div class="empty-state-text">Aucun mouvement récent</div>
+              </div>
+            </ng-template>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+</app-sidebar-admin>

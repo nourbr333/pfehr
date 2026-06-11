@@ -1,0 +1,425 @@
+﻿<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <h2>HRScope</h2>
+      <p>Portail Responsable RH</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" routerLink="/accueil-resp" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>Tableau de bord
+      </a>
+      <a class="nav-item" routerLink="/employes" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>Collaborateurs
+      </a>
+      <a class="nav-item" routerLink="/departements" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+          <line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>
+        </svg>Départements
+      </a>
+      <a class="nav-item" routerLink="/performances-evaluations" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+        </svg>Performances &amp; Évaluations
+      </a>
+      <a class="nav-item" routerLink="/absences-conges" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M8 2v4"/><path d="M16 2v4"/>
+          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/>
+          <path d="M9 15l6 6"/><path d="M15 15l-6 6"/>
+        </svg>Absences &amp; Congés
+      </a>
+      <a class="nav-item" routerLink="/rh/rapports" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/>
+        </svg>Rapports
+      </a>
+      <a class="nav-item" routerLink="/resp/notes" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>Mes notes
+      </a>
+      <a class="nav-item" routerLink="/calendrier" routerLinkActive="active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>Calendrier
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-logout" (click)="onDeconnexion()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>Déconnexion
+      </div>
+    </div>
+  </aside>
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-left"></div>
+      <div class="topbar-actions">
+        <app-notifications-panel></app-notifications-panel>
+        <div class="user-info">
+          <div class="user-info-text">
+            <div class="name">{{ utilisateur?.prenom }} {{ utilisateur?.nom }}</div>
+            <div class="role">Responsable RH</div>
+          </div>
+          <div class="avatar" (click)="onProfil()">{{ utilisateur?.initiales }}</div>
+        </div>
+      </div>
+    </header>
+    <main class="page-content"><div class="page-header">
+        <div>
+          <h1>Collaborateurs</h1>
+          <p>Liste et gestion des collaborateurs de l'entreprise.</p>
+        </div>
+        <button type="button" class="btn-add-employee" (click)="onAddEmployee()">+ Ajouter collaborateur(s)</button>
+      </div>
+      <p class="import-success" *ngIf="importSuccessMessage">{{ importSuccessMessage }}</p>
+
+      <!-- ── KPI Cards ── -->
+      <div class="emp-kpi-grid">
+
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Effectif total</span>
+          </div>
+          <strong class="kpi-value">{{ kpiTotalEmployees }}</strong>
+          <span class="kpi-subvalue">collaborateurs actifs</span>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Managers</span>
+          </div>
+          <strong class="kpi-value">{{ kpiManagerCount }}</strong>
+          <span class="kpi-subvalue">ont au moins un subordonné</span>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Sans manager assigné</span>
+          </div>
+          <strong class="kpi-value" [class.warn]="kpiNoManagerCount > 0">{{ kpiNoManagerCount }}</strong>
+          <span class="kpi-subvalue">{{ kpiNoManagerCount === 1 ? 'employé non rattaché' : 'collaborateurs non rattachés' }}</span>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-card-head">
+            <span class="kpi-label">Arrivées ce mois-ci</span>
+          </div>
+          <strong class="kpi-value" [class.good]="kpiNewThisMonth > 0">{{ kpiNewThisMonth }}</strong>
+          <span class="kpi-subvalue">{{ kpiNewThisMonth === 1 ? 'nouvel arrivant' : 'nouveaux arrivants' }}</span>
+        </article>
+
+      </div>
+
+      <div class="table-toolbar">
+        <div class="toolbar-search">
+          <svg width="15" height="15" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" name="employee-search" placeholder="Rechercher par ID, prénom ou nom…" [(ngModel)]="searchTerm" (input)="onSearch()"/>
+        </div>
+
+        <div class="toolbar-filter">
+          <svg width="15" height="15" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M3 4h18l-7 8v6l-4 2v-8L3 4z"/>
+          </svg>
+          <select name="department-filter" [(ngModel)]="selectedDepartmentId" (change)="onDepartmentFilterChange()">
+            <option value="">Tous les départements</option>
+            <option *ngFor="let dept of departments" [value]="dept.departmentId">
+              {{ dept.departmentName }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table data-table--compact">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Collaborateur</th>
+              <th>Département</th>
+              <th>Poste</th>
+              <th>Score perf.</th>
+              <th>Présence</th>
+              <th>Date embauche</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let employee of paginatedEmployees"
+              class="clickable-row"
+              [class.row-manager]="employee.isManager"
+              (click)="openEmployeePanel(employee)"
+            >
+              <td>{{ employee.employeeId }}</td>
+              <td>{{ employee.firstName }} {{ employee.lastName }}</td>
+              <td>{{ employee.departmentName }}</td>
+              <td>{{ employee.jobTitle }}</td>
+              <td class="score-na">—</td>
+              <td>
+                <div class="presence-cell">
+                  <div class="presence-track">
+                    <div [class]="presenceFillClass(tablePresenceRate(employee))" [style.width.%]="tablePresenceRate(employee)"></div>
+                  </div>
+                  <span>{{ tablePresenceRate(employee) }}%</span>
+                </div>
+              </td>
+              <td>{{ employee.hireDate | date: 'dd/MM/yyyy' }}</td>
+              <td>
+                <div class="row-actions">
+                  <button
+                    type="button"
+                    class="row-action-btn edit"
+                    title="Modifier"
+                    aria-label="Modifier le collaborateur"
+                    (click)="onEditEmployee(employee, $event)"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 20h9"/>
+                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="row-action-btn delete"
+                    title="Supprimer"
+                    aria-label="Supprimer le collaborateur"
+                    (click)="onDeleteEmployee(employee, $event)"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6"/><path d="M14 11v6"/>
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="empty-row" *ngIf="paginatedEmployees.length === 0">
+              <td colspan="8">
+                <div class="empty-inline">
+                  <svg width="18" height="18" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  </svg>
+                  Aucun collaborateur
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-toolbar pagination-toolbar">
+        <div class="toolbar-search pagination-status">
+          <span>Page {{ currentPage }} / {{ totalPages }}</span>
+        </div>
+        <div class="toolbar-filter pagination-controls">
+          <button type="button" class="page-nav-btn" (click)="previousPage()" [disabled]="!canGoPrevious">Précédent</button>
+          <button type="button" class="page-nav-btn" (click)="nextPage()" [disabled]="!canGoNext">Suivant</button>
+        </div>
+      </div>
+    
+<app-toast></app-toast>
+
+<div class="modal-backdrop" *ngIf="showImportModal">
+  <div class="modal-card import-modal-card">
+    <div class="modal-head">
+      <h3>Importer fichier Employés</h3>
+      <button type="button" class="modal-close" (click)="closeImportModal()" [disabled]="importInProgress">×</button>
+    </div>
+
+    <div *ngIf="importStep === 'select'" class="modal-step">
+      <button type="button" class="btn-download-template" (click)="downloadEmployeeTemplate()">⬇ Télécharger le modèle</button>
+      <input id="employee-import-file" name="employee-import-file" type="file" accept=".xlsx,.csv" (change)="onImportFileSelected($event)" [disabled]="importInProgress" />
+      <p class="error-text" *ngIf="importFileError">{{ importFileError }}</p>
+      <p class="import-success" *ngIf="importModalMessage">{{ importModalMessage }}</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeImportModal()" [disabled]="importInProgress">Annuler</button>
+        <button type="button" class="btn-primary" (click)="submitEmployeeImport()" [disabled]="importInProgress || !selectedImportFile">
+          {{ importInProgress ? 'Import en cours...' : 'Valider' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="showEditEmployeeModal" (click)="closeEditEmployeeModal()">
+  <div class="modal-card modal-card--compact" (click)="$event.stopPropagation()">
+    <div class="modal-header-band">
+      <div class="modal-header-left">
+        <div class="modal-header-icon">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <div class="modal-header-title">Modifier le collaborateur</div>
+      </div>
+      <button type="button" class="modal-close-btn" (click)="closeEditEmployeeModal()" [disabled]="isSavingEmployeeEdit" aria-label="Fermer">×</button>
+    </div>
+    <div class="modal-body modal-body--grid">
+      <label class="form-field">
+        <span>Prénom</span>
+        <input type="text" [(ngModel)]="employeeEditForm.firstName" [disabled]="isSavingEmployeeEdit"/>
+      </label>
+      <label class="form-field">
+        <span>Nom</span>
+        <input type="text" [(ngModel)]="employeeEditForm.lastName" [disabled]="isSavingEmployeeEdit"/>
+      </label>
+      <label class="form-field form-field--full">
+        <span>Poste</span>
+        <input type="text" [(ngModel)]="employeeEditForm.jobTitle" [disabled]="isSavingEmployeeEdit"/>
+      </label>
+      <label class="form-field">
+        <span>Département</span>
+        <select [(ngModel)]="employeeEditForm.departmentId" [disabled]="isSavingEmployeeEdit">
+          <option [ngValue]="null">— Sélectionner —</option>
+          <option *ngFor="let dept of departments" [ngValue]="dept.departmentId">{{ dept.departmentName }}</option>
+        </select>
+      </label>
+      <label class="form-field">
+        <span>Manager (ID optionnel)</span>
+        <input type="text" [(ngModel)]="employeeEditForm.managerId" [disabled]="isSavingEmployeeEdit"/>
+      </label>
+      <label class="form-field form-field--full toggle-label">
+        <span>Est manager</span>
+        <input type="checkbox" class="toggle-checkbox" [(ngModel)]="employeeEditForm.isManager" [disabled]="isSavingEmployeeEdit"/>
+        <span class="toggle-hint">Cochez si ce collaborateur peut avoir des subordonnés</span>
+      </label>
+      <p class="error-text form-field--full" *ngIf="editEmployeeError">{{ editEmployeeError }}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" (click)="closeEditEmployeeModal()" [disabled]="isSavingEmployeeEdit">Annuler</button>
+      <button type="button" class="btn-primary" (click)="saveEmployeeEdit()" [disabled]="isSavingEmployeeEdit">
+        {{ isSavingEmployeeEdit ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="showDeleteEmployeeModal">
+  <div class="modal-card delete-confirm-modal">
+    <div class="modal-head">
+      <h3>Confirmer la suppression</h3>
+      <button type="button" class="modal-close" (click)="closeDeleteEmployeeModal()" [disabled]="isDeletingEmployee">×</button>
+    </div>
+    <div class="modal-step" *ngIf="employeeToDelete as employee">
+      <p>
+        Voulez-vous supprimer <strong>{{ employee.firstName }} {{ employee.lastName }}</strong>
+        (ID {{ employee.employeeId }}) ?
+      </p>
+      <p class="modal-note">Cette action est définitive.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeDeleteEmployeeModal()" [disabled]="isDeletingEmployee">Annuler</button>
+        <button type="button" class="btn-danger" (click)="confirmDeleteEmployee()" [disabled]="isDeletingEmployee">
+          {{ isDeletingEmployee ? 'Suppression...' : 'Supprimer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Assigner / Réassigner un manager -->
+<div class="modal-backdrop" *ngIf="isAssignManagerModalOpen" (click)="closeAssignManagerModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()" style="max-width:420px">
+    <div class="modal-head">
+      <h3>{{ assignManagerTarget?.managerId ? 'Réassigner un manager' : 'Assigner un manager' }}</h3>
+      <button type="button" class="modal-close" (click)="closeAssignManagerModal()" [disabled]="isSavingAssignment">×</button>
+    </div>
+    <div class="modal-step">
+      <p style="margin:0 0 12px;font-size:.875rem;color:#4b5563">
+        Employé : <strong>{{ assignManagerTarget?.firstName }} {{ assignManagerTarget?.lastName }}</strong>
+      </p>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:.875rem;font-weight:500">
+        Manager
+        <select [(ngModel)]="selectedManagerId" [disabled]="isSavingAssignment" style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px;font-size:.875rem">
+          <option [ngValue]="null">— Sélectionner un manager —</option>
+          <option *ngFor="let m of managers" [ngValue]="m.employeeId">
+            {{ m.firstName }} {{ m.lastName }} · {{ m.jobTitle }}
+          </option>
+        </select>
+      </label>
+      <div class="error" *ngIf="assignManagerError" style="margin-top:8px">{{ assignManagerError }}</div>
+    </div>
+    <div class="modal-actions" style="padding:12px 18px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid #e5e7eb">
+      <button type="button" class="btn-secondary" (click)="closeAssignManagerModal()" [disabled]="isSavingAssignment">Annuler</button>
+      <button type="button" class="btn-primary" (click)="confirmAssignManager()" [disabled]="isSavingAssignment || selectedManagerId == null">
+        {{ isSavingAssignment ? 'Enregistrement...' : 'Confirmer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="drawer-backdrop" [class.open]="isEmployeePanelOpen" (click)="closeEmployeePanel()">
+  <aside class="employee-drawer" [class.open]="isEmployeePanelOpen" (click)="$event.stopPropagation()">
+    <div class="drawer-header" *ngIf="selectedEmployee as employee">
+      <div class="drawer-identity">
+        <div class="drawer-avatar">{{ initialsOf(employee) }}</div>
+        <div>
+          <div class="drawer-name">{{ employee.firstName }} {{ employee.lastName }}</div>
+          <div class="drawer-sub">
+            <span>{{ employee.jobTitle }} • {{ employee.departmentName }}</span>
+            <span *ngIf="isManager(employee)" class="manager-badge">Manager</span>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="drawer-close" (click)="closeEmployeePanel()">✕</button>
+    </div>
+
+    <div class="drawer-content" *ngIf="selectedEmployee as employee">
+      <section class="drawer-section">
+        <h3>Profil</h3>
+        <div class="drawer-grid">
+          <div class="drawer-item">
+            <span>Nom</span>
+            <strong>{{ employee.lastName }}</strong>
+          </div>
+          <div class="drawer-item">
+            <span>Prénom</span>
+            <strong>{{ employee.firstName }}</strong>
+          </div>
+          <div class="drawer-item">
+            <span>Email</span>
+            <strong>{{ emailOf(employee) }}</strong>
+          </div>
+          <div class="drawer-item">
+            <span>Date embauche</span>
+            <strong>{{ employee.hireDate | date: 'dd/MM/yyyy' }}</strong>
+          </div>
+          <div class="drawer-item full">
+            <span>{{ isManager(employee) ? 'Rôle' : 'Manager' }}</span>
+            <strong *ngIf="!isManager(employee)" class="manager-field-row">
+              <span>{{ managerLabel(employee) }}</span>
+              <button class="btn-assign-manager" type="button" (click)="openAssignManagerModal(employee)">
+                {{ employee.managerId ? 'Réassigner' : 'Assigner' }}
+              </button>
+            </strong>
+            <strong *ngIf="isManager(employee)" class="manager-role">
+              <span class="manager-badge">Manager</span>
+              <span class="manager-role-caption">Responsable d'équipe</span>
+            </strong>
+          </div>
+        </div>
+      </section>
+    </div>
+  </aside>
+</div>
+    </main>
+  </div>
+</div>

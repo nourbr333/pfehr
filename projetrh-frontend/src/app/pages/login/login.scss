@@ -1,0 +1,328 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@400;600;700&display=swap');
+
+$primary:      #2563eb;
+$primary-dark: #1d4ed8;
+$bg:           #f5f7fb;
+$text-dark:    #111827;
+$text-light:   #9ca3af;
+$border:       #e5e7eb;
+$red:          #dc2626;
+$red-bg:       #fef2f2;
+$font-main:    'DM Sans', sans-serif;
+$font-display: 'Sora', sans-serif;
+
+:host {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+// ── LAYOUT ──────────────────────────────────
+.login-page {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  font-family: $font-main;
+}
+
+// ── PANNEAU GAUCHE ──────────────────────────
+.login-left {
+  width: 45%;
+  min-height: 100vh;
+  background: linear-gradient(145deg, #1e40af 0%, #2563eb 55%, #3b82f6 100%);
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) { display: none; }
+}
+
+.brand {
+  display: flex; align-items: center; gap: 12px;
+  position: relative; z-index: 2;
+}
+
+.brand-icon {
+  width: 46px; height: 46px;
+  background: rgba(255,255,255,.15);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.brand-name {
+  font-family: $font-display;
+  font-size: 1.2rem; font-weight: 700;
+  color: #fff; letter-spacing: -.3px;
+  text-decoration: none;
+}
+
+.left-content {
+  margin: auto 0;
+  position: relative; z-index: 2;
+
+  h1 {
+    font-family: $font-display;
+    font-size: 1.9rem; font-weight: 700;
+    color: #fff; line-height: 1.25; margin-bottom: 16px;
+  }
+
+  p {
+    font-size: .93rem; color: rgba(255,255,255,.75);
+    line-height: 1.65; margin-bottom: 32px;
+  }
+}
+
+.features { display: flex; flex-direction: column; gap: 14px; }
+
+.feature-item {
+  display: flex; align-items: center; gap: 12px;
+  color: rgba(255,255,255,.9); font-size: .88rem;
+}
+
+.feature-dot {
+  width: 8px; height: 8px;
+  background: rgba(255,255,255,.55);
+  border-radius: 50%; flex-shrink: 0;
+}
+
+.left-decoration { position: absolute; inset: 0; pointer-events: none; }
+
+.circle {
+  position: absolute; border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,.1);
+  &.c1 { width: 320px; height: 320px; bottom: -90px; right: -90px; }
+  &.c2 { width: 210px; height: 210px; bottom: 70px; right: 50px; }
+  &.c3 { width: 110px; height: 110px; top: 80px; right: -30px; background: rgba(255,255,255,.05); }
+}
+
+// ── PANNEAU DROIT ───────────────────────────
+.login-right {
+  flex: 1;
+  min-height: 100vh;
+  background: $bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.login-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid $border;
+  padding: 40px 36px;
+  width: 100%; max-width: 440px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.07);
+  animation: fadeUp .4s ease both;
+
+  @media (max-width: 480px) { padding: 28px 20px; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-header {
+  margin-bottom: 28px;
+  h2 { font-family: $font-display; font-size: 1.5rem; font-weight: 700; color: $text-dark; margin-bottom: 4px; }
+  p  { font-size: .875rem; color: $text-light; }
+}
+
+.alert-error {
+  display: flex; align-items: center; gap: 8px;
+  background: $red-bg; border: 1px solid #fecaca;
+  border-radius: 8px; padding: 10px 14px;
+  font-size: .83rem; color: $red;
+  margin-bottom: 20px;
+}
+
+// ── FORMULAIRE ──────────────────────────────
+.form-group {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-bottom: 18px;
+  label { font-size: .82rem; font-weight: 600; color: $text-dark; }
+}
+
+.label-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.forgot-link {
+  background: none; border: none;
+  font-family: $font-main; font-size: .78rem; color: $primary;
+  cursor: pointer; padding: 0;
+  transition: opacity .2s;
+  &:hover { opacity: .7; }
+}
+
+// Champ email simple (sans icône pour éviter conflit navigateur)
+.input-simple {
+  width: 100%; height: 42px;
+  border: 1px solid $border; border-radius: 8px;
+  background: $bg; font-family: $font-main;
+  font-size: .875rem; color: $text-dark;
+  padding: 0 14px; outline: none;
+  transition: border-color .2s, box-shadow .2s;
+
+  // Masque l'icône native du navigateur (gestionnaire mdp)
+  &::-webkit-credentials-auto-fill-button { display: none !important; visibility: hidden; }
+
+  &::placeholder { color: $text-light; }
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, .12);
+    background: #fff;
+  }
+}
+
+// Champ mot de passe avec bouton œil
+.input-password-wrapper {
+  position: relative; display: flex; align-items: center;
+
+  input {
+    width: 100%; height: 42px;
+    border: 1px solid $border; border-radius: 8px;
+    background: $bg; font-family: $font-main;
+    font-size: .875rem; color: $text-dark;
+    padding: 0 44px 0 14px; outline: none;
+    transition: border-color .2s, box-shadow .2s;
+
+    // Masque l'icône native du gestionnaire de mots de passe
+    &::-webkit-credentials-auto-fill-button { display: none !important; visibility: hidden; }
+    &::-ms-reveal, &::-ms-clear { display: none; }
+
+    &::placeholder { color: $text-light; }
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, .12);
+      background: #fff;
+    }
+  }
+}
+
+.toggle-password {
+  position: absolute; right: 12px;
+  background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; padding: 0;
+  transition: opacity .2s;
+  &:hover { opacity: .65; }
+}
+
+// ── BOUTON ──────────────────────────────────
+.btn-connexion {
+  width: 100%; height: 44px;
+  background: $primary; color: #fff;
+  border: none; border-radius: 8px;
+  font-family: $font-display; font-size: .95rem; font-weight: 600;
+  cursor: pointer; margin-top: 8px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s, transform .1s, box-shadow .2s;
+
+  &:hover:not(:disabled) {
+    background: $primary-dark;
+    box-shadow: 0 4px 16px rgba($primary, .35);
+    transform: translateY(-1px);
+  }
+  &:active:not(:disabled) { transform: translateY(0); }
+  &:disabled { opacity: .7; cursor: not-allowed; }
+}
+
+.spinner {
+  width: 20px; height: 20px;
+  border: 2.5px solid rgba(255,255,255,.35);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── SSO ─────────────────────────────────────
+.sso-separator {
+  display: flex; align-items: center; gap: 10px;
+  margin: 18px 0 12px;
+  &::before, &::after {
+    content: ''; flex: 1;
+    height: 1px; background: $border;
+  }
+  span { font-size: .78rem; color: $text-light; white-space: nowrap; }
+}
+
+.btn-sso {
+  width: 100%; height: 42px;
+  background: #fff; color: $text-dark;
+  border: 1.5px solid $border; border-radius: 8px;
+  font-family: $font-main; font-size: .875rem; font-weight: 500;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: border-color .2s, background .2s, box-shadow .2s;
+  &:hover {
+    border-color: $primary;
+    background: #f0f5ff;
+    box-shadow: 0 2px 8px rgba($primary, .12);
+  }
+}
+
+.sso-form {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f8faff;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  animation: fadeUp .25s ease both;
+}
+
+.sso-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .76rem; color: #1d4ed8;
+  background: #dbeafe; border-radius: 20px;
+  padding: 3px 10px; margin-bottom: 12px;
+}
+
+.sso-error { margin-bottom: 12px !important; }
+
+.btn-sso-submit { margin-top: 4px !important; }
+
+// ── COMPTES DE TEST ─────────────────────────
+.hints {
+  margin-top: 24px;
+  background: #f8faff;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hints-title {
+  font-size: .75rem;
+  font-weight: 700;
+  color: $text-light;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  margin-bottom: 2px;
+}
+
+.hint-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .8rem;
+  color: #374151;
+}
+
+.hint-role {
+  font-size: .7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+
+  &.admin   { background: #dbeafe; color: #1d4ed8; }
+  &.manager { background: #dcfce7; color: #15803d; }
+  &.resp    { background: #fef9c3; color: #854d0e; }
+}

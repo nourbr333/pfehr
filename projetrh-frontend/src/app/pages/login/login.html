@@ -1,0 +1,141 @@
+<div class="login-page">
+
+  <div class="login-left">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="28" height="28" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <a class="brand-name" routerLink="/">HRScope</a>
+    </div>
+    <div class="left-content">
+      <h1>Gérez votre capital humain avec intelligence.</h1>
+      <p>Tableau de bord RH complet — KPI en temps réel, analyse des performances, gestion des absences et bien plus.</p>
+      <div class="features">
+        <div class="feature-item"><div class="feature-dot"></div><span>Analyse prédictive des données RH</span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span>Tableaux de bord Power BI intégrés</span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span>Gestion des rôles et accès sécurisés</span></div>
+      </div>
+    </div>
+    <div class="left-decoration">
+      <div class="circle c1"></div>
+      <div class="circle c2"></div>
+      <div class="circle c3"></div>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-card">
+      <div class="card-header">
+        <h2>Connexion</h2>
+        <p>Accédez à votre espace RH</p>
+      </div>
+
+      <div class="alert-error" *ngIf="erreur">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ erreur }}
+      </div>
+
+      <div class="form-group">
+        <label for="email">Adresse email</label>
+        <input id="email" class="input-simple" type="email" placeholder="ex: utilisateur@rh.com"
+          [(ngModel)]="email" name="email" autocomplete="username"/>
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label for="motDePasse">Mot de passe</label>
+          <button type="button" class="forgot-link" (click)="onMotDePasseOublie()">Mot de passe oublié ?</button>
+        </div>
+        <div class="input-password-wrapper">
+          <input id="motDePasse" [type]="showPassword ? 'text' : 'password'" placeholder="••••••••"
+            [(ngModel)]="motDePasse" name="motDePasse" autocomplete="current-password"/>
+          <button type="button" class="toggle-password" (click)="togglePassword()" tabindex="-1">
+            <svg *ngIf="!showPassword" width="17" height="17" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <svg *ngIf="showPassword" width="17" height="17" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+              <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <button class="btn-connexion" (click)="onConnexion()" [disabled]="chargement">
+        <span *ngIf="!chargement">Se connecter</span>
+        <span *ngIf="chargement" class="spinner"></span>
+      </button>
+
+      <!-- ── SSO Active Directory ──────────────────────────────── -->
+      <div class="sso-separator">
+        <span>ou</span>
+      </div>
+
+      <button class="btn-sso" type="button" (click)="toggleSsoForm()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="2" width="20" height="20" rx="3"/>
+          <path d="M2 7h20M7 2v20"/>
+        </svg>
+        <span>{{ showSsoForm ? 'Masquer' : 'Se connecter avec un compte Windows (SSO)' }}</span>
+      </button>
+
+      <div class="sso-form" *ngIf="showSsoForm">
+        <div class="sso-badge">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Domaine : <strong>EMEAAD</strong>
+        </div>
+
+        <div class="alert-error sso-error" *ngIf="ssoErreur">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          {{ ssoErreur }}
+        </div>
+
+        <div class="form-group">
+          <label for="ssoUsername">Identifiant Windows</label>
+          <input id="ssoUsername" class="input-simple" type="text" placeholder="ex: nbenromdhane"
+            [(ngModel)]="ssoUsername" name="ssoUsername" autocomplete="username"/>
+        </div>
+
+        <div class="form-group">
+          <label for="ssoPassword">Mot de passe Windows</label>
+          <div class="input-password-wrapper">
+            <input id="ssoPassword" [type]="showSsoPassword ? 'text' : 'password'" placeholder="••••••••"
+              [(ngModel)]="ssoPassword" name="ssoPassword" autocomplete="current-password"/>
+            <button type="button" class="toggle-password" (click)="toggleSsoPassword()" tabindex="-1">
+              <svg *ngIf="!showSsoPassword" width="17" height="17" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showSsoPassword" width="17" height="17" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-connexion btn-sso-submit" (click)="onSsoConnexion()" [disabled]="ssoChargement">
+          <span *ngIf="!ssoChargement">Authentification SSO</span>
+          <span *ngIf="ssoChargement" class="spinner"></span>
+        </button>
+      </div>
+      <!-- ── fin SSO ────────────────────────────────────────────── -->
+
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,192 @@
+﻿<!-- Critical balance alert -->
+<section class="alerts-section" *ngIf="employeesWithCriticalBalance.length > 0">
+  <div class="alert-banner critical">
+    <strong>⚠ {{ employeesWithCriticalBalance.length }} collaborateur(s)</strong> avec solde congés payés critique (&lt; 5 jours restants)
+  </div>
+</section>
+
+<!-- Toolbar -->
+<div class="balance-toolbar">
+  <div class="balance-filters">
+    <select [(ngModel)]="filterDepartment" (ngModelChange)="onFilterChange()">
+      <option value="">Tous les départements</option>
+      <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+    </select>
+  </div>
+  <div class="toolbar-right">
+    <span class="result-count">{{ filteredSortedBalances.length }} résultat(s)</span>
+    <button class="btn-export-excel" type="button" (click)="exportExcel()" title="Exporter en Excel">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/>
+        <polyline points="9 15 12 18 15 15"/>
+      </svg>
+      Exporter en Excel
+    </button>
+  </div>
+</div>
+
+<!-- Table -->
+<section class="card-section">
+  <div class="table-wrap">
+    <table class="balance-table">
+      <thead>
+        <tr>
+          <th class="sortable" (click)="setSort('name')">
+            Employé <span class="sort-icon">{{ getSortIcon('name') }}</span>
+          </th>
+          <th class="sortable" (click)="setSort('department')">
+            Département <span class="sort-icon">{{ getSortIcon('department') }}</span>
+          </th>
+          <th class="sortable num" (click)="setSort('entitled')">
+            Acquis ({{ congePayeEntitled }}j) <span class="sort-icon">{{ getSortIcon('entitled') }}</span>
+          </th>
+          <th class="sortable num" (click)="setSort('used')">
+            Pris <span class="sort-icon">{{ getSortIcon('used') }}</span>
+          </th>
+          <th class="sortable num" (click)="setSort('pending')">
+            En attente <span class="sort-icon">{{ getSortIcon('pending') }}</span>
+          </th>
+          <th class="sortable num" (click)="setSort('remaining')">
+            CP restants <span class="sort-icon">{{ getSortIcon('remaining') }}</span>
+          </th>
+          <th>Progression</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let balance of pagedBalances" [ngClass]="getBalanceStatusClass(balance)">
+          <td class="td-name">{{ getEmployeeName(balance.employeeId) }}</td>
+          <td>{{ getEmployeeDepartment(balance.employeeId) }}</td>
+          <td class="num">{{ balance.entitled }}</td>
+          <td class="num">{{ balance.used }}</td>
+          <td class="num">{{ balance.pending }}</td>
+          <td class="num">
+            <strong
+              [class.text-critical]="balance.remaining < 5"
+              [class.text-warning]="balance.remaining >= 5 && balance.remaining < 10">
+              {{ balance.remaining }}
+            </strong>
+          </td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-fill"
+                [style.width.%]="getProgressPercent(balance)"
+                [class.fill-ok]="getProgressPercent(balance) < 60"
+                [class.fill-warning]="getProgressPercent(balance) >= 60 && getProgressPercent(balance) < 80"
+                [class.fill-critical]="getProgressPercent(balance) >= 80">
+              </div>
+            </div>
+            <span class="progress-label">{{ getProgressPercent(balance) | number:'1.0-0' }}%</span>
+          </td>
+          <td class="td-action">
+            <button class="btn-adjust" title="Ajuster le solde" (click)="openAdjust(balance)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="pagedBalances.length === 0">
+          <td colspan="8" class="empty-state">
+            <div class="empty-inner">
+              <svg width="32" height="32" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <p>Aucun solde disponible pour ce filtre.</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button class="page-btn" title="Première page" (click)="goToPage(1)" [disabled]="currentPage === 1">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+    </button>
+    <button class="page-btn" title="Page précédente" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button class="page-btn"
+      *ngFor="let p of pageNumbers"
+      (click)="goToPage(p)"
+      [class.active]="p === currentPage">
+      {{ p }}
+    </button>
+    <button class="page-btn" title="Page suivante" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <button class="page-btn" title="Dernière page" (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+    </button>
+    <span class="page-info">{{ (currentPage - 1) * 8 + 1 }}–{{ getPageEnd() }} / {{ filteredSortedBalances.length }}</span>
+  </div>
+</section>
+
+<!-- Adjust Modal -->
+<div class="modal-overlay" *ngIf="adjustModalOpen" (click)="closeAdjustModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Ajustement de solde</h3>
+      <button class="modal-close" (click)="closeAdjustModal()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" *ngIf="adjustingBalance">
+      <div class="modal-employee-info">
+        <div class="modal-emp-name">{{ getEmployeeName(adjustingBalance.employeeId) }}</div>
+        <div class="modal-emp-meta">
+          {{ getEmployeeDepartment(adjustingBalance.employeeId) }} ·
+          <span class="type-badge small"
+            [style.background]="typeColors[adjustingBalance.type]?.bg"
+            [style.color]="typeColors[adjustingBalance.type]?.text">
+            {{ typeColors[adjustingBalance.type]?.label }}
+          </span>
+          · Année {{ adjustingBalance.year }}
+        </div>
+      </div>
+
+      <div class="modal-balance-summary">
+        <div class="balance-stat">
+          <span class="bs-label">Acquis</span>
+          <span class="bs-val">{{ adjustingBalance.entitled }} j</span>
+        </div>
+        <div class="balance-stat">
+          <span class="bs-label">Pris</span>
+          <span class="bs-val">{{ adjustingBalance.used }} j</span>
+        </div>
+        <div class="balance-stat">
+          <span class="bs-label">En attente</span>
+          <span class="bs-val">{{ adjustingBalance.pending }} j</span>
+        </div>
+        <div class="balance-stat highlight">
+          <span class="bs-label">Restant</span>
+          <span class="bs-val">{{ adjustingBalance.remaining }} j</span>
+        </div>
+      </div>
+
+      <div class="modal-fields">
+        <label class="modal-label">
+          Ajustement (jours, positif = ajouter, négatif = retirer)
+          <input type="number" [(ngModel)]="adjustmentValue" step="0.5" class="modal-input" />
+          <span class="hint" *ngIf="adjustmentValue !== 0">
+            Nouveau solde estimé : <strong>{{ adjustingBalance.remaining + adjustmentValue }} j</strong>
+          </span>
+        </label>
+        <label class="modal-label">
+          Motif <span class="required">*</span>
+          <input type="text" [(ngModel)]="adjustmentReason" placeholder="Raison de l'ajustement (min 5 caractères)..." class="modal-input" />
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeAdjustModal()">Annuler</button>
+      <button class="btn-primary"
+        (click)="confirmAdjust()"
+        [disabled]="adjustmentReason.length < 5 || adjustmentValue === 0">
+        Confirmer l'ajustement
+      </button>
+    </div>
+  </div>
+</div>
+

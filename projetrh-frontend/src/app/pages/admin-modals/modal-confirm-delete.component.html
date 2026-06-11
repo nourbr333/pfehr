@@ -1,0 +1,36 @@
+<div class="modal-backdrop" (click)="cancel.emit()">
+  <div class="modal-card sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">
+        Supprimer {{ fullNameOf() }}
+      </div>
+      <button type="button" class="modal-close" (click)="cancel.emit()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="danger-text">
+        Cette action est irréversible. Le compte sera définitivement supprimé.
+      </div>
+
+      <label class="confirm-label">
+        Tapez {{ user.email }} pour confirmer
+        <input type="text" name="confirmEmail" [(ngModel)]="confirmEmail" />
+      </label>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" (click)="cancel.emit()">
+        Annuler
+      </button>
+      <button
+        type="button"
+        class="btn-danger"
+        [disabled]="!canConfirm"
+        (click)="onConfirm()"
+      >
+        Supprimer définitivement
+      </button>
+    </div>
+  </div>
+</div>
+

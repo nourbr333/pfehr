@@ -1,0 +1,95 @@
+<section class="card-section">
+  <div class="card-head">
+    <h3>Politique de congés payés</h3>
+    <span class="policy-subtitle">Seul type générant un solde — 18 jours/an (droit tunisien)</span>
+  </div>
+
+  <!-- Congé payé — editable -->
+  <div class="policies-list" *ngIf="congePayePolicy as policy">
+    <div class="policy-card" [class.editing]="editingId === policy.id">
+      <div class="policy-header">
+        <div class="policy-color" [style.background]="policy.color"></div>
+        <div class="policy-title">
+          <strong>{{ policy.label }}</strong>
+        </div>
+        <span class="policy-status" [class.active]="policy.isActive" [class.inactive]="!policy.isActive">
+          {{ policy.isActive ? 'Actif' : 'Inactif' }}
+        </span>
+        <button class="btn-edit" *ngIf="editingId !== policy.id" (click)="startEdit(policy)">Modifier</button>
+      </div>
+
+      <!-- Read-only view -->
+      <div class="policy-details" *ngIf="editingId !== policy.id">
+        <div class="detail-item">
+          <span class="detail-label">Jours acquis/an</span>
+          <span class="detail-value">{{ policy.maxDaysPerYear }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Justificatif</span>
+          <span class="detail-value">{{ policy.requiresDocument ? 'Oui' : 'Non' }}</span>
+        </div>
+      </div>
+
+      <!-- Editable form -->
+      <div class="policy-edit-form" *ngIf="editingId === policy.id">
+        <div class="edit-row">
+          <label>
+            Jours acquis/an
+            <input type="number" min="1" max="365" [(ngModel)]="editForm.maxDaysPerYear" />
+          </label>
+        </div>
+        <div class="edit-row">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="editForm.requiresDocument" />
+            Justificatif requis
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="editForm.isActive" />
+            Actif
+          </label>
+        </div>
+        <div class="edit-actions">
+          <span class="modified-badge" *ngIf="isModified(policy)">Modifié, non sauvegardé</span>
+          <button class="btn-primary btn-sm" (click)="save()" [disabled]="!isValid() || saving">
+            {{ saving ? 'Sauvegarde...' : 'Sauvegarder' }}
+          </button>
+          <button class="btn-cancel-sm" (click)="cancelEdit()">Annuler</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!congePayePolicy">
+    Politique congé payé non configurée.
+  </div>
+</section>
+
+<!-- Motifs d'absence — read-only, pas de solde -->
+<section class="card-section motifs-section" *ngIf="motifPolicies.length > 0">
+  <div class="card-head">
+    <h3>Motifs d'absence (sans solde)</h3>
+    <span class="policy-subtitle">Ces types sont enregistrés sur les demandes mais ne génèrent pas de solde déductible.</span>
+  </div>
+  <div class="policies-list">
+    <div class="policy-card motif-card" *ngFor="let policy of motifPolicies">
+      <div class="policy-header">
+        <div class="policy-color" [style.background]="policy.color"></div>
+        <div class="policy-title">
+          <strong>{{ policy.label }}</strong>
+          <span class="policy-type">{{ policy.type }}</span>
+        </div>
+        <span class="policy-badge-motif">Motif uniquement</span>
+      </div>
+      <div class="policy-details">
+        <div class="detail-item">
+          <span class="detail-label">Justificatif</span>
+          <span class="detail-value">{{ policy.requiresDocument ? 'Oui' : 'Non' }}</span>
+        </div>
+        <div class="detail-item" *ngIf="policy.type === 'evenement-familial'">
+          <span class="detail-label">Jours fixes</span>
+          <span class="detail-value">Mariage 4j · Naissance 2j · Décès 3j</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
