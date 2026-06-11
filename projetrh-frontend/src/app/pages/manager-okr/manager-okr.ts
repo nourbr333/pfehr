@@ -1,5 +1,5 @@
 ﻿import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
@@ -9,7 +9,6 @@ import { EmployeeService, Employee } from '../../services/employee.service';
 import {
   CreateObjectivePayload,
   ManagerObjective,
-  ManagerObjectiveMilestone,
   ManagerOkrService,
   ObjectiveActionType,
   ObjectiveRiskStatus,
@@ -20,8 +19,47 @@ import {
 import { ManagerCrossAnalysisService } from '../../services/manager-cross-analysis.service';
 import { ContinuityPlanResult, ManagerAdvancedAbsencesService, ObjectiveAbsenceImpactItem } from '../../services/manager-advanced-absences.service';
 import { NotificationsPanelComponent } from '../../components/notifications-panel/notifications-panel';
+import { Chart, ChartConfiguration, Plugin, registerables } from 'chart.js';
+import { MatrixController, MatrixElement } from 'chartjs-chart-matrix';
+import { isActiveOkrForAnalysis } from '../../utils/okr-active';
+
+Chart.register(...registerables, MatrixController, MatrixElement);
 
 type ObjectiveScope = 'Équipe' | 'Individuel';
+
+interface HeatmapMatrixPoint {
+  x: string;
+  y: string;
+  v: number;
+}
+
+const HEATMAP_DELAY_LABELS = ['Élevé', 'Moyen', 'Faible'] as const;
+const HEATMAP_PROXIMITY_LABELS = ['<= 14 jours', '15-30 jours', '> 30 jours'] as const;
+
+const heatmapCellLabelsPlugin: Plugin<'matrix'> = {
+  id: 'okrHeatmapCellLabels',
+  afterDatasetsDraw(chart) {
+    const dataset = chart.data.datasets[0];
+    if (!dataset) return;
+    const meta = chart.getDatasetMeta(0);
+    const { ctx } = chart;
+    meta.data.forEach((element, index) => {
+      const raw = dataset.data[index] as HeatmapMatrixPoint | undefined;
+      if (!raw) return;
+      const center = (element as MatrixElement).getCenterPoint();
+      if (center.x == null || center.y == null) return;
+      const { x, y } = center;
+      const count = raw.v;
+      ctx.save();
+      ctx.fillStyle = count >= 2 ? '#991b1b' : count === 1 ? '#92400e' : '#94a3b8';
+      ctx.font = count > 0 ? '700 15px "DM Sans", sans-serif' : '500 13px "DM Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(count > 0 ? String(count) : '—', x, y);
+      ctx.restore();
+    });
+  }
+};
 
 interface ObjectiveItem {
   id: number;
@@ -44,26 +82,6 @@ interface ObjectiveItem {
   note?: string;
 }
 
-interface MilestoneItem {
-  label: string;
-  owner: string;
-  plannedDate: string;
-  actualDate?: string;
-}
-
-interface HeatCell {
-  proximity: string;
-  delay: string;
-  count: number;
-}
-
-interface RecommendedAction {
-  type: 'Replanifier' | 'Escalader' | 'Renforcer capacité';
-  objectiveId: number;
-  objectiveTitle: string;
-  reason: string;
-}
-
 @Component({
   selector: 'app-manager-okr',
   standalone: true,
@@ -71,8 +89,11 @@ interface RecommendedAction {
   templateUrl: './manager-okr.html',
   styleUrl: './manager-okr.scss'
 })
-export class ManagerOkrComponent implements OnInit, OnDestroy {
+export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('riskHeatmapCanvas') riskHeatmapCanvas?: ElementRef<HTMLCanvasElement>;
+
   utilisateur: Utilisateur | null;
+  private riskHeatmapChart: Chart<'matrix'> | null = null;
   isLoading = false;
   loadError = '';
   managerEmployeeId: number | null = null;
@@ -83,8 +104,6 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
 
   quickProgress = 0;
   quickComment = '';
-  quickRiskReason = '';
-  quickRiskStatus: ObjectiveRiskStatus = 'AT_RISK';
   selectedObjectiveId: number | null = null;
 
   newObjectiveTitle = '';
@@ -107,10 +126,6 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
 
   // Create form extras
   newObjectiveDescription = '';
-  newObjectiveInitialRisk: ObjectiveRiskStatus = 'ON_TRACK';
-
-  // Risk panel (own objective selector)
-  riskObjectiveId: number | null = null;
 
   // Plan panel (own objective selector + extra fields)
   planObjectiveId: number | null = null;
@@ -145,10 +160,6 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
   progressErrorMessage = '';
   progressSuccessMessage = '';
 
-  // Risk status inline feedback
-  riskSuccessMessage = '';
-  riskErrorMessage = '';
-
   // Create form feedback
   isCreating = false;
   createSuccess = '';
@@ -164,8 +175,6 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
   editHorizon = '';
   editDueDate = '';
   editProgress = 0;
-  editRisk: ObjectiveRiskStatus = 'ON_TRACK';
-  editRiskReason = '';
   editWeighting = 1;
   editLoading = false;
   editError = '';
@@ -180,11 +189,13 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
   pendingRows: OkrImportRow[] | null = null;
   importPage = 1;
   readonly importPageSize = 7;
+
+  portfolioPage = 1;
+  readonly portfolioPageSize = 10;
   editingRowIdx: number | null = null;
   editingRow: OkrImportRow | null = null;
 
   objectives: ObjectiveItem[] = [];
-  milestones: MilestoneItem[] = [];
   crossImpacts: ObjectiveAbsenceImpactItem[] = [];
   continuityPlans: ContinuityPlanResult[] = [];
   highlightedObjectiveId: number | null = null;
@@ -222,6 +233,9 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
           setTimeout(() => this.scrollToAbsencesCapacitePanel(), 150);
         }
       }
+      if (this.activeTab === 'analyse') {
+        setTimeout(() => this.renderRiskHeatmap(), 0);
+      }
     });
     const mid = this.managerEmployeeId;
     this.employeeService.getAllEmployees().subscribe({
@@ -241,19 +255,67 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
     return this.objectives
       .filter((objective) => this.selectedScope === 'all' || objective.scope === this.selectedScope)
       .filter((objective) => this.selectedRisk === 'all' || objective.risk === this.selectedRisk)
-      .filter((objective) => {
-        if (!term) return true;
-        return `${objective.id} ${objective.titre} ${objective.proprietaire}`.toLowerCase().includes(term);
-      });
+      .filter((objective) => this.matchesPortfolioSearch(objective, term));
   }
 
+  /**
+   * Tri portefeuille : en cours (haut) → terminés (100 %) → échus (bas).
+   * Dans chaque groupe : échéance la plus proche en premier ; échus = plus anciens en bas.
+   */
   get sortedObjectives(): ObjectiveItem[] {
-    const riskRank: Record<string, number> = { off_track: 0, at_risk: 1, on_track: 2 };
     return [...this.filteredObjectives].sort((a, b) => {
-      const riskDiff = riskRank[a.risk] - riskRank[b.risk];
-      if (riskDiff !== 0) return riskDiff;
-      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      const groupDiff = this.portfolioSortGroup(a) - this.portfolioSortGroup(b);
+      if (groupDiff !== 0) return groupDiff;
+
+      const dueA = new Date(a.dueDate).getTime();
+      const dueB = new Date(b.dueDate).getTime();
+      const group = this.portfolioSortGroup(a);
+
+      if (group === 2) {
+        // Échus : les plus anciens tout en bas du tableau
+        return dueB - dueA;
+      }
+      // En cours & terminés : échéance la plus proche en haut du groupe
+      return dueA - dueB;
     });
+  }
+
+  /** 0 = en cours, 1 = terminé (100 %), 2 = échu */
+  private portfolioSortGroup(objective: ObjectiveItem): number {
+    if (objective.progress >= 100) return 1;
+    const due = new Date(objective.dueDate).getTime();
+    if (due < this.todayStart().getTime()) return 2;
+    return 0;
+  }
+
+  get portfolioTotalPages(): number {
+    return Math.max(1, Math.ceil(this.sortedObjectives.length / this.portfolioPageSize));
+  }
+
+  get pagedPortfolioObjectives(): ObjectiveItem[] {
+    const safePage = Math.min(this.portfolioPage, this.portfolioTotalPages);
+    const start = (safePage - 1) * this.portfolioPageSize;
+    return this.sortedObjectives.slice(start, start + this.portfolioPageSize);
+  }
+
+  onPortfolioFilterChange(): void {
+    this.portfolioPage = 1;
+  }
+
+  portfolioFirstPage(): void {
+    this.portfolioPage = 1;
+  }
+
+  portfolioPreviousPage(): void {
+    this.portfolioPage = Math.max(1, this.portfolioPage - 1);
+  }
+
+  portfolioNextPage(): void {
+    this.portfolioPage = Math.min(this.portfolioTotalPages, this.portfolioPage + 1);
+  }
+
+  portfolioLastPage(): void {
+    this.portfolioPage = this.portfolioTotalPages;
   }
 
   get onTrackPercent(): number {
@@ -280,20 +342,11 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
     return this.objectives.filter((objective) => new Date(objective.dueDate) < today && objective.progress < 100).length;
   }
 
-  get heatmapCells(): HeatCell[] {
-    const proximities = ['<= 14 jours', '15-30 jours', '> 30 jours'];
-    const delays = ['Élevé', 'Moyen', 'Faible'];
-    const cells: HeatCell[] = [];
-    for (const proximity of proximities) {
-      for (const delay of delays) {
-        const count = this.objectives.filter((objective) => (
-          this.proximityBucket(objective.dueDate) === proximity &&
-          this.delayBucket(objective.retardDays) === delay
-        )).length;
-        cells.push({ proximity, delay, count });
-      }
-    }
-    return cells;
+  /** Objectifs en cours uniquement — exclus des analyses une fois l'échéance dépassée. */
+  get objectivesForAnalysis(): ObjectiveItem[] {
+    return this.objectives.filter((objective) =>
+      isActiveOkrForAnalysis(objective.dueDate, objective.progress)
+    );
   }
 
   get filteredTeamMembers(): Employee[] {
@@ -314,58 +367,6 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
     return this.objectives.find((o) => o.id === this.selectedObjectiveId) ?? null;
   }
 
-  get milestoneTimeline(): Array<MilestoneItem & { state: 'passé' | 'a_venir'; gapLabel: string }> {
-    const today = this.todayStart();
-    return [...this.milestones]
-      .sort((a, b) => new Date(a.plannedDate).getTime() - new Date(b.plannedDate).getTime())
-      .map((milestone) => {
-        const planned = new Date(milestone.plannedDate);
-        const reference = milestone.actualDate ? new Date(milestone.actualDate) : today;
-        const diffDays = Math.round((reference.getTime() - planned.getTime()) / 86400000);
-        const gapLabel = milestone.actualDate
-          ? (diffDays > 0 ? `+${diffDays}j` : `${diffDays}j`)
-          : (diffDays > 0 ? `${diffDays}j de retard` : `${Math.abs(diffDays)}j restants`);
-        return {
-          ...milestone,
-          state: planned < today ? 'passé' : 'a_venir',
-          gapLabel
-        };
-      });
-  }
-
-  get blockingDependencies(): ObjectiveItem[] {
-    return this.objectives.filter((objective) => objective.dependencies.length > 0 && objective.risk !== 'on_track');
-  }
-
-  get recommendedActions(): RecommendedAction[] {
-    const actions: RecommendedAction[] = [];
-    for (const objective of this.objectives) {
-      if (objective.risk === 'off_track') {
-        actions.push({
-          type: 'Escalader',
-          objectiveId: objective.id,
-          objectiveTitle: objective.titre,
-          reason: 'Risque critique et date proche.'
-        });
-      } else if (objective.retardDays >= 7) {
-        actions.push({
-          type: 'Replanifier',
-          objectiveId: objective.id,
-          objectiveTitle: objective.titre,
-          reason: 'Retard cumulé supérieur à 7 jours.'
-        });
-      } else if (objective.dependencies.length > 0 && objective.risk === 'at_risk') {
-        actions.push({
-          type: 'Renforcer capacité',
-          objectiveId: objective.id,
-          objectiveTitle: objective.titre,
-          reason: 'Dépendance externe et capacité limitée.'
-        });
-      }
-    }
-    return actions;
-  }
-
   riskLabel(risk: string): string {
     if (risk === 'on_track') return 'On track';
     if (risk === 'at_risk') return 'At risk';
@@ -382,18 +383,26 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
     return objective.dependencies.length ? objective.dependencies.join(', ') : 'Aucune';
   }
 
+  private matchesPortfolioSearch(objective: ObjectiveItem, term: string): boolean {
+    if (!term) return true;
+    const haystack = [
+      objective.titre,
+      objective.code,
+      objective.proprietaire,
+      this.ownerLabel(objective),
+      ...(objective.memberNames ?? [])
+    ]
+      .join(' ')
+      .toLowerCase();
+    return haystack.includes(term);
+  }
+
   /** Returns comma-separated owner names, truncated with ellipsis if >3 members. */
   ownerLabel(objective: ObjectiveItem): string {
     const names = objective.memberNames;
     if (!names || !names.length) return objective.proprietaire;
     if (names.length <= 3) return names.join(', ');
     return names.slice(0, 3).join(', ') + '\u2026';
-  }
-
-  heatLevelClass(count: number): string {
-    if (count >= 2) return 'heat-cell high';
-    if (count === 1) return 'heat-cell medium';
-    return 'heat-cell low';
   }
 
   onCreateObjective(): void {
@@ -434,7 +443,6 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
       dueDate: this.newObjectiveDueDate || new Date().toISOString().slice(0, 10),
       progressPercent: 0,
       weighting: 1,
-      riskStatus: this.newObjectiveInitialRisk,
       dependencies: this.newObjectiveDependencies
         .split(',')
         .map((entry) => entry.trim())
@@ -484,31 +492,6 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
     });
   }
 
-  onUpdateRiskStatus(): void {
-    this.riskSuccessMessage = '';
-    this.riskErrorMessage = '';
-    if (!this.quickRiskReason.trim()) {
-      this.riskErrorMessage = 'Ajoute un motif de changement de risque.';
-      return;
-    }
-    const objectiveId = this.riskObjectiveId ?? this.selectedObjectiveId;
-    if (!objectiveId || !this.managerEmployeeId) return;
-    this.managerOkrService.updateObjectiveProgress(this.managerEmployeeId, objectiveId, {
-      authorEmployeeId: this.managerEmployeeId,
-      riskStatus: this.quickRiskStatus,
-      riskReason: this.quickRiskReason
-    }).subscribe({
-      next: () => {
-        this.quickRiskReason = '';
-        this.loadDashboard();
-        this.showToast('Statut de risque mis à jour.');
-      },
-      error: (err: any) => {
-        this.showToast('Erreur !', 'error');
-      }
-    });
-  }
-
   onCreateActionPlan(): void {
     const objectiveId = this.planObjectiveId ?? this.selectedObjectiveId;
     this.planSuccessMessage = '';
@@ -536,16 +519,6 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
     });
   }
 
-  resetPortfolioFilters(): void {
-    this.searchTerm = '';
-    this.selectedScope = 'all';
-    this.selectedRisk = 'all';
-  }
-
-  hasAbsenceImpact(objectiveId: number): boolean {
-    return this.crossImpacts.some(i => i.objectiveId === objectiveId);
-  }
-
   fmtDate(date: string | null | undefined): string {
     if (!date) return '';
     const [y, m, d] = date.slice(0, 10).split('-');
@@ -555,6 +528,9 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
 
   setTab(tab: string): void {
     this.activeTab = tab;
+    if (tab === 'analyse') {
+      setTimeout(() => this.renderRiskHeatmap(), 0);
+    }
   }
 
   setActionTab(tab: string): void {
@@ -568,7 +544,6 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
     this.newObjectiveDueDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
     this.newObjectiveDependencies = '';
     this.newObjectiveDescription = '';
-    this.newObjectiveInitialRisk = 'ON_TRACK';
     this.newObjectiveOwnerEmployeeId = null;
     this.ownerSearch = '';
     this.ownerDropdownOpen = false;
@@ -663,8 +638,6 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
     this.editHorizon = obj.horizon;
     this.editDueDate = obj.dueDate;
     this.editProgress = obj.progress;
-    this.editRisk = obj.risk.toUpperCase() as ObjectiveRiskStatus;
-    this.editRiskReason = obj.note ?? '';
     this.editDependencies = obj.dependencies.join(', ');
     this.editWeighting = obj.weight;
     this.editError = '';
@@ -686,8 +659,6 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
       horizonLabel: this.editHorizon,
       dueDate: this.editDueDate || undefined,
       progressPercent: this.editProgress,
-      riskStatus: this.editRisk,
-      riskReason: this.editRiskReason || undefined,
       weighting: this.editWeighting,
       dependencies: this.editDependencies.split(',').map((d) => d.trim()).filter(Boolean),
     };
@@ -751,13 +722,20 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
     this.editingRow = null;
   }
 
+  ngAfterViewInit(): void {
+    if (this.activeTab === 'analyse') {
+      setTimeout(() => this.renderRiskHeatmap(), 0);
+    }
+  }
+
   ngOnDestroy(): void {
     this.previewSub?.unsubscribe();
+    this.destroyRiskHeatmap();
   }
 
   exportPortfolioExcel(): void {
     import('xlsx/xlsx.mjs').then((XLSX) => {
-      const headers = ['Code', 'Titre', 'Propriétaire', 'Portée', 'Horizon', 'Échéance', 'Progression %', 'Statut risque', 'Dépendances', 'Dernière MAJ'];
+      const headers = ['Code', 'Titre', 'Propriétaire', 'Portée', 'Horizon', 'Échéance', 'Progression %', 'Statut risque', 'Dépendances'];
       const rows = this.sortedObjectives.map(o => [
         o.code,
         o.titre,
@@ -767,8 +745,7 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
         o.dueDate,
         o.progress,
         this.riskLabel(o.risk),
-        o.dependencies.join(', '),
-        o.lastUpdate
+        o.dependencies.join(', ')
       ]);
       const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
       const wb = XLSX.utils.book_new();
@@ -920,8 +897,9 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
   }
 
   onDownloadCsvTemplate(): void {
-    const header = 'titre,scope,owner_employee_id,horizon,due_date,progress,risk_status,weighting,dependencies';
-    const content = header + '\n';
+    const header = 'titre,scope,owner_employee_id,horizon,created_at,due_date,progress,weighting,dependencies';
+    const example = 'Réduire le délai de validation des congés,EQUIPE,12;15;18,Q2,2025-01-15,2025-06-30,45,1,';
+    const content = header + '\n' + example + '\n';
     // No BOM — UTF-8 plain
     const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -961,9 +939,10 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
   }
 
   private percentByRisk(risk: string): number {
-    if (!this.objectives.length) return 0;
-    const count = this.objectives.filter((objective) => objective.risk === risk).length;
-    return Math.round((count / this.objectives.length) * 100);
+    const active = this.objectivesForAnalysis;
+    if (!active.length) return 0;
+    const count = active.filter((objective) => objective.risk === risk).length;
+    return Math.round((count / active.length) * 100);
   }
 
   private proximityBucket(dueDate: string): string {
@@ -1004,28 +983,168 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
     this.managerOkrService.getDashboard(this.managerEmployeeId).subscribe({
       next: (dashboard) => {
         this.objectives = dashboard.objectives.map((objective) => this.mapObjective(objective));
-        this.milestones = dashboard.milestones.map((milestone) => this.mapMilestone(milestone));
         if (!this.selectedObjectiveId && this.objectives.length) {
           this.selectedObjectiveId = this.objectives[0].id;
         }
         if (this.selectedObjectiveId && !this.objectives.some((objective) => objective.id === this.selectedObjectiveId)) {
           this.selectedObjectiveId = this.objectives.length ? this.objectives[0].id : null;
         }
+        this.portfolioPage = Math.min(this.portfolioPage, this.portfolioTotalPages);
         this.isLoading = false;
+        if (this.activeTab === 'analyse') {
+          setTimeout(() => this.renderRiskHeatmap(), 0);
+        }
       },
       error: () => {
         this.objectives = [];
-        this.milestones = [];
         this.loadError = 'Impossible de charger les objectifs.';
         this.isLoading = false;
+        if (this.activeTab === 'analyse') {
+          setTimeout(() => this.renderRiskHeatmap(), 0);
+        }
       }
     });
+  }
+
+  private buildHeatmapMatrixData(): HeatmapMatrixPoint[] {
+    const points: HeatmapMatrixPoint[] = [];
+    for (const proximity of HEATMAP_PROXIMITY_LABELS) {
+      for (const delay of HEATMAP_DELAY_LABELS) {
+        const count = this.objectivesForAnalysis.filter((objective) => (
+          this.proximityBucket(objective.dueDate) === proximity &&
+          this.delayBucket(objective.retardDays) === delay
+        )).length;
+        points.push({ x: delay, y: proximity, v: count });
+      }
+    }
+    return points;
+  }
+
+  private heatmapCellColor(count: number, hover = false): string {
+    if (count >= 2) return hover ? '#fecaca' : '#fee2e2';
+    if (count === 1) return hover ? '#fde68a' : '#fef3c7';
+    return hover ? '#f1f5f9' : '#f8fafc';
+  }
+
+  private renderRiskHeatmap(): void {
+    const canvas = this.riskHeatmapCanvas?.nativeElement;
+    if (!canvas || this.activeTab !== 'analyse') return;
+
+    const matrixData = this.buildHeatmapMatrixData();
+
+    if (this.riskHeatmapChart) {
+      const dataset = this.riskHeatmapChart.data.datasets[0];
+      dataset.data = matrixData;
+      dataset.backgroundColor = matrixData.map((point) => this.heatmapCellColor(point.v));
+      dataset.hoverBackgroundColor = matrixData.map((point) => this.heatmapCellColor(point.v, true));
+      this.riskHeatmapChart.update();
+      return;
+    }
+
+    const config: ChartConfiguration<'matrix'> = {
+      type: 'matrix',
+      data: {
+        datasets: [{
+          label: 'Objectifs',
+          data: matrixData,
+          backgroundColor: matrixData.map((point) => this.heatmapCellColor(point.v)),
+          hoverBackgroundColor: matrixData.map((point) => this.heatmapCellColor(point.v, true)),
+          borderColor: '#e2e8f0',
+          borderWidth: 1,
+          borderRadius: 10,
+          hoverBorderColor: '#cbd5e1',
+          width: ({ chart }) => {
+            const area = chart.chartArea;
+            if (!area) return 20;
+            return area.width / HEATMAP_DELAY_LABELS.length - 6;
+          },
+          height: ({ chart }) => {
+            const area = chart.chartArea;
+            if (!area) return 20;
+            return area.height / HEATMAP_PROXIMITY_LABELS.length - 6;
+          }
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1e293b',
+            titleFont: { size: 12, weight: 'bold' },
+            bodyFont: { size: 12 },
+            padding: 10,
+            cornerRadius: 8,
+            callbacks: {
+              title: () => '',
+              label: (ctx) => {
+                const raw = ctx.raw as HeatmapMatrixPoint;
+                return `${raw.y} · Retard ${raw.x.toLowerCase()} : ${raw.v} objectif${raw.v > 1 ? 's' : ''}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            type: 'category',
+            labels: [...HEATMAP_DELAY_LABELS],
+            offset: true,
+            grid: { display: false },
+            border: { display: false },
+            title: {
+              display: true,
+              text: 'Niveau de retard',
+              color: '#6b7280',
+              font: { size: 10, weight: 'bold' },
+              padding: { top: 4 }
+            },
+            ticks: {
+              color: '#9ca3af',
+              font: { size: 11, weight: 'bold' }
+            }
+          },
+          y: {
+            type: 'category',
+            labels: [...HEATMAP_PROXIMITY_LABELS],
+            reverse: true,
+            offset: true,
+            grid: { display: false },
+            border: { display: false },
+            title: {
+              display: true,
+              text: 'Proximité échéance',
+              color: '#6b7280',
+              font: { size: 10, weight: 'bold' },
+              padding: { bottom: 4 }
+            },
+            ticks: {
+              color: '#4b5563',
+              font: { size: 11, weight: 'bold' },
+              padding: 6
+            }
+          }
+        }
+      },
+      plugins: [heatmapCellLabelsPlugin]
+    };
+
+    this.riskHeatmapChart = new Chart(canvas, config);
+  }
+
+  private destroyRiskHeatmap(): void {
+    this.riskHeatmapChart?.destroy();
+    this.riskHeatmapChart = null;
   }
 
   private loadCrossAnalysis(): void {
     if (!this.managerEmployeeId) return;
     this.crossAnalysisService.getCrossAnalysis(this.managerEmployeeId).subscribe({
-      next: (data) => { this.crossImpacts = data.objectiveAbsenceImpacts ?? []; },
+      next: (data) => {
+        this.crossImpacts = (data.objectiveAbsenceImpacts ?? []).filter((impact) =>
+          isActiveOkrForAnalysis(impact.dueDate, impact.progressPercent ?? 0)
+        );
+      },
       error: () => { this.crossImpacts = []; }
     });
   }
@@ -1132,16 +1251,8 @@ export class ManagerOkrComponent implements OnInit, OnDestroy {
       risk: this.mapRisk(objective.riskStatus),
       retardDays: objective.delayDays,
       dependencies: objective.dependencies ?? [],
-      lastUpdate: objective.lastUpdateAt ? objective.lastUpdateAt.slice(0, 10) : ''
-    };
-  }
-
-  private mapMilestone(milestone: ManagerObjectiveMilestone): MilestoneItem {
-    return {
-      label: milestone.label || milestone.objectiveTitle,
-      owner: milestone.ownerName,
-      plannedDate: milestone.plannedDate,
-      actualDate: milestone.actualDate ?? undefined
+      lastUpdate: objective.lastUpdateAt ? objective.lastUpdateAt.slice(0, 10) : '',
+      note: objective.riskReason ?? undefined
     };
   }
 

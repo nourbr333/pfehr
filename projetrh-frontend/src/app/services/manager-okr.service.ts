@@ -60,9 +60,6 @@ export interface CreateObjectivePayload {
   dueDate: string;
   progressPercent?: number;
   weighting?: number;
-  riskStatus?: ObjectiveRiskStatus;
-  riskReason?: string;
-  delayDays?: number;
   dependencies?: string[];
 }
 
@@ -70,8 +67,6 @@ export interface UpdateObjectiveProgressPayload {
   authorEmployeeId: number;
   progressPercent?: number;
   commentText?: string;
-  riskStatus?: ObjectiveRiskStatus;
-  riskReason?: string;
 }
 
 export interface CreateActionPlanPayload {
@@ -90,11 +85,13 @@ export interface OkrImportRow {
   title: string | null;
   objectiveScope: string | null;
   ownerEmployeeId: number | null;
+  memberEmployeeIds: number[] | null;
   ownerName: string | null;
   horizonLabel: string | null;
   dueDate: string | null;
+  /** Optionnel — date de début réelle pour imports historiques (YYYY-MM-DD). */
+  createdAt: string | null;
   progressPercent: number | null;
-  riskStatus: string | null;
   weighting: number | null;
   dependencies: string | null;
   valid: boolean;
@@ -122,9 +119,6 @@ export interface UpdateObjectivePayload {
   dueDate?: string;
   progressPercent?: number;
   weighting?: number;
-  riskStatus?: ObjectiveRiskStatus;
-  riskReason?: string;
-  delayDays?: number;
   dependencies?: string[];
 }
 

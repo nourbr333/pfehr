@@ -25,6 +25,8 @@ import com.hranalytics.hrbackend.repository.ObjectiveProgressUpdateRepository;
 import com.hranalytics.hrbackend.repository.TeamObjectiveRepository;
 import com.hranalytics.hrbackend.repository.TeamObjectiveMemberRepository;
 import com.hranalytics.hrbackend.entity.TeamObjectiveMember;
+import com.hranalytics.hrbackend.util.ObjectiveRiskCalculator;
+import com.hranalytics.hrbackend.util.ObjectiveRiskCalculator.RiskEvaluation;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -83,7 +85,7 @@ public class ManagerOkrService {
 
     /** Returns all objectives across all managers — used by the RH dashboard. */
     public ManagerOkrDashboardDTO getAllObjectives() {
-        List<TeamObjective> objectives = teamObjectiveRepository.findAll();
+        List<TeamObjective> objectives = refreshRiskStatuses(teamObjectiveRepository.findAll());
         if (objectives.isEmpty()) {
             ManagerOkrDashboardDTO empty = new ManagerOkrDashboardDTO();
             empty.setObjectives(List.of());
@@ -126,7 +128,8 @@ public class ManagerOkrService {
     }
 
     public ManagerOkrDashboardDTO getDashboard(Integer managerId) {
-        List<TeamObjective> objectives = teamObjectiveRepository.findByManagerEmployeeIdOrderByDueDateAsc(managerId);
+        List<TeamObjective> objectives =
+                refreshRiskStatuses(teamObjectiveRepository.findByManagerEmployeeIdOrderByDueDateAsc(managerId));
         if (objectives.isEmpty()) {
             ManagerOkrDashboardDTO empty = new ManagerOkrDashboardDTO();
             empty.setObjectives(List.of());
@@ -176,95 +179,65 @@ public class ManagerOkrService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le propriétaire est obligatoire.");
         }
 
-        // Determine the list of owner IDs to create objectives for
-        List<Integer> ownerIds;
-        boolean isTeamMulti = "TEAM".equalsIgnoreCase(payload.getObjectiveScope())
-                && payload.getMemberEmployeeIds() != null
-                && !payload.getMemberEmployeeIds().isEmpty();
+        List<Integer> memberIds = resolveMemberIds(payload);
 
-        if (isTeamMulti) {
-            ownerIds = new ArrayList<>(payload.getMemberEmployeeIds());
-        } else {
-            ownerIds = List.of(payload.getOwnerEmployeeId());
-        }
-
-        // Validate all owners belong to this manager's team
-        for (Integer ownerId : ownerIds) {
+        for (Integer memberId : memberIds) {
             @SuppressWarnings("null")
-            Employee owner = employeeRepository.findById(ownerId).orElse(null);
-            if (owner == null) {
+            Employee member = employeeRepository.findById(memberId).orElse(null);
+            if (member == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Employé introuvable : id=" + ownerId);
+                        "Employé introuvable : id=" + memberId);
             }
-            if (!Objects.equals(owner.getManagerId(), managerId) && !Objects.equals(owner.getEmployeeId(), managerId)) {
+            if (!Objects.equals(member.getManagerId(), managerId) && !Objects.equals(member.getEmployeeId(), managerId)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "L'employé " + ownerId + " n'appartient pas à l'équipe du manager.");
+                        "L'employé " + memberId + " n'appartient pas à l'équipe du manager.");
             }
         }
 
         LocalDateTime now = LocalDateTime.now();
-        TeamObjective firstSaved = null;
-        Employee firstOwner = null;
-        List<Long> createdIds = new ArrayList<>();
+        Integer primaryOwnerId = memberIds.get(0);
+        @SuppressWarnings("null")
+        Employee primaryOwner = employeeRepository.findById(primaryOwnerId).orElseThrow();
 
-        for (int i = 0; i < ownerIds.size(); i++) {
-            Integer ownerId = ownerIds.get(i);
-            @SuppressWarnings("null")
-            Employee owner = employeeRepository.findById(ownerId).orElseThrow();
-            TeamObjective objective = new TeamObjective();
-            // Use a unique suffix per iteration to avoid UNIQUE constraint violations on objective_code
-            objective.setObjectiveCode(clean(payload.getObjectiveCode(), generateCode(now.plusNanos(i))));
-            objective.setTitle(payload.getTitle().trim());
-            objective.setObjectiveScope(normalizeScope(payload.getObjectiveScope()));
-            objective.setOwnerEmployeeId(ownerId);
-            objective.setManagerEmployeeId(managerId);
-            objective.setHorizonLabel(clean(payload.getHorizonLabel(), "N/A"));
-            objective.setDueDate(payload.getDueDate() != null ? payload.getDueDate() : LocalDate.now().plusDays(30));
-            objective.setProgressPercent(clampPercent(payload.getProgressPercent(), BigDecimal.ZERO));
-            objective.setWeighting(clampPositive(payload.getWeighting(), new BigDecimal("1.00")));
-            objective.setRiskStatus(normalizeRisk(payload.getRiskStatus()));
-            objective.setRiskReason(clean(payload.getRiskReason(), null));
-            objective.setDelayDays(payload.getDelayDays() == null || payload.getDelayDays() < 0 ? 0 : payload.getDelayDays());
-            objective.setLastUpdateAt(now);
-            objective.setCreatedAt(now);
-            objective.setUpdatedAt(now);
-            TeamObjective saved = teamObjectiveRepository.save(objective);
-            saveDependencies(saved.getObjectiveId(), payload.getDependencies(), now);
-            createdIds.add(saved.getObjectiveId());
-            if (firstSaved == null) {
-                firstSaved = saved;
-                firstOwner = owner;
-            }
-        }
+        TeamObjective objective = new TeamObjective();
+        objective.setObjectiveCode(clean(payload.getObjectiveCode(), generateCode(now)));
+        objective.setTitle(payload.getTitle().trim());
+        objective.setObjectiveScope(normalizeScope(payload.getObjectiveScope()));
+        objective.setOwnerEmployeeId(primaryOwnerId);
+        objective.setManagerEmployeeId(managerId);
+        objective.setHorizonLabel(clean(payload.getHorizonLabel(), "N/A"));
+        objective.setDueDate(payload.getDueDate() != null ? payload.getDueDate() : LocalDate.now().plusDays(30));
+        objective.setProgressPercent(clampPercent(payload.getProgressPercent(), BigDecimal.ZERO));
+        objective.setWeighting(clampPositive(payload.getWeighting(), new BigDecimal("1.00")));
+        objective.setLastUpdateAt(now);
+        objective.setCreatedAt(now);
+        objective.setUpdatedAt(now);
+        applyComputedRisk(objective, now.toLocalDate());
+        TeamObjective saved = teamObjectiveRepository.save(objective);
+        saveDependencies(saved.getObjectiveId(), payload.getDependencies(), now);
 
-        // For TEAM scope with multiple members, save all member IDs to the join table
-        // so that the portfolio can show all owners of this logical group.
-        if (isTeamMulti) {
-            // All created objectives belong to the same team assignment — link each
-            // objective to all selected member IDs so the frontend can aggregate.
-            for (Long objId : createdIds) {
-                for (Integer memberId : ownerIds) {
-                    TeamObjectiveMember link = new TeamObjectiveMember();
-                    link.setObjectiveId(objId);
-                    link.setEmployeeId(memberId);
-                    teamObjectiveMemberRepository.save(link);
-                }
-            }
-        } else {
-            // Individual objective — single member row
-            @SuppressWarnings("null") final TeamObjective firstSavedRef = firstSaved;
+        for (Integer memberId : memberIds) {
             TeamObjectiveMember link = new TeamObjectiveMember();
-            link.setObjectiveId(firstSavedRef.getObjectiveId());
-            link.setEmployeeId(firstSavedRef.getOwnerEmployeeId());
+            link.setObjectiveId(saved.getObjectiveId());
+            link.setEmployeeId(memberId);
             teamObjectiveMemberRepository.save(link);
         }
 
-        @SuppressWarnings("null") final TeamObjective firstSavedFinal = firstSaved;
-        Map<Long, List<String>> dependencies = mapDependencies(List.of(firstSavedFinal.getObjectiveId()));
-        Map<Long, List<Integer>> membersByObjective = mapMembers(createdIds);
-        Map<Integer, Employee> ownerMap = employeeRepository.findAllById(ownerIds).stream()
+        Map<Long, List<String>> dependencies = mapDependencies(List.of(saved.getObjectiveId()));
+        Map<Long, List<Integer>> membersByObjective = mapMembers(List.of(saved.getObjectiveId()));
+        Map<Integer, Employee> ownerMap = employeeRepository.findAllById(memberIds).stream()
                 .collect(Collectors.toMap(Employee::getEmployeeId, e -> e));
-        return toObjectiveDto(firstSavedFinal, firstOwner, dependencies, membersByObjective, ownerMap);
+        return toObjectiveDto(saved, primaryOwner, dependencies, membersByObjective, ownerMap);
+    }
+
+    private List<Integer> resolveMemberIds(CreateTeamObjectiveDTO payload) {
+        boolean isTeamMulti = "TEAM".equalsIgnoreCase(payload.getObjectiveScope())
+                && payload.getMemberEmployeeIds() != null
+                && !payload.getMemberEmployeeIds().isEmpty();
+        if (isTeamMulti) {
+            return new ArrayList<>(payload.getMemberEmployeeIds());
+        }
+        return List.of(payload.getOwnerEmployeeId());
     }
 
     public ManagerObjectiveDTO updateObjectiveProgress(
@@ -276,15 +249,12 @@ public class ManagerOkrService {
                                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Objectif introuvable."));
 
         BigDecimal progress = clampPercent(payload == null ? null : payload.getProgressPercent(), objective.getProgressPercent());
-        String riskStatus = payload == null ? objective.getRiskStatus() : normalizeRisk(payload.getRiskStatus(), objective.getRiskStatus());
-        String riskReason = payload == null ? objective.getRiskReason() : clean(payload.getRiskReason(), objective.getRiskReason());
         Integer authorId =
                 payload == null || payload.getAuthorEmployeeId() == null ? managerId : payload.getAuthorEmployeeId();
 
         LocalDateTime now = LocalDateTime.now();
         objective.setProgressPercent(progress);
-        objective.setRiskStatus(riskStatus);
-        objective.setRiskReason(riskReason);
+        applyComputedRisk(objective, now.toLocalDate());
         objective.setLastUpdateAt(now);
         objective.setUpdatedAt(now);
         TeamObjective updated = teamObjectiveRepository.save(objective);
@@ -294,8 +264,8 @@ public class ManagerOkrService {
         progressUpdate.setAuthorEmployeeId(authorId);
         progressUpdate.setProgressPercent(progress);
         progressUpdate.setCommentText(payload == null ? null : clean(payload.getCommentText(), null));
-        progressUpdate.setRiskStatus(riskStatus);
-        progressUpdate.setRiskReason(riskReason);
+        progressUpdate.setRiskStatus(updated.getRiskStatus());
+        progressUpdate.setRiskReason(updated.getRiskReason());
         progressUpdate.setUpdatedAt(now);
         objectiveProgressUpdateRepository.save(progressUpdate);
 
@@ -460,23 +430,50 @@ public class ManagerOkrService {
     }
 
     private String normalizeScope(String rawScope) {
-        String value = clean(rawScope, "TEAM").toUpperCase();
-        if (!Set.of("TEAM", "INDIVIDUAL").contains(value)) {
+        String value = clean(rawScope, "TEAM").trim().toUpperCase().replace("É", "E");
+        if ("INDIVIDUAL".equals(value) || "INDIVIDUEL".equals(value)) {
+            return "INDIVIDUAL";
+        }
+        if ("TEAM".equals(value) || "EQUIPE".equals(value)) {
             return "TEAM";
         }
-        return value;
+        return "TEAM";
     }
 
-    private String normalizeRisk(String rawRisk) {
-        return normalizeRisk(rawRisk, "AT_RISK");
+    private void applyComputedRisk(TeamObjective objective, LocalDate today) {
+        RiskEvaluation evaluation = ObjectiveRiskCalculator.evaluate(
+                objective.getDueDate(),
+                objective.getProgressPercent(),
+                objective.getCreatedAt(),
+                today);
+        objective.setRiskStatus(evaluation.status());
+        objective.setRiskReason(evaluation.reason());
+        objective.setDelayDays(evaluation.delayDays());
     }
 
-    private String normalizeRisk(String rawRisk, String fallback) {
-        String value = clean(rawRisk, fallback).toUpperCase();
-        if (!Set.of("ON_TRACK", "AT_RISK", "OFF_TRACK").contains(value)) {
-            return fallback;
+    /** Recomputes risk on read so status stays aligned with elapsed time. */
+    private List<TeamObjective> refreshRiskStatuses(List<TeamObjective> objectives) {
+        if (objectives.isEmpty()) {
+            return objectives;
         }
-        return value;
+        LocalDate today = LocalDate.now();
+        List<TeamObjective> toPersist = new ArrayList<>();
+        for (TeamObjective objective : objectives) {
+            String previousStatus = objective.getRiskStatus();
+            String previousReason = objective.getRiskReason();
+            int previousDelay = objective.getDelayDays() == null ? 0 : objective.getDelayDays();
+            applyComputedRisk(objective, today);
+            if (!Objects.equals(previousStatus, objective.getRiskStatus())
+                    || !Objects.equals(previousReason, objective.getRiskReason())
+                    || previousDelay != objective.getDelayDays()) {
+                objective.setUpdatedAt(LocalDateTime.now());
+                toPersist.add(objective);
+            }
+        }
+        if (!toPersist.isEmpty()) {
+            teamObjectiveRepository.saveAll(toPersist);
+        }
+        return objectives;
     }
 
     private String normalizeActionType(String rawActionType) {
@@ -555,17 +552,9 @@ public class ManagerOkrService {
         if (payload.getWeighting() != null) {
             objective.setWeighting(clampPositive(payload.getWeighting(), objective.getWeighting()));
         }
-        if (payload.getRiskStatus() != null) {
-            objective.setRiskStatus(normalizeRisk(payload.getRiskStatus(), objective.getRiskStatus()));
-        }
-        if (payload.getRiskReason() != null) {
-            objective.setRiskReason(payload.getRiskReason().isBlank() ? null : payload.getRiskReason().trim());
-        }
-        if (payload.getDelayDays() != null) {
-            objective.setDelayDays(Math.max(0, payload.getDelayDays()));
-        }
 
         LocalDateTime now = LocalDateTime.now();
+        applyComputedRisk(objective, now.toLocalDate());
         objective.setLastUpdateAt(now);
         objective.setUpdatedAt(now);
         TeamObjective saved = teamObjectiveRepository.save(objective);
@@ -704,14 +693,14 @@ public class ManagerOkrService {
         dto.setDependencies(cell(row, colIndex, fmt, "dependencies"));
         dto.setProgressPercent(parseBigDecimal(cell(row, colIndex, fmt, "progress")));
         dto.setWeighting(parseBigDecimal(cell(row, colIndex, fmt, "weighting")));
-        dto.setRiskStatus(cell(row, colIndex, fmt, "risk_status"));
         dto.setDueDate(parseDate(cell(row, colIndex, fmt, "due_date")));
+        dto.setCreatedAt(parseDate(cell(row, colIndex, fmt, "created_at")));
 
         // Owner resolution: numeric ID preferred
         String ownerRaw = cell(row, colIndex, fmt, "owner_employee_id");
-        fillOwner(dto, ownerRaw, employeeById, managerId);
+        fillOwners(dto, ownerRaw, employeeById);
 
-        validate(dto, managerId);
+        validate(dto, employeeById);
         return dto;
     }
 
@@ -727,48 +716,103 @@ public class ManagerOkrService {
         dto.setDependencies(csvCell(cells, colIndex, "dependencies"));
         dto.setProgressPercent(parseBigDecimal(csvCell(cells, colIndex, "progress")));
         dto.setWeighting(parseBigDecimal(csvCell(cells, colIndex, "weighting")));
-        dto.setRiskStatus(csvCell(cells, colIndex, "risk_status"));
         dto.setDueDate(parseDate(csvCell(cells, colIndex, "due_date")));
+        dto.setCreatedAt(parseDate(csvCell(cells, colIndex, "created_at")));
 
         String ownerRaw = csvCell(cells, colIndex, "owner_employee_id");
-        fillOwner(dto, ownerRaw, employeeById, managerId);
+        fillOwners(dto, ownerRaw, employeeById);
 
-        validate(dto, managerId);
+        validate(dto, employeeById);
         return dto;
     }
 
-    private void fillOwner(OkrImportRowDTO dto, String ownerRaw,
-                            Map<Integer, Employee> employeeById, Integer managerId) {
+    private void fillOwners(OkrImportRowDTO dto, String ownerRaw, Map<Integer, Employee> employeeById) {
         if (ownerRaw == null || ownerRaw.isBlank()) return;
         String trimmed = ownerRaw.trim();
-        try {
-            int id = Integer.parseInt(trimmed);
-            dto.setOwnerEmployeeId(id);
-            Employee emp = employeeById.get(id);
-            if (emp != null) dto.setOwnerName(formatOwnerName(emp, id));
-        } catch (NumberFormatException e) {
-            // Try name-based resolution: "Prénom Nom"
-            String lower = trimmed.toLowerCase();
-            employeeById.values().stream()
-                    .filter(emp -> {
-                        String full = (formatOwnerName(emp, emp.getEmployeeId())).toLowerCase();
-                        return full.contains(lower) || lower.contains(full.split(" ")[0]);
+        List<Integer> parsedIds = parseEmployeeIds(trimmed);
+        if (!parsedIds.isEmpty()) {
+            dto.setMemberEmployeeIds(new ArrayList<>(parsedIds));
+            List<String> names = new ArrayList<>();
+            Integer firstResolved = null;
+            for (Integer id : parsedIds) {
+                Employee emp = employeeById.get(id);
+                if (emp != null) {
+                    if (firstResolved == null) {
+                        firstResolved = id;
+                    }
+                    names.add(formatOwnerName(emp, id));
+                }
+            }
+            if (firstResolved != null) {
+                dto.setOwnerEmployeeId(firstResolved);
+                dto.setOwnerName(String.join("; ", names));
+            }
+            return;
+        }
+        // Fallback: résolution par nom (un seul collaborateur)
+        String lower = trimmed.toLowerCase();
+        employeeById.values().stream()
+                .filter(emp -> {
+                    String full = formatOwnerName(emp, emp.getEmployeeId()).toLowerCase();
+                    return full.contains(lower) || lower.contains(full.split(" ")[0]);
+                })
+                .findFirst()
+                .ifPresent(emp -> {
+                    dto.setOwnerEmployeeId(emp.getEmployeeId());
+                    dto.setMemberEmployeeIds(List.of(emp.getEmployeeId()));
+                    dto.setOwnerName(formatOwnerName(emp, emp.getEmployeeId()));
+                });
+    }
+
+    private List<Integer> parseEmployeeIds(String raw) {
+        String multiPattern = null;
+        if (raw.contains("|")) {
+            multiPattern = "\\|";
+        } else if (raw.contains(";")) {
+            multiPattern = ";";
+        } else if (raw.contains(",")) {
+            multiPattern = ",";
+        }
+        if (multiPattern != null) {
+            return Arrays.stream(raw.split(multiPattern))
+                    .map(String::trim)
+                    .filter(part -> !part.isEmpty())
+                    .map(part -> {
+                        try {
+                            return Integer.parseInt(part);
+                        } catch (NumberFormatException e) {
+                            return null;
+                        }
                     })
-                    .findFirst()
-                    .ifPresent(emp -> {
-                        dto.setOwnerEmployeeId(emp.getEmployeeId());
-                        dto.setOwnerName(formatOwnerName(emp, emp.getEmployeeId()));
-                    });
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .collect(Collectors.toCollection(ArrayList::new));
+        }
+        try {
+            return new ArrayList<>(List.of(Integer.parseInt(raw.trim())));
+        } catch (NumberFormatException e) {
+            return List.of();
         }
     }
 
-    private void validate(OkrImportRowDTO dto, Integer managerId) {
+    private void validate(OkrImportRowDTO dto, Map<Integer, Employee> employeeById) {
         List<String> errors = new ArrayList<>();
         if (dto.getTitle() == null || dto.getTitle().isBlank()) {
             errors.add("Titre obligatoire.");
         }
+        List<Integer> members = dto.getMemberEmployeeIds() == null
+                ? List.of()
+                : dto.getMemberEmployeeIds();
         if (dto.getOwnerEmployeeId() == null) {
             errors.add("owner_employee_id introuvable ou non renseigné.");
+        } else if ("INDIVIDUAL".equals(normalizeScope(dto.getObjectiveScope())) && members.size() > 1) {
+            errors.add("scope INDIVIDUAL n'accepte qu'un seul owner_employee_id.");
+        } else if (!members.isEmpty()) {
+            for (Integer id : members) {
+                if (!employeeById.containsKey(id)) {
+                    errors.add("Employé introuvable ou hors équipe : id=" + id);
+                }
+            }
         }
         if (dto.getProgressPercent() != null) {
             if (dto.getProgressPercent().compareTo(BigDecimal.ZERO) < 0
@@ -776,10 +820,13 @@ public class ManagerOkrService {
                 errors.add("La progression doit être entre 0 et 100.");
             }
         }
-        if (dto.getRiskStatus() != null && !dto.getRiskStatus().isBlank()) {
-            String rs = dto.getRiskStatus().toUpperCase();
-            if (!Set.of("ON_TRACK", "AT_RISK", "OFF_TRACK").contains(rs)) {
-                errors.add("risk_status invalide (ON_TRACK / AT_RISK / OFF_TRACK).");
+        if (dto.getCreatedAt() != null) {
+            LocalDate today = LocalDate.now();
+            if (dto.getCreatedAt().isAfter(today)) {
+                errors.add("created_at ne peut pas être dans le futur.");
+            }
+            if (dto.getDueDate() != null && dto.getCreatedAt().isAfter(dto.getDueDate())) {
+                errors.add("created_at ne peut pas être postérieur à due_date.");
             }
         }
         dto.setValid(errors.isEmpty());
@@ -792,42 +839,23 @@ public class ManagerOkrService {
         if (request == null || request.getRows() == null || request.getRows().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aucune ligne à importer.");
         }
+        Map<Integer, Employee> employeeById = employeeRepository.findAll().stream()
+                .filter(e -> Objects.equals(e.getManagerId(), managerId)
+                        || Objects.equals(e.getEmployeeId(), managerId))
+                .collect(Collectors.toMap(Employee::getEmployeeId, e -> e));
+
         List<OkrImportRowDTO> rows = request.getRows();
         List<String> skippedTitles = new ArrayList<>();
         int inserted = 0;
 
         for (OkrImportRowDTO row : rows) {
             // Re-validate server-side regardless of client state
-            validate(row, managerId);
+            validate(row, employeeById);
             if (!row.isValid()) {
                 skippedTitles.add(row.getTitle() == null ? "Ligne " + row.getRowIndex() : row.getTitle());
                 continue;
             }
-            LocalDateTime now = LocalDateTime.now();
-            TeamObjective obj = new TeamObjective();
-            obj.setObjectiveCode(generateCode(now.plusNanos(inserted)));
-            obj.setTitle(row.getTitle().trim());
-            obj.setObjectiveScope(normalizeScope(row.getObjectiveScope()));
-            obj.setOwnerEmployeeId(row.getOwnerEmployeeId());
-            obj.setManagerEmployeeId(managerId);
-            obj.setHorizonLabel(clean(row.getHorizonLabel(), "N/A"));
-            obj.setDueDate(row.getDueDate() != null ? row.getDueDate() : LocalDate.now().plusDays(30));
-            obj.setProgressPercent(clampPercent(row.getProgressPercent(), BigDecimal.ZERO));
-            obj.setWeighting(clampPositive(row.getWeighting(), new BigDecimal("1.00")));
-            obj.setRiskStatus(normalizeRisk(row.getRiskStatus(), "ON_TRACK"));
-            obj.setRiskReason(null);
-            obj.setDelayDays(0);
-            obj.setLastUpdateAt(now);
-            obj.setCreatedAt(now);
-            obj.setUpdatedAt(now);
-            TeamObjective saved = teamObjectiveRepository.save(obj);
-
-            if (row.getDependencies() != null && !row.getDependencies().isBlank()) {
-                List<String> deps = Arrays.stream(row.getDependencies().split(";"))
-                        .map(String::trim).filter(s -> !s.isEmpty()).toList();
-                saveDependencies(saved.getObjectiveId(), deps, now);
-            }
-            inserted++;
+            inserted += persistImportedRow(row, managerId, inserted);
         }
 
         OkrImportSummaryDTO summary = new OkrImportSummaryDTO();
@@ -835,6 +863,65 @@ public class ManagerOkrService {
         summary.setSkippedRows(skippedTitles.size());
         summary.setSkippedTitles(skippedTitles);
         return summary;
+    }
+
+    /**
+     * Insère une ligne d'import : 1 ligne CSV = 1 objectif en BDD.
+     * Équipe multi-membres : un seul team_objectives + N lignes team_objective_members
+     * (affichage portefeuille = une ligne, noms concaténés via memberNames).
+     */
+    private int persistImportedRow(OkrImportRowDTO row, Integer managerId, int insertedSoFar) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime createdAt = row.getCreatedAt() != null
+                ? row.getCreatedAt().atStartOfDay()
+                : now;
+        String scope = normalizeScope(row.getObjectiveScope());
+        List<Integer> memberIds = resolveImportOwnerIds(row, scope);
+
+        List<String> deps = row.getDependencies() == null || row.getDependencies().isBlank()
+                ? List.of()
+                : Arrays.stream(row.getDependencies().split(";"))
+                        .map(String::trim)
+                        .filter(part -> !part.isEmpty())
+                        .toList();
+
+        TeamObjective obj = new TeamObjective();
+        obj.setObjectiveCode(generateCode(now.plusNanos(insertedSoFar)));
+        obj.setTitle(row.getTitle().trim());
+        obj.setObjectiveScope(scope);
+        obj.setOwnerEmployeeId(memberIds.get(0));
+        obj.setManagerEmployeeId(managerId);
+        obj.setHorizonLabel(clean(row.getHorizonLabel(), "N/A"));
+        obj.setDueDate(row.getDueDate() != null ? row.getDueDate() : LocalDate.now().plusDays(30));
+        obj.setProgressPercent(clampPercent(row.getProgressPercent(), BigDecimal.ZERO));
+        obj.setWeighting(clampPositive(row.getWeighting(), new BigDecimal("1.00")));
+        obj.setCreatedAt(createdAt);
+        obj.setLastUpdateAt(createdAt);
+        obj.setUpdatedAt(now);
+        applyComputedRisk(obj, now.toLocalDate());
+        TeamObjective saved = teamObjectiveRepository.save(obj);
+
+        if (!deps.isEmpty()) {
+            saveDependencies(saved.getObjectiveId(), deps, now);
+        }
+
+        for (Integer memberId : memberIds) {
+            TeamObjectiveMember link = new TeamObjectiveMember();
+            link.setObjectiveId(saved.getObjectiveId());
+            link.setEmployeeId(memberId);
+            teamObjectiveMemberRepository.save(link);
+        }
+
+        return 1;
+    }
+
+    private List<Integer> resolveImportOwnerIds(OkrImportRowDTO row, String scope) {
+        if ("TEAM".equals(scope)
+                && row.getMemberEmployeeIds() != null
+                && !row.getMemberEmployeeIds().isEmpty()) {
+            return new ArrayList<>(row.getMemberEmployeeIds());
+        }
+        return List.of(row.getOwnerEmployeeId());
     }
 
     // ─── Parsing helpers ──────────────────────────────────────────────────────

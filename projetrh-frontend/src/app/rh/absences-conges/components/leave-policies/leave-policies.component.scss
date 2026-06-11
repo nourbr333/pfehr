@@ -175,15 +175,11 @@ $shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
 }
 
 .btn-primary {
-  background: $primary;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 6px; font-size: .78rem; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: background .15s; border: 1px solid;
+  background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8;
+  &:hover { background: #dbeafe; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 

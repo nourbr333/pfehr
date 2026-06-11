@@ -213,12 +213,14 @@ $font-display:  'DM Sans', sans-serif;
 }
 
 .btn-primary, .btn-secondary, .btn-danger {
-  height: 38px; border-radius: 10px; padding: 0 14px; font-family: $font-main; font-weight: 700; cursor: pointer;
-  border: 1px solid transparent;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 6px; font-size: .78rem; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: background .15s; border: 1px solid;
+  &:disabled { opacity: .55; cursor: not-allowed; }
 }
-.btn-primary { background: $primary; border-color: $primary; color: #fff; }
-.btn-secondary { background: #fff; border-color: $border; color: $text-mid; }
-.btn-danger { background: $red; border-color: $red; color: #fff; }
+.btn-primary { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; &:hover:not(:disabled) { background: #dbeafe; } }
+.btn-secondary { background: #f9fafb; border-color: #d1d5db; color: #374151; &:hover:not(:disabled) { background: #f3f4f6; } }
+.btn-danger { background: #fef2f2; border-color: #fecaca; color: #dc2626; &:hover:not(:disabled) { background: #fee2e2; } }
 
 .page-content { padding: 24px 28px 32px; flex: 1; }
 

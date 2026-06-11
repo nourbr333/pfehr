@@ -104,17 +104,17 @@ $font-main:     'DM Sans', sans-serif;
 }
 
 .btn-header-import {
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
+  &:hover { background: #dcfce7; }
+}
+
+.btn-header-create {
   border: 1px solid #bfdbfe;
   background: #eff6ff;
   color: #1d4ed8;
   &:hover { background: #dbeafe; }
-}
-
-.btn-header-create {
-  border: 1px solid $primary;
-  background: $primary;
-  color: #fff;
-  &:hover { background: #1d4ed8; border-color: #1d4ed8; }
 }
 
 // ── Tab bar (identique manager-okr) ─────────────────────────────────────
@@ -140,24 +140,28 @@ $font-main:     'DM Sans', sans-serif;
 
 // ── Buttons ──────────────────────────────────────────────────────────────
 .btn-primary {
-  display: inline-flex; align-items: center; gap: 6px; padding: 0 16px; height: 36px;
-  background: $primary; color: #fff; border: none; border-radius: 8px;
-  font-size: .875rem; font-weight: 600; cursor: pointer; white-space: nowrap;
-  transition: background .15s;
-  &:hover:not(:disabled) { background: #1d4ed8; }
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 6px; font-size: .78rem; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: background .15s; border: 1px solid;
+  background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8;
+  &:hover:not(:disabled) { background: #dbeafe; }
   &:disabled { opacity: .55; cursor: not-allowed; }
 }
 .btn-secondary {
-  display: inline-flex; align-items: center; gap: 6px; padding: 0 16px; height: 36px;
-  background: #fff; color: $text-dark; border: 1px solid $border; border-radius: 8px;
-  font-size: .875rem; font-weight: 500; cursor: pointer;
-  &:hover:not(:disabled) { background: $bg; }
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 6px; font-size: .78rem; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: background .15s; border: 1px solid;
+  background: #f9fafb; border-color: #d1d5db; color: #374151;
+  &:hover:not(:disabled) { background: #f3f4f6; }
   &:disabled { opacity: .55; cursor: not-allowed; }
 }
 .btn-danger {
-  @extend .btn-secondary;
-  color: $red; border-color: #fecaca;
-  &:hover:not(:disabled) { background: #fef2f2; }
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 6px; font-size: .78rem; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: background .15s; border: 1px solid;
+  background: #fef2f2; border-color: #fecaca; color: #dc2626;
+  &:hover:not(:disabled) { background: #fee2e2; }
+  &:disabled { opacity: .55; cursor: not-allowed; }
 }
 
 // ── KPI grid (identique manager-okr / manager-equipe) ───────────────────
@@ -605,19 +609,11 @@ textarea.eval-form-control { resize: none; min-height: 76px; }
 }
 
 .btn-download-template {
-  flex-shrink: 0;
-  height: 34px;
-  padding: 0 12px;
-  border-radius: 8px;
-  border: 1px solid #93c5fd;
-  background: #fff;
-  color: #1d4ed8;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  font-family: $font-main;
-  &:hover { background: #eff6ff; }
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 6px; font-size: .78rem; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: background .15s;
+  border: 1px solid #bbf7d0; background: #f0fdf4; color: #166534;
+  &:hover { background: #dcfce7; }
 }
 
 .import-file-zone {

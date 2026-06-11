@@ -13,6 +13,7 @@ import { Attendance, AttendanceService } from '../../services/attendance.service
 import { Employee, EmployeeService } from '../../services/employee.service';
 import { Workload, WorkloadService } from '../../services/workload.service';
 import { ManagerOkrService, ManagerObjective } from '../../services/manager-okr.service';
+import { isActiveOkrForAnalysis } from '../../utils/okr-active';
 import { KpiThresholdService, KpiThreshold } from '../../services/kpi-threshold.service';
 import { NotificationService } from '../../services/notification.service';
 import { ToastService } from '../../components/toast/toast.service';
@@ -202,6 +203,7 @@ export class AccueilRespComponent implements OnInit, AfterViewInit, OnDestroy {
   get filteredOkrObjectives(): ManagerObjective[] {
     const range = this.currentRange;
     return this.okrObjectives.filter((objective) => {
+      if (!isActiveOkrForAnalysis(objective.dueDate, objective.progressPercent)) return false;
       if (!objective.dueDate) return true;
       const due = this.parseDate(objective.dueDate.slice(0, 10));
       return due >= range.start && due <= range.end;

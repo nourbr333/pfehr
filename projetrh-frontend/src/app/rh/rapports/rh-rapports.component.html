@@ -187,8 +187,20 @@
           <section class="section-card">
             <div class="section-title">Exporter le rapport</div>
             <div class="export-actions">
-              <button type="button" class="btn-secondary" (click)="openPreview()" [disabled]="isLoading">Aperçu</button>
-              <button type="button" class="btn-primary" (click)="export('pdf')">Exporter en PDF</button>
+              <button type="button" class="btn-secondary" (click)="openPreview()" [disabled]="isLoading">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+                Aperçu
+              </button>
+              <button type="button" class="btn-export-excel" (click)="export('pdf')">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/>
+                </svg>
+                Exporter en PDF
+              </button>
               <button class="btn-export-excel" type="button" (click)="export('excel')" title="Exporter en Excel">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -226,7 +238,14 @@
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-secondary" (click)="closePreview()">Fermer</button>
-      <button type="button" class="btn-primary" (click)="export('excel'); closePreview()">Exporter Excel</button>
+      <button type="button" class="btn-export-excel" (click)="export('excel'); closePreview()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/>
+          <polyline points="9 15 12 18 15 15"/>
+        </svg>
+        Exporter Excel
+      </button>
     </div>
   </div>
 </div>

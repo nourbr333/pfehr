@@ -502,6 +502,7 @@
                   [class.warn]="alert.severity === 'warning'"
                 >
                   <div class="sev-label" [class.warn]="alert.severity !== 'critical'">{{ alert.severity === 'critical' ? 'Critique' : 'Avertissement' }}</div>
+                  <div class="alert-day" *ngIf="alert.day">{{ formatDateFr(alert.day) }}</div>
                   <div class="alert-title">{{ alert.title }}</div>
                   <div class="alert-desc">{{ alert.description }}</div>
                   <div class="alert-action">

@@ -248,28 +248,20 @@ $shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
   background: #fafafa;
 }
 
-.btn-primary,
-.btn-secondary {
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid transparent;
-}
-
 .btn-primary {
-  background: $primary;
-  color: #fff;
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 6px; font-size: .78rem; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: background .15s; border: 1px solid;
+  background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8;
+  &:hover:not(:disabled) { background: #dbeafe; }
+  &:disabled { opacity: .55; cursor: not-allowed; }
 }
 
 .btn-secondary {
-  background: #fff;
-  color: #374151;
-  border-color: $border;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 6px; font-size: .78rem; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: background .15s; border: 1px solid;
+  background: #f9fafb; border-color: #d1d5db; color: #374151;
+  &:hover:not(:disabled) { background: #f3f4f6; }
+  &:disabled { opacity: .55; cursor: not-allowed; }
 }

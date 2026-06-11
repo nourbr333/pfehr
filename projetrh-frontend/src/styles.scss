@@ -146,8 +146,61 @@ app-root {
   margin-left: 6px;
 }
 
-/* ── Global export Excel button ── */
-.btn-export-excel {
+/* ══════════════════════════════════════════════════
+   GLOBAL BUTTON DESIGN SYSTEM — HRScope
+   Pastel outline style, unified across all pages.
+   ══════════════════════════════════════════════════ */
+
+/* --- shared base --- */
+.btn-primary, .btn-secondary, .btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: .78rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  white-space: nowrap;
+  transition: background .15s;
+  border: 1px solid;
+  line-height: 1.4;
+  &:disabled { opacity: .55; cursor: not-allowed; }
+}
+
+/* Blue — create, save, saisir, validate, submit */
+.btn-primary {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+  &:hover:not(:disabled) { background: #dbeafe; }
+}
+
+/* Grey — cancel, close, preview, reset */
+.btn-secondary {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #374151;
+  &:hover:not(:disabled) { background: #f3f4f6; }
+}
+
+/* Red — delete, reject */
+.btn-danger {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+  &:hover:not(:disabled) { background: #fee2e2; }
+}
+
+/* Small variant */
+.btn-sm {
+  padding: 3px 8px;
+  font-size: .72rem;
+}
+
+/* ── Green family: export Excel / download template ── */
+.btn-export-excel, .btn-download-template {
   display: inline-flex;
   align-items: center;
   gap: 5px;

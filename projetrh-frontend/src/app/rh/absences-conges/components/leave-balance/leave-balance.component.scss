@@ -450,16 +450,11 @@ $radius: 10px;
 }
 
 .btn-primary {
-  background: $primary;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 18px;
-  font-size: 0.83rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
-  &:hover { background: color.adjust($primary, $lightness: -6%); }
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 6px; font-size: .78rem; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: background .15s; border: 1px solid;
+  background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8;
+  &:hover { background: #dbeafe; }
   &:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
@@ -651,30 +646,28 @@ $radius: 10px;
 }
 
 .btn-primary {
-  background: $primary;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 6px; font-size: .78rem; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: background .15s; border: 1px solid;
+  background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8;
+  &:hover { background: #dbeafe; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
 .btn-sm {
-  padding: 6px 12px;
-  font-size: 0.78rem;
+  padding: 3px 8px;
+  font-size: .72rem;
 }
 
 .btn-cancel-sm {
   background: none;
-  border: 1px solid $border;
-  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  padding: 5px 12px;
   border-radius: 6px;
   font-size: 0.78rem;
   cursor: pointer;
+  color: #374151;
+  &:hover { background: #f3f4f6; }
 }
 
 .empty-state {

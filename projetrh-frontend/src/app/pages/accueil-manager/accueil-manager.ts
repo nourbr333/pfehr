@@ -20,6 +20,7 @@ import { ManagerObjective, ManagerOkrService } from '../../services/manager-okr.
 import { NotificationsPanelComponent } from '../../components/notifications-panel/notifications-panel';
 import { DashboardFiltersComponent } from '../accueil-resp/components/dashboard-filters/dashboard-filters.component';
 import { DashboardPeriod, getCurrentRange, getPreviousRange, isDateInRange } from '../../utils/period-range.util';
+import { isActiveOkrForAnalysis } from '../../utils/okr-active';
 
 interface TeamMemberSnapshot {
   employeeId: number;
@@ -295,12 +296,15 @@ export class AccueilManagerComponent implements OnInit, AfterViewInit, OnDestroy
     this.teamSize = this.teamMembers.length;
     this.activeMembersCount = this.teamMembers.filter((member) => member.attendanceRate >= 70).length;
 
-    if (this.objectives.length) {
-      const weightedProgress = this.objectives.reduce(
+    const activeObjectives = this.objectives.filter((objective) =>
+      isActiveOkrForAnalysis(objective.dueDate, objective.progressPercent)
+    );
+    if (activeObjectives.length) {
+      const weightedProgress = activeObjectives.reduce(
         (sum, objective) => sum + (objective.progressPercent * objective.weighting),
         0
       );
-      const totalWeight = this.objectives.reduce((sum, objective) => sum + objective.weighting, 0);
+      const totalWeight = activeObjectives.reduce((sum, objective) => sum + objective.weighting, 0);
       this.averageObjectiveAchievement = totalWeight > 0 ? this.round1(weightedProgress / totalWeight) : 0;
     } else {
       this.averageObjectiveAchievement = this.round1(this.average(this.teamMembers.map((member) => member.evaluationScore)));
@@ -441,7 +445,9 @@ export class AccueilManagerComponent implements OnInit, AfterViewInit, OnDestroy
     if (!this.objectiveProgressCanvas) return;
     // Group objectives by owner's department
     const deptMap = new Map<string, ManagerObjective[]>();
-    for (const obj of this.objectives) {
+    for (const obj of this.objectives.filter((objective) =>
+      isActiveOkrForAnalysis(objective.dueDate, objective.progressPercent)
+    )) {
       const member = this.teamMembers.find(
         m => m.name.trim().toLowerCase() === (obj.ownerName ?? '').trim().toLowerCase()
       );
@@ -487,9 +493,12 @@ export class AccueilManagerComponent implements OnInit, AfterViewInit, OnDestroy
 
   private renderObjectiveStatusChart(): void {
     if (!this.objectiveStatusCanvas) return;
-    const achieved = this.objectives.filter((o) => o.riskStatus === 'ON_TRACK').length;
-    const atRisk   = this.objectives.filter((o) => o.riskStatus === 'AT_RISK').length;
-    const delayed  = this.objectives.filter((o) => o.riskStatus === 'OFF_TRACK').length;
+    const activeObjectives = this.objectives.filter((o) =>
+      isActiveOkrForAnalysis(o.dueDate, o.progressPercent)
+    );
+    const achieved = activeObjectives.filter((o) => o.riskStatus === 'ON_TRACK').length;
+    const atRisk   = activeObjectives.filter((o) => o.riskStatus === 'AT_RISK').length;
+    const delayed  = activeObjectives.filter((o) => o.riskStatus === 'OFF_TRACK').length;
     const total    = achieved + atRisk + delayed;
     const isEmpty  = total === 0;
     this.chartInstances.push(new Chart(this.objectiveStatusCanvas.nativeElement, {

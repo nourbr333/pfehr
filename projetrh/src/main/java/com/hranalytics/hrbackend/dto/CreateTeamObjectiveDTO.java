@@ -47,17 +47,6 @@ public class CreateTeamObjectiveDTO {
     @DecimalMin(value = "0.0", inclusive = false)
     private BigDecimal weighting;
 
-    @Pattern(
-            regexp = "(?i)(ON_TRACK|AT_RISK|OFF_TRACK)",
-            message = "riskStatus must be ON_TRACK, AT_RISK or OFF_TRACK")
-    private String riskStatus;
-
-    @Size(max = 500)
-    private String riskReason;
-
-    @PositiveOrZero
-    private Integer delayDays;
-
     @Size(max = 50)
     private List<@Size(max = 255) String> dependencies;
 }

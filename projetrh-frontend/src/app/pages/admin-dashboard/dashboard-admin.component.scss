@@ -4,28 +4,22 @@
 // En-tête, sections, KPI, cartes et pills : voir partial admin-page.
 
 // ——— Boutons ———
-.btn-primary,
-.btn-secondary {
-  height: 38px;
-  border-radius: 10px;
-  padding: 0 14px;
-  font-family: $font-main;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid transparent;
-  white-space: nowrap;
-}
-
 .btn-primary {
-  background: $primary;
-  border-color: $primary;
-  color: #fff;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 6px; font-size: .78rem; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: background .15s; border: 1px solid;
+  background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8;
+  &:hover:not(:disabled) { background: #dbeafe; }
+  &:disabled { opacity: .55; cursor: not-allowed; }
 }
 
 .btn-secondary {
-  background: #fff;
-  border-color: $border-soft;
-  color: $text-mid;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 6px; font-size: .78rem; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: background .15s; border: 1px solid;
+  background: #f9fafb; border-color: #d1d5db; color: #374151;
+  &:hover:not(:disabled) { background: #f3f4f6; }
+  &:disabled { opacity: .55; cursor: not-allowed; }
 }
 
 .btn-small {

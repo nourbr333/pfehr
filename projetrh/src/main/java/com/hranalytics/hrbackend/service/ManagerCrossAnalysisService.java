@@ -79,7 +79,13 @@ public class ManagerCrossAnalysisService {
         // 5. Build impact list
         List<ManagerCrossAnalysisDTO.ObjectiveAbsenceImpactDTO> impacts = new ArrayList<>();
 
+        LocalDate today = LocalDate.now();
+
         for (TeamObjective objective : objectives) {
+            if (!isActiveForAnalysis(objective, today)) {
+                continue;
+            }
+
             LocalDate windowStart = objective.getDueDate().minusDays(15);
             LocalDate windowEnd = objective.getDueDate();
 
@@ -137,6 +143,17 @@ public class ManagerCrossAnalysisService {
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /** En cours = échéance non dépassée et progression &lt; 100 %. Les échus sont ignorés. */
+    private boolean isActiveForAnalysis(TeamObjective objective, LocalDate today) {
+        if (objective.getDueDate() == null || objective.getDueDate().isBefore(today)) {
+            return false;
+        }
+        int progress = objective.getProgressPercent() != null
+                ? objective.getProgressPercent().intValue()
+                : 0;
+        return progress < 100;
+    }
 
     private boolean overlaps(LocalDate s1, LocalDate e1, LocalDate s2, LocalDate e2) {
         if (s1 == null || e1 == null || s2 == null || e2 == null) return false;

@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module IA Prédictif — HR Analytics</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, serif; font-size: 15px; line-height: 1.7; color: #1a1a1a; background: #fafafa; padding: 40px 20px; }
+  .container { max-width: 960px; margin: 0 auto; background: #fff; padding: 48px 56px; border: 1px solid #ddd; }
+
+  /* Header */
+  .doc-header { border-bottom: 3px solid #1e3a5f; padding-bottom: 24px; margin-bottom: 32px; }
+  .doc-header h1 { font-size: 22px; color: #1e3a5f; font-weight: bold; margin-bottom: 4px; }
+  .doc-header .subtitle { font-size: 13px; color: #666; margin-bottom: 16px; }
+  .meta-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .meta-table td { padding: 5px 10px; border: 1px solid #ccc; }
+  .meta-table td:first-child { background: #1e3a5f; color: #fff; font-weight: bold; width: 200px; }
+  .doc-intro { margin-top: 16px; font-style: italic; color: #444; font-size: 14px; }
+
+  /* Headings */
+  h1.section { font-size: 19px; color: #1e3a5f; border-left: 5px solid #1e3a5f; padding-left: 12px; margin: 40px 0 16px; }
+  h2.subsection { font-size: 16px; color: #2c5282; margin: 28px 0 10px; border-bottom: 1px solid #cbd5e0; padding-bottom: 4px; }
+  h3.sub3 { font-size: 14px; color: #2d3748; margin: 20px 0 8px; font-style: italic; }
+
+  /* Prediction badges */
+  .pred-header { background: #1e3a5f; color: #fff; padding: 10px 16px; margin: 36px 0 4px; font-size: 15px; font-weight: bold; letter-spacing: 0.5px; }
+  .pred-subheader { background: #2c5282; color: #e2e8f0; padding: 6px 16px; font-size: 13px; margin-bottom: 20px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 13px; }
+  th { background: #2c5282; color: #fff; padding: 8px 10px; text-align: left; }
+  td { padding: 7px 10px; border: 1px solid #cbd5e0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7fafc; }
+  .info-box td { background: #ebf4ff; border: 1px solid #bee3f8; }
+  .warn-box td { background: #fffbeb; border: 1px solid #fbd38d; }
+
+  /* Code blocks */
+  pre { background: #1a202c; color: #e2e8f0; padding: 18px 20px; overflow-x: auto; font-size: 12px; line-height: 1.5; border-radius: 4px; margin: 12px 0 20px; border-left: 4px solid #4299e1; }
+  code { font-family: 'Courier New', monospace; }
+
+  /* Mockup blocks */
+  .mockup { background: #f0f4f8; border: 1px solid #a0aec0; border-left: 4px solid #4299e1; padding: 16px 18px; margin: 12px 0 20px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.6; white-space: pre-wrap; color: #2d3748; }
+
+  /* Phase tables */
+  .phase-header td { background: #2c5282; color: #fff; font-weight: bold; font-size: 14px; }
+  .phase-total td { background: #1e3a5f; color: #fff; font-weight: bold; }
+
+  /* Tips box */
+  .tips-box { background: #f0fff4; border: 1px solid #9ae6b4; border-left: 4px solid #38a169; padding: 16px 20px; margin: 20px 0; font-size: 14px; }
+  .tips-box ul { padding-left: 20px; margin-top: 8px; }
+  .tips-box li { margin-bottom: 6px; }
+
+  /* Architecture diagram */
+  .arch { display: flex; align-items: center; gap: 6px; padding: 16px; background: #f7fafc; border: 1px solid #cbd5e0; margin: 12px 0 20px; flex-wrap: wrap; font-size: 13px; }
+  .arch-box { background: #2c5282; color: #fff; padding: 8px 12px; border-radius: 4px; text-align: center; font-size: 12px; }
+  .arch-box small { display: block; font-size: 10px; opacity: 0.8; }
+  .arch-arrow { color: #4a5568; font-size: 18px; }
+
+  /* Note star */
+  .star-note { font-size: 12px; color: #718096; margin-top: -10px; margin-bottom: 16px; font-style: italic; }
+
+  p { margin-bottom: 12px; }
+  ul { padding-left: 22px; margin-bottom: 12px; }
+  li { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ═══════════════════════════════════════════════════ EN-TÊTE ═══ -->
+  <div class="doc-header">
+    <h1>Module IA Prédictif — HR Analytics</h1>
+    <div class="subtitle">Plan Complet : Conception · Implémentation · Affichage</div>
+    <table class="meta-table">
+      <tr><td>3 Prédictions</td><td>Absentéisme · Burnout · Non-Atteinte OKR</td></tr>
+      <tr><td>Acteurs</td><td>Admin RH · Responsable RH · Manager Équipe</td></tr>
+      <tr><td>Stack IA</td><td>Python · scikit-learn · Flask · Spring Boot · Angular</td></tr>
+      <tr><td>Architecture</td><td>Microservice Flask (port 5001) + Proxy Spring Boot</td></tr>
+      <tr><td>Workload</td><td>Retiré du périmètre (sans portail employé)</td></tr>
+      <tr><td>Durée totale estimée</td><td>~18h avec outils IA (Cursor · Copilot · Claude · ChatGPT)</td></tr>
+    </table>
+    <p class="doc-intro">Ce document couvre l'intégralité du module IA : contexte métier, choix des prédictions, features engineering, entraînement des modèles, microservice Flask, intégration Spring Boot, et affichage complet dans Angular avec maquettes visuelles pour les 3 acteurs.</p>
+  </div>
+
+
+  <!-- ═════════════════════════════════════════ SECTION 1 ═══════════ -->
+  <h1 class="section">1. Contexte, Justification et Architecture Globale</h1>
+
+  <h2 class="subsection">1.1 Pourquoi un Module IA dans ce Système RH ?</h2>
+  <p>L'application HR Analytics gère déjà les présences, absences, congés, évaluations et OKR. Ces données historiques constituent un dataset naturel pour entraîner des modèles prédictifs. Ajouter un module IA permet de passer d'un système réactif (constater les absences) à un système proactif (anticiper les risques).</p>
+
+  <table>
+    <tr><th>Acteur</th><th>Valeur ajoutée</th></tr>
+    <tr><td><strong>Admin RH</strong></td><td>Vue globale des risques sur tous les employés, aide à la décision pour les politiques RH</td></tr>
+    <tr><td><strong>Responsable RH</strong></td><td>Identification proactive des employés à risque avant que la situation ne se dégrade</td></tr>
+    <tr><td><strong>Manager Équipe</strong></td><td>Alertes sur son équipe directe pour planifier les remplacements et ajuster la charge</td></tr>
+  </table>
+
+  <h2 class="subsection">1.2 Les 3 Prédictions Choisies et leur Justification</h2>
+  <table>
+    <tr><th>#</th><th>Prédiction</th><th>Type ML</th><th>Acteurs</th><th>Justification principale</th></tr>
+    <tr><td><strong>P1</strong></td><td><strong>Risque d'Absentéisme</strong></td><td>Classification binaire</td><td>Manager + RH</td><td>Données les plus riches (attendance). Résultat actionnable immédiatement.</td></tr>
+    <tr><td><strong>P2</strong></td><td><strong>Risque de Burnout</strong></td><td>Classification binaire</td><td>Manager + RH</td><td>Sujet tendance en People Analytics. Construit sur overtime + maladie + refus congés.</td></tr>
+    <tr><td><strong>P3</strong></td><td><strong>Non-Atteinte des OKR</strong></td><td>Classification binaire</td><td>Manager</td><td>Unique : croise RH et performance business. Démontre la valeur stratégique du module.</td></tr>
+  </table>
+
+  <h2 class="subsection">1.3 Architecture Globale du Module IA</h2>
+  <div class="arch">
+    <div class="arch-box">PostgreSQL<small>Données brutes</small></div>
+    <span class="arch-arrow">→</span>
+    <div class="arch-box">Python<small>Features + Entraînement</small></div>
+    <span class="arch-arrow">→</span>
+    <div class="arch-box">Flask :5001<small>3 endpoints /predict</small></div>
+    <span class="arch-arrow">→</span>
+    <div class="arch-box">Spring Boot<small>Proxy + /api/predictions</small></div>
+    <span class="arch-arrow">→</span>
+    <div class="arch-box">Angular<small>Dashboard IA</small></div>
+  </div>
+
+
+  <!-- ══════════════════════════════════ PRÉDICTION 1 ══════════════ -->
+  <div class="pred-header">PRÉDICTION 1</div>
+  <div class="pred-subheader">Risque d'Absentéisme</div>
+
+  <h2 class="subsection">2.1 Définition Métier et Variable Cible</h2>
+  <table>
+    <tr><th>Paramètre</th><th>Détail</th></tr>
+    <tr><td><strong>Objectif</strong></td><td>Prédire la probabilité qu'un employé soit absent au moins 1 jour dans les 30 prochains jours.</td></tr>
+    <tr><td><strong>Acteurs</strong></td><td>Responsable RH (vue globale) + Manager Équipe (son équipe directe)</td></tr>
+    <tr><td><strong>Utilité concrète</strong></td><td>Anticiper les absences, organiser les remplacements, déclencher un entretien préventif.</td></tr>
+    <tr><td><strong>Type de modèle</strong></td><td>Classification binaire — sortie : probabilité [0,1] + niveau de risque LOW / MEDIUM / HIGH</td></tr>
+  </table>
+
+  <table class="info-box">
+    <tr><td>
+      <strong>Définition de la Variable Cible</strong><br>
+      Pour chaque employé et chaque snapshot mensuel :<br>
+      <code>target = 1</code> → l'employé a au moins 1 jour d'absence dans les 30 jours suivant la date de snapshot<br>
+      <code>target = 0</code> → l'employé est présent tous les jours ouvrés sur la même période<br><br>
+      Méthode : pour chaque mois historique M, calculer les features à M et la target sur M+1.<br>
+      Chaque ligne du dataset = 1 employé × 1 mois. Ex : 80 employés × 12 mois = 960 lignes.
+    </td></tr>
+  </table>
+
+  <h2 class="subsection">2.2 Features — Variables d'Entrée</h2>
+  <table>
+    <tr><th>Feature</th><th>Table SQL</th><th>Description &amp; Calcul</th></tr>
+    <tr><td><strong>★ taux_absence_30j</strong></td><td>attendance</td><td>Nb jours is_present=false / total jours sur 30j — feature la plus prédictive</td></tr>
+    <tr><td><strong>★ taux_absence_90j</strong></td><td>attendance</td><td>Même calcul sur 90j — capte les tendances longues</td></tr>
+    <tr><td><strong>★ nb_retards_30j</strong></td><td>attendance</td><td>COUNT(is_late=true) sur 30j — signal de désengagement</td></tr>
+    <tr><td><strong>★ nb_absences_maladie_12m</strong></td><td>absence_requests</td><td>COUNT(absence_type=maladie) sur 12 mois — proxy santé dégradée</td></tr>
+    <tr><td>nb_conges_approuves_12m</td><td>absence_requests</td><td>Congés légitimes pris — distinction avec absences non justifiées</td></tr>
+    <tr><td>nb_refus_conges_12m</td><td>absence_requests</td><td>Refus accumulés → frustration → absences non déclarées</td></tr>
+    <tr><td>overtime_moyen_30j</td><td>attendance</td><td>Moyenne overtime_hours — surcharge mène à l'épuisement</td></tr>
+    <tr><td>solde_conges_restant</td><td>leave_balances</td><td>Solde nul force l'absence non justifiée</td></tr>
+    <tr><td>dept_taux_absence</td><td>attendance + employees</td><td>Taux moyen du département — effet de contagion</td></tr>
+    <tr><td>anciennete_annees</td><td>employees</td><td>EXTRACT(YEAR FROM AGE(NOW(), hire_date))</td></tr>
+    <tr><td>age</td><td>employees</td><td>AGE depuis date_of_birth — corrélation avec types d'absence</td></tr>
+  </table>
+  <p class="star-note">★ = features minimales si dataset &lt; 100 employés. Les autres s'ajoutent si les données le permettent.</p>
+
+  <h2 class="subsection">2.3 Modèle et Entraînement</h2>
+  <h3 class="sub3">Choix du modèle : Random Forest + Régression Logistique (comparaison)</h3>
+  <ul>
+    <li><strong>Régression Logistique</strong> : interprétable, coefficients = importance des features, idéale pour expliquer au jury</li>
+    <li><strong>Random Forest</strong> : meilleure performance, fournit <code>feature_importances_</code>, robuste aux valeurs manquantes</li>
+    <li><strong>Stratégie</strong> : entraîner les deux, comparer via AUC (courbe ROC), présenter les deux résultats dans le rapport PFE</li>
+  </ul>
+
+  <h3 class="sub3">Code Python — Extraction des features</h3>
+<pre><code># ── 1. Connexion et extraction des features ──────────────────────────────
+import pandas as pd
+from sqlalchemy import create_engine
+
+engine = create_engine("postgresql://postgres:PASSWORD@localhost/hr_database")
+
+sql_abs = """
+WITH att AS (
+  SELECT employee_id,
+    COUNT(CASE WHEN is_present=false AND attendance_date >= NOW()-INTERVAL '30 days'
+         THEN 1 END)::float / NULLIF(COUNT(CASE WHEN attendance_date >= NOW()-INTERVAL '30 days'
+         THEN 1 END),0)                                      AS taux_absence_30j,
+    COUNT(CASE WHEN is_present=false AND attendance_date >= NOW()-INTERVAL '90 days'
+         THEN 1 END)::float / NULLIF(COUNT(CASE WHEN attendance_date >= NOW()-INTERVAL '90 days'
+         THEN 1 END),0)                                      AS taux_absence_90j,
+    COUNT(CASE WHEN is_late=true AND attendance_date >= NOW()-INTERVAL '30 days'
+         THEN 1 END)                                         AS nb_retards_30j,
+    AVG(CASE WHEN attendance_date >= NOW()-INTERVAL '30 days'
+        THEN overtime_hours ELSE NULL END)                   AS overtime_moyen_30j
+  FROM attendance GROUP BY employee_id
+),
+ab AS (
+  SELECT employee_id,
+    COUNT(CASE WHEN absence_type='maladie' AND start_date >= NOW()-INTERVAL '12 months'
+         THEN 1 END)                                         AS nb_maladie_12m,
+    COUNT(CASE WHEN status='APPROVED' AND start_date >= NOW()-INTERVAL '12 months'
+         THEN 1 END)                                         AS nb_approuves_12m,
+    COUNT(CASE WHEN status='REJECTED' AND start_date >= NOW()-INTERVAL '12 months'
+         THEN 1 END)                                         AS nb_refus_12m
+  FROM absence_requests GROUP BY employee_id
+),
+dept AS (
+  SELECT e.department_id,
+    COUNT(CASE WHEN a.is_present=false THEN 1 END)::float / NULLIF(COUNT(*),0) AS dept_taux
+  FROM attendance a JOIN employees e ON a.employee_id=e.employee_id
+  GROUP BY e.department_id
+)
+SELECT e.employee_id,
+  COALESCE(att.taux_absence_30j,0)   AS taux_absence_30j,
+  COALESCE(att.taux_absence_90j,0)   AS taux_absence_90j,
+  COALESCE(att.nb_retards_30j,0)     AS nb_retards_30j,
+  COALESCE(att.overtime_moyen_30j,0) AS overtime_moyen_30j,
+  COALESCE(ab.nb_maladie_12m,0)      AS nb_maladie_12m,
+  COALESCE(ab.nb_approuves_12m,0)    AS nb_approuves_12m,
+  COALESCE(ab.nb_refus_12m,0)        AS nb_refus_12m,
+  COALESCE(dept.dept_taux,0)         AS dept_taux_absence,
+  EXTRACT(YEAR FROM AGE(NOW(),e.hire_date))     AS anciennete,
+  EXTRACT(YEAR FROM AGE(NOW(),e.date_of_birth)) AS age,
+  CASE WHEN EXISTS (
+    SELECT 1 FROM attendance a2
+    WHERE a2.employee_id=e.employee_id AND a2.is_present=false
+    AND a2.attendance_date BETWEEN NOW() AND NOW()+INTERVAL '30 days'
+  ) THEN 1 ELSE 0 END                           AS target_absence
+FROM employees e
+LEFT JOIN att  ON e.employee_id=att.employee_id
+LEFT JOIN ab   ON e.employee_id=ab.employee_id
+LEFT JOIN dept ON e.department_id=dept.department_id
+"""
+
+df = pd.read_sql(sql_abs, engine)
+df.fillna(0, inplace=True)
+print(f"Dataset : {len(df)} lignes │ Target=1 : {df.target_absence.sum()}")</code></pre>
+
+  <h3 class="sub3">Code Python — Entraînement, Métriques et Sauvegarde</h3>
+<pre><code># ── 2. Entraînement et évaluation ────────────────────────────────────────
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import classification_report, roc_auc_score, roc_curve
+import matplotlib.pyplot as plt
+import joblib
+
+FEATS = ["taux_absence_30j","taux_absence_90j","nb_retards_30j","overtime_moyen_30j",
+         "nb_maladie_12m","nb_approuves_12m","nb_refus_12m","dept_taux_absence",
+         "anciennete","age"]
+
+X = df[FEATS]
+y = df["target_absence"]
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+scaler = StandardScaler()
+X_tr_s, X_te_s = scaler.fit_transform(X_tr), scaler.transform(X_te)
+
+# Modèle 1 — Régression Logistique
+lr = LogisticRegression(max_iter=500, random_state=42)
+lr.fit(X_tr_s, y_tr)
+print(f"LR  AUC={roc_auc_score(y_te, lr.predict_proba(X_te_s)[:,1]):.3f}")
+
+# Modèle 2 — Random Forest
+rf = RandomForestClassifier(n_estimators=100, random_state=42)
+rf.fit(X_tr, y_tr)
+print(f"RF  AUC={roc_auc_score(y_te, rf.predict_proba(X_te)[:,1]):.3f}")
+
+# Courbe ROC
+for model, X_eval, label in [(lr,X_te_s,"Logistic Reg"),(rf,X_te,"Random Forest")]:
+    fpr, tpr, _ = roc_curve(y_te, model.predict_proba(X_eval)[:,1])
+    plt.plot(fpr, tpr, label=f"{label} (AUC={roc_auc_score(y_te, model.predict_proba(X_eval)[:,1]):.2f})")
+plt.plot([0,1],[0,1],"k--")
+plt.title("Courbe ROC — Risque Absentéisme")
+plt.legend(); plt.savefig("roc_absenteisme.png", dpi=150)
+
+# Feature importances
+import pandas as pd
+pd.Series(rf.feature_importances_, index=FEATS).sort_values().plot(
+    kind="barh", color="crimson", figsize=(8,5))
+plt.title("Feature Importances — Absentéisme")
+plt.savefig("feat_imp_absenteisme.png", dpi=150)
+
+# Sauvegarde
+joblib.dump(rf,     "model_absenteisme.pkl")
+joblib.dump(scaler, "scaler_absenteisme.pkl")</code></pre>
+
+  <h2 class="subsection">2.4 Affichage Angular — Où et Comment</h2>
+  <table>
+    <tr><th>Page Angular</th><th>Acteur</th><th>Détail d'affichage</th></tr>
+    <tr><td><strong>Dashboard Manager</strong></td><td>Manager Équipe</td><td>Carte de risque sur chaque ligne du tableau employé</td></tr>
+    <tr><td><strong>Vue Employé (détail)</strong></td><td>Manager + RH</td><td>Section "Analyse Prédictive" avec gauge et historique</td></tr>
+    <tr><td><strong>Dashboard RH Global</strong></td><td>Responsable RH</td><td>Liste triée par risque décroissant + filtres département</td></tr>
+    <tr><td><strong>Page Rapports IA</strong></td><td>Admin RH</td><td>Tableau complet de tous les employés avec les 3 scores</td></tr>
+  </table>
+
+  <h3 class="sub3">Maquette — Colonne Risque dans le tableau équipe (Dashboard Manager)</h3>
+  <div class="mockup">[ TABLEAU ÉQUIPE — Dashboard Manager ]
+Colonne "Risque IA" dans le tableau des employés
+
+Dupont Jean  │ Présent │ Dept: IT │ [ ██████████░░░  73%  ÉLEVÉ  ▲ ]
+Martin Sara  │ Présent │ Dept: RH │ [ ████░░░░░░░░░  32%  MOYEN  ► ]
+Karim Ali    │ Absent  │ Dept: IT │ [ ██░░░░░░░░░░░  18%  FAIBLE ▼ ]
+
+Code couleur : ÉLEVÉ = rouge (#ef4444) │ MOYEN = orange (#f59e0b) │ FAIBLE = vert (#22c55e)
+Clic sur la ligne → page détail employé avec analyse complète</div>
+
+  <h3 class="sub3">Maquette — Section IA dans la page Détail Employé</h3>
+  <div class="mockup">[ PAGE DÉTAIL EMPLOYÉ — Section "Analyse Prédictive" ]
+
+RISQUE D'ABSENTÉISME (30 jours)
+Score : 73%      Niveau : ÉLEVÉ
+████████████████████░░░░  73 / 100
+
+Facteurs contributifs (feature importances)
+taux_absence_30j    ████████████  42%  (principal)
+nb_absences_maladie ██████        21%
+nb_retards_30j      ████          16%
+overtime_moyen      ███           12%
+autres              ██             9%
+
+Mise à jour : aujourd'hui à 08h00  │  [ Actualiser ]  [ Voir Historique ]</div>
+
+  <h3 class="sub3">Code Angular — RiskCardComponent (réutilisable pour les 3 prédictions)</h3>
+<pre><code>// risk-card.component.ts
+import { Component, Input } from "@angular/core";
+import { CommonModule } from "@angular/common";
+
+export interface PredictionResult {
+  riskProba: number;         // 0.0 à 1.0
+  riskLevel: "LOW" | "MEDIUM" | "HIGH";
+  riskLabel: string;
+  topFeatures?: { name: string; importance: number }[];
+}
+
+@Component({
+  selector: "app-risk-card",
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    &lt;div class="risk-card" [class]="result.riskLevel.toLowerCase()"&gt;
+      &lt;div class="risk-header"&gt;
+        &lt;span class="risk-icon"&gt;
+          {{ result.riskLevel === "HIGH" ? "🔴" :
+             result.riskLevel === "MEDIUM" ? "🟡" : "🟢" }}
+        &lt;/span&gt;
+        &lt;span class="risk-title"&gt;{{ result.riskLabel }}&lt;/span&gt;
+        &lt;span class="risk-badge {{ result.riskLevel.toLowerCase() }}"&gt;
+          {{ result.riskLevel === "HIGH" ? "ÉLEVÉ" :
+             result.riskLevel === "MEDIUM" ? "MOYEN" : "FAIBLE" }}
+        &lt;/span&gt;
+      &lt;/div&gt;
+      &lt;div class="risk-score"&gt;{{ (result.riskProba * 100).toFixed(0) }}%&lt;/div&gt;
+      &lt;div class="risk-bar-track"&gt;
+        &lt;div class="risk-bar-fill {{ result.riskLevel.toLowerCase() }}"
+             [style.width.%]="result.riskProba * 100"&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class="risk-features" *ngIf="result.topFeatures"&gt;
+        &lt;div *ngFor="let f of result.topFeatures" class="feature-row"&gt;
+          &lt;span class="feat-name"&gt;{{ f.name }}&lt;/span&gt;
+          &lt;div class="feat-bar"&gt;&lt;div [style.width.%]="f.importance * 100"&gt;&lt;/div&gt;&lt;/div&gt;
+          &lt;span class="feat-pct"&gt;{{ (f.importance*100).toFixed(0) }}%&lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;`
+})
+export class RiskCardComponent {
+  @Input() result!: PredictionResult;
+}</code></pre>
+
+
+  <!-- ══════════════════════════════════ PRÉDICTION 2 ══════════════ -->
+  <div class="pred-header">PRÉDICTION 2</div>
+  <div class="pred-subheader">Risque de Burnout / Surcharge</div>
+
+  <h2 class="subsection">3.1 Définition Métier et Variable Cible</h2>
+  <table>
+    <tr><th>Paramètre</th><th>Détail</th></tr>
+    <tr><td><strong>Objectif</strong></td><td>Détecter les signaux faibles de surcharge ou d'épuisement professionnel sur 60 jours.</td></tr>
+    <tr><td><strong>Acteurs</strong></td><td>Manager Équipe (alertes proactives) + Responsable RH (tableau de bord bien-être)</td></tr>
+    <tr><td><strong>Utilité concrète</strong></td><td>Déclencher un entretien préventif, ajuster la charge, proposer des congés avant l'arrêt maladie.</td></tr>
+    <tr><td><strong>Originalité</strong></td><td>Croise heures supplémentaires, absences maladie et refus de congés — sans données workload.</td></tr>
+  </table>
+
+  <table class="info-box">
+    <tr><td>
+      <strong>Définition de la Variable Cible — Règle Métier (sans Workload)</strong><br>
+      Un employé est classé "à risque de burnout" (<code>target = 1</code>) si au moins 2 des 3 signaux suivants sont présents sur les 60 derniers jours :<br><br>
+      <strong>Signal Surcharge :</strong> overtime_hours moyen &gt; 2h/jour OU présences weekend &gt; 4 fois<br>
+      <strong>Signal Désengagement :</strong> taux_absence_60j &gt; 15% OU nb_retards_60j &gt; 6<br>
+      <strong>Signal Santé :</strong> nb_absences_maladie_60j ≥ 2 OU delta_note_eval &lt; -1 (baisse de note)<br><br>
+      Cette règle est académiquement valide car basée sur des indicateurs RH reconnus (Maslach, 1996).
+    </td></tr>
+  </table>
+
+  <h2 class="subsection">3.2 Features — Variables d'Entrée</h2>
+  <table>
+    <tr><th>Feature</th><th>Table SQL</th><th>Description &amp; Calcul</th></tr>
+    <tr><td><strong>★ overtime_moyen_60j</strong></td><td>attendance</td><td>AVG(overtime_hours) sur 60j — principal signal de surcharge</td></tr>
+    <tr><td><strong>★ overtime_max_semaine</strong></td><td>attendance</td><td>Max hebdomadaire d'OT — pic exceptionnel de stress</td></tr>
+    <tr><td><strong>★ nb_absences_maladie_60j</strong></td><td>absence_requests</td><td>Congés maladie sur 60j — signal de santé dégradée</td></tr>
+    <tr><td><strong>★ nb_retards_60j</strong></td><td>attendance</td><td>COUNT(is_late=true) sur 60j — signe de démotivation</td></tr>
+    <tr><td><strong>★ taux_absence_60j</strong></td><td>attendance</td><td>Taux d'absences global sur 60j</td></tr>
+    <tr><td><strong>★ delta_note_eval</strong></td><td>employee_evaluations</td><td>Dernière note - avant-dernière note — tendance baisse</td></tr>
+    <tr><td>nb_weekend_presents</td><td>attendance</td><td>Nb jours weekend is_present=true — culture présentéisme</td></tr>
+    <tr><td>nb_conges_refuses_60j</td><td>absence_requests</td><td>Refus récents — incapacité à récupérer</td></tr>
+    <tr><td>duree_moy_conges_refuses</td><td>absence_requests</td><td>Durée moyenne des demandes rejetées — frustration</td></tr>
+    <tr><td>derniere_note_eval</td><td>employee_evaluations</td><td>Dernier rating absolu (1-5)</td></tr>
+    <tr><td>dept_overtime_moyen</td><td>attendance + employees</td><td>Overtime moyen du département — culture collective</td></tr>
+    <tr><td>anciennete_annees</td><td>employees</td><td>Corrélation avec résilience au stress</td></tr>
+  </table>
+
+  <h2 class="subsection">3.3 Code Python — Extraction Features Burnout</h2>
+<pre><code># ── Extraction features Burnout ──────────────────────────────────────────
+sql_burnout = """
+WITH att60 AS (
+  SELECT employee_id,
+    AVG(overtime_hours)                                             AS ot_moyen_60j,
+    MAX(overtime_hours)                                             AS ot_max,
+    COUNT(CASE WHEN is_present=false THEN 1 END)::float/
+      NULLIF(COUNT(*),0)                                            AS taux_abs_60j,
+    COUNT(CASE WHEN is_late=true THEN 1 END)                        AS nb_retards_60j,
+    COUNT(CASE WHEN EXTRACT(DOW FROM attendance_date) IN (0,6)
+         AND is_present=true THEN 1 END)                            AS nb_weekend
+  FROM attendance
+  WHERE attendance_date >= NOW()-INTERVAL '60 days'
+  GROUP BY employee_id
+),
+ab60 AS (
+  SELECT employee_id,
+    COUNT(CASE WHEN absence_type='maladie' THEN 1 END)             AS nb_maladie_60j,
+    COUNT(CASE WHEN status='REJECTED' THEN 1 END)                   AS nb_refuses_60j,
+    COALESCE(AVG(CASE WHEN status='REJECTED'
+        THEN EXTRACT(DAY FROM end_date-start_date) END),0)          AS duree_moy_ref
+  FROM absence_requests
+  WHERE start_date >= NOW()-INTERVAL '60 days'
+  GROUP BY employee_id
+),
+eval_data AS (
+  SELECT employee_id,
+    FIRST_VALUE(rating) OVER(PARTITION BY employee_id ORDER BY evaluated_at DESC) AS last_note,
+    FIRST_VALUE(rating) OVER(PARTITION BY employee_id ORDER BY evaluated_at DESC) -
+    NTH_VALUE(rating,2) OVER(PARTITION BY employee_id ORDER BY evaluated_at DESC
+      ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)     AS delta_note
+  FROM employee_evaluations
+)
+SELECT e.employee_id,
+  COALESCE(a.ot_moyen_60j,0)   AS overtime_moyen_60j,
+  COALESCE(a.ot_max,0)         AS overtime_max,
+  COALESCE(a.taux_abs_60j,0)   AS taux_absence_60j,
+  COALESCE(a.nb_retards_60j,0) AS nb_retards_60j,
+  COALESCE(a.nb_weekend,0)     AS nb_weekend_presents,
+  COALESCE(b.nb_maladie_60j,0) AS nb_maladie_60j,
+  COALESCE(b.nb_refuses_60j,0) AS nb_refuses_60j,
+  COALESCE(b.duree_moy_ref,0)  AS duree_moy_refuses,
+  COALESCE(ev.last_note,3)     AS derniere_note,
+  COALESCE(ev.delta_note,0)    AS delta_note,
+  EXTRACT(YEAR FROM AGE(NOW(),e.hire_date)) AS anciennete
+FROM employees e
+LEFT JOIN att60 a   ON e.employee_id=a.employee_id
+LEFT JOIN ab60 b    ON e.employee_id=b.employee_id
+LEFT JOIN eval_data ev ON e.employee_id=ev.employee_id
+"""
+
+df_b = pd.read_sql(sql_burnout, engine)
+df_b.fillna(0, inplace=True)
+
+# Générer la target par règle des 3 signaux
+sig1 = ((df_b.overtime_moyen_60j > 2) | (df_b.nb_weekend_presents > 4)).astype(int)
+sig2 = ((df_b.taux_absence_60j > 0.15) | (df_b.nb_retards_60j > 6)).astype(int)
+sig3 = ((df_b.nb_maladie_60j >= 2) | (df_b.delta_note < -1)).astype(int)
+df_b["target_burnout"] = ((sig1+sig2+sig3) >= 2).astype(int)
+
+FEATS_B = ["overtime_moyen_60j","overtime_max","taux_absence_60j","nb_retards_60j",
+           "nb_weekend_presents","nb_maladie_60j","nb_refuses_60j","duree_moy_refuses",
+           "derniere_note","delta_note","dept_overtime_moyen","anciennete"]
+
+X_b = df_b[FEATS_B]; y_b = df_b["target_burnout"]
+X_tr_b, X_te_b, y_tr_b, y_te_b = train_test_split(X_b, y_b, test_size=0.2, random_state=42)
+
+rf_b = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_b.fit(X_tr_b, y_tr_b)
+print(classification_report(y_te_b, rf_b.predict(X_te_b)))
+
+# Arbre de décision visualisable (pour soutenance)
+from sklearn.tree import DecisionTreeClassifier, export_text
+dt = DecisionTreeClassifier(max_depth=4, random_state=42)
+dt.fit(X_tr_b, y_tr_b)
+print(export_text(dt, feature_names=FEATS_B))
+
+joblib.dump(rf_b, "model_burnout.pkl")</code></pre>
+
+  <h2 class="subsection">3.4 Affichage Angular — Où et Comment</h2>
+
+  <h3 class="sub3">Maquette — Widget Burnout dans le Dashboard Manager</h3>
+  <div class="mockup">[ DASHBOARD MANAGER — Onglet "Bien-être Équipe" ]
+
+ALERTES BURNOUT — Mon Équipe (5 membres)
+🔴  Dupont Jean    Score : 81%  [ RISQUE ÉLEVÉ ]  [ Planifier entretien ]
+🟡  Karim Ali      Score : 54%  [ RISQUE MOYEN ]  [ Surveiller ]
+🟢  Martin Sara    Score : 22%  [ Faible       ]
+🟢  Ben Ali Nour   Score : 15%  [ Faible       ]
+🟡  Trabelsi Ines  Score : 48%  [ RISQUE MOYEN ]  [ Surveiller ]
+
+Signaux détectés pour Dupont Jean :
+  ✓ Surcharge      : overtime moyen 3.2h/j (seuil : 2h)
+  ✓ Santé          : 3 absences maladie en 60 jours
+  ✓ Désengagement  : 8 retards sur 60 jours</div>
+
+  <h3 class="sub3">Maquette — Dashboard RH Global (Responsable RH)</h3>
+  <div class="mockup">[ DASHBOARD RH — Onglet "Risques RH" — Tous les Employés ]
+Filtres : [ Tous les départements ▼ ]  [ Tous les niveaux ▼ ]  [ Exporter CSV ]
+
+Nom              │ Dept │ Abs   │ Burnout │ OKR   │ Score Global
+──────────────────────────────────────────────────────────────────
+Dupont Jean      │ IT   │ 🔴73% │ 🔴 81%  │ 🟡45% │ ⚠️ CRITIQUE
+Trabelsi Ines    │ RH   │ 🟡42% │ 🟡 48%  │ 🟢22% │ ⚠️ ATTENTION
+Ben Ali Nour     │ FIN  │ 🟢18% │ 🟢 15%  │ 🟢10% │ ✅ NORMAL
+
+Tri par défaut : Score Global décroissant</div>
+
+
+  <!-- ══════════════════════════════════ PRÉDICTION 3 ══════════════ -->
+  <div class="pred-header">PRÉDICTION 3</div>
+  <div class="pred-subheader">Risque de Non-Atteinte des OKR</div>
+
+  <h2 class="subsection">4.1 Définition Métier et Variable Cible</h2>
+  <table>
+    <tr><th>Paramètre</th><th>Détail</th></tr>
+    <tr><td><strong>Objectif</strong></td><td>Prédire si un objectif d'équipe (TeamObjective) ne sera pas atteint avant sa deadline.</td></tr>
+    <tr><td><strong>Acteurs</strong></td><td>Manager Équipe (ses objectifs) + Responsable RH (vue portefeuille OKR global)</td></tr>
+    <tr><td><strong>Utilité concrète</strong></td><td>Déclencher une révision de l'objectif, allouer des ressources, alerter le management.</td></tr>
+    <tr><td><strong>Originalité</strong></td><td>Seule prédiction qui croise données RH (absences) avec performance business (OKR).</td></tr>
+  </table>
+
+  <table class="info-box">
+    <tr><td>
+      <strong>Définition de la Variable Cible</strong><br>
+      <code>target = 1</code> → l'objectif a terminé avec progress_percentage &lt; 70% (échec)<br>
+      <code>target = 0</code> → l'objectif a terminé avec progress_percentage ≥ 70% (succès)<br><br>
+      Pour l'entraînement : utiliser uniquement les objectifs dont la deadline est passée (statut COMPLETED ou FAILED).<br>
+      Le seuil de 70% correspond à la définition standard "OKR partiellement atteint" (méthodologie OKR). Il peut être rendu configurable dans les KPI Thresholds existants.
+    </td></tr>
+  </table>
+
+  <h2 class="subsection">4.2 Features — Variables d'Entrée</h2>
+  <table>
+    <tr><th>Feature</th><th>Table SQL</th><th>Description &amp; Calcul</th></tr>
+    <tr><td><strong>★ progress_actuel</strong></td><td>team_objectives</td><td>progress_percentage actuel (0-100) — feature la plus prédictive</td></tr>
+    <tr><td><strong>★ ratio_jalons_completes</strong></td><td>objective_milestones</td><td>jalons COMPLETED / total jalons — rythme d'avancement</td></tr>
+    <tr><td><strong>★ jours_restants_ratio</strong></td><td>team_objectives</td><td>(deadline - TODAY) / (deadline - start_date) — temps restant en %</td></tr>
+    <tr><td><strong>★ taux_absence_equipe_30j</strong></td><td>attendance + members</td><td>Taux d'absence moyen des membres assignés sur 30j</td></tr>
+    <tr><td><strong>★ delta_progress_30j</strong></td><td>objective_progress_updates</td><td>Gain de progression réel sur les 30 derniers jours</td></tr>
+    <tr><td>nb_membres_absents_auj</td><td>attendance + members</td><td>Membres absents aujourd'hui — impact immédiat</td></tr>
+    <tr><td>nb_updates_30j</td><td>objective_progress_updates</td><td>Fréquence des updates — équipe active ou inactive</td></tr>
+    <tr><td>nb_membres</td><td>team_objective_members</td><td>Taille équipe — petites équipes plus vulnérables</td></tr>
+    <tr><td>has_action_plan</td><td>objective_action_plans</td><td>1 si plan d'action défini</td></tr>
+    <tr><td>nb_dependances</td><td>objective_dependencies</td><td>Dépendances vers autres objectifs — risque de blocage</td></tr>
+    <tr><td>manager_taux_presence</td><td>attendance</td><td>Présence du manager lui-même — leadership factor</td></tr>
+  </table>
+
+  <h2 class="subsection">4.3 Code Python — Extraction et Entraînement OKR</h2>
+<pre><code># ── Extraction features OKR ──────────────────────────────────────────────
+sql_okr = """
+WITH members AS (
+  SELECT tom.objective_id,
+    COUNT(DISTINCT tom.employee_id)                                 AS nb_membres,
+    AVG(CASE WHEN a.is_present=false
+        AND a.attendance_date >= NOW()-INTERVAL '30 days'
+        THEN 1.0 ELSE 0.0 END)                                      AS taux_abs_equipe_30j,
+    SUM(CASE WHEN a.attendance_date=CURRENT_DATE
+        AND a.is_present=false THEN 1 ELSE 0 END)                   AS absents_auj
+  FROM team_objective_members tom
+  LEFT JOIN attendance a ON tom.employee_id=a.employee_id
+  GROUP BY tom.objective_id
+),
+milestones AS (
+  SELECT objective_id,
+    COUNT(CASE WHEN status='COMPLETED' THEN 1 END)::float /
+      NULLIF(COUNT(*),0)                                            AS ratio_jalons
+  FROM objective_milestones GROUP BY objective_id
+),
+updates AS (
+  SELECT objective_id,
+    COUNT(CASE WHEN updated_at >= NOW()-INTERVAL '30 days' THEN 1 END) AS nb_updates_30j,
+    COALESCE(MAX(CASE WHEN updated_at >= NOW()-INTERVAL '30 days'
+        THEN progress_value END) -
+    MIN(CASE WHEN updated_at >= NOW()-INTERVAL '30 days'
+        THEN progress_value END), 0)                                AS delta_progress_30j
+  FROM objective_progress_updates GROUP BY objective_id
+)
+SELECT o.objective_id,
+  o.progress_percentage                                             AS progress_actuel,
+  COALESCE(m.ratio_jalons,0)         AS ratio_jalons_completes,
+  GREATEST(0,
+    EXTRACT(DAY FROM o.deadline-NOW())::float /
+    NULLIF(EXTRACT(DAY FROM o.deadline-o.start_date),0))           AS jours_restants_ratio,
+  COALESCE(mem.taux_abs_equipe_30j,0) AS taux_absence_equipe,
+  COALESCE(upd.nb_updates_30j,0)     AS nb_updates_30j,
+  COALESCE(upd.delta_progress_30j,0) AS delta_progress_30j,
+  COALESCE(mem.nb_membres,1)         AS nb_membres,
+  CASE WHEN o.progress_percentage &lt; 70 THEN 1 ELSE 0 END          AS target_non_atteint
+FROM team_objectives o
+LEFT JOIN milestones m   ON o.objective_id=m.objective_id
+LEFT JOIN members   mem  ON o.objective_id=mem.objective_id
+LEFT JOIN updates   upd  ON o.objective_id=upd.objective_id
+WHERE o.deadline &lt; NOW()  -- entraînement sur objectifs terminés uniquement
+"""
+
+df_o = pd.read_sql(sql_okr, engine)
+df_o.fillna(0, inplace=True)
+
+FEATS_O = ["progress_actuel","ratio_jalons_completes","jours_restants_ratio",
+           "taux_absence_equipe","nb_absents_auj","nb_updates_30j","delta_progress_30j",
+           "nb_membres","has_action_plan","nb_dependances","manager_presence"]
+
+X_o = df_o[FEATS_O]; y_o = df_o["target_non_atteint"]
+X_tr_o, X_te_o, y_tr_o, y_te_o = train_test_split(X_o, y_o, test_size=0.2, random_state=42)
+
+rf_o = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_o.fit(X_tr_o, y_tr_o)
+print(f"OKR AUC : {roc_auc_score(y_te_o, rf_o.predict_proba(X_te_o)[:,1]):.3f}")
+
+pd.Series(rf_o.feature_importances_, index=FEATS_O).sort_values().plot(
+    kind="barh", color="purple", figsize=(8,5))
+plt.title("Feature Importances — OKR Non-Atteinte")
+plt.savefig("feat_imp_okr.png", dpi=150)
+joblib.dump(rf_o, "model_okr.pkl")</code></pre>
+
+  <h2 class="subsection">4.4 Affichage Angular — Où et Comment</h2>
+  <h3 class="sub3">Maquette — Section OKR Risk dans le Dashboard Manager</h3>
+  <div class="mockup">[ DASHBOARD MANAGER — Onglet "Mes OKR" ]
+
+OBJECTIFS EN COURS — Prédiction de Risque
+
+Objectif : Améliorer satisfaction client Q2
+  Avancement : ████████░░░░  65%  │  Deadline : 30/06/2026  │  Jours restants : 21
+  Risque IA  : 🔴  [ NON-ATTEINTE PROBABLE  74% ]
+  Facteurs   : Progression lente (+3% en 30j) │ 2 membres absents │ 1/4 jalons complétés
+
+Objectif : Réduire délai de traitement RH
+  Avancement : ████████████  88%  │  Deadline : 15/07/2026  │  Jours restants : 36
+  Risque IA  : 🟢  [ ATTEINTE PROBABLE  12% ]
+  Facteurs   : Bonne progression (+22% en 30j) │ Équipe présente │ Plan d'action actif</div>
+
+  <h3 class="sub3">Code Angular — Intégration dans la page OKR</h3>
+<pre><code>// okr-list.component.ts — Snippet d'intégration
+export class OkrListComponent implements OnInit {
+  objectives: ObjectiveWithRisk[] = [];
+
+  constructor(
+    private okrService: OkrService,
+    private predService: PredictionService
+  ) {}
+
+  ngOnInit() {
+    this.okrService.getMyObjectives().pipe(
+      switchMap(objectives =>
+        forkJoin(
+          objectives.map(obj =>
+            this.predService.getOkrRisk(obj.id).pipe(
+              map(risk => ({ ...obj, risk })),
+              catchError(() => of({ ...obj, risk: null }))
+            )
+          )
+        )
+      )
+    ).subscribe(data => this.objectives = data);
+  }
+}</code></pre>
+
+
+  <!-- ══════════════════════════════════ SECTION 5 ══════════════════ -->
+  <h1 class="section">5. Microservice Flask — Code Complet</h1>
+  <p>Un seul fichier Python (~80 lignes). Charge les 3 modèles au démarrage, expose 4 endpoints (3 prédictions + health check).</p>
+
+<pre><code># app.py — Microservice Flask unifié
+from flask import Flask, request, jsonify
+import joblib, numpy as np, os
+from functools import wraps
+
+app = Flask(__name__)
+
+# ── Chargement des modèles au démarrage ──────────────────────────────────
+MODEL_DIR = os.getenv("MODEL_DIR", "./models")
+try:
+    model_abs  = joblib.load(f"{MODEL_DIR}/model_absenteisme.pkl")
+    scaler_abs = joblib.load(f"{MODEL_DIR}/scaler_absenteisme.pkl")
+    model_burn = joblib.load(f"{MODEL_DIR}/model_burnout.pkl")
+    model_okr  = joblib.load(f"{MODEL_DIR}/model_okr.pkl")
+    print("[FLASK] Tous les modèles chargés avec succès.")
+except FileNotFoundError as e:
+    print(f"[FLASK] ERREUR chargement modèle : {e}")
+    raise
+
+# ── Utilitaires ──────────────────────────────────────────────────────────
+def risk_level(proba: float) -> str:
+    if proba >= 0.65: return "HIGH"
+    if proba >= 0.35: return "MEDIUM"
+    return "LOW"
+
+def risk_label_fr(level: str) -> str:
+    return {"HIGH":"Risque Élevé","MEDIUM":"Risque Moyen","LOW":"Risque Faible"}[level]
+
+def validate_payload(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        data = request.get_json(silent=True)
+        if not data or "features" not in data:
+            return jsonify({"error":"Payload invalide. Clé 'features' manquante."}), 400
+        return f(data, *args, **kwargs)
+    return wrapper
+
+# ── Endpoint 1 : Risque Absentéisme ─────────────────────────────────────
+@app.route("/predict/absenteisme", methods=["POST"])
+@validate_payload
+def predict_absenteisme(data):
+    try:
+        X = np.array([data["features"]], dtype=float)
+        X_s = scaler_abs.transform(X)
+        proba = float(model_abs.predict_proba(X_s)[0][1])
+        level = risk_level(proba)
+        return jsonify({
+            "prediction":  "absenteisme",
+            "employee_id": data.get("employee_id"),
+            "risk_proba":  round(proba, 3),
+            "risk_level":  level,
+            "risk_label":  f"Risque Absentéisme — {risk_label_fr(level)}",
+            "threshold":   {"HIGH": 0.65, "MEDIUM": 0.35}
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ── Endpoint 2 : Risque Burnout ──────────────────────────────────────────
+@app.route("/predict/burnout", methods=["POST"])
+@validate_payload
+def predict_burnout(data):
+    try:
+        X = np.array([data["features"]], dtype=float)
+        proba = float(model_burn.predict_proba(X)[0][1])
+        level = risk_level(proba)
+        return jsonify({
+            "prediction":  "burnout",
+            "employee_id": data.get("employee_id"),
+            "risk_proba":  round(proba, 3),
+            "risk_level":  level,
+            "risk_label":  f"Risque Burnout — {risk_label_fr(level)}"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ── Endpoint 3 : Risque Non-Atteinte OKR ────────────────────────────────
+@app.route("/predict/okr", methods=["POST"])
+@validate_payload
+def predict_okr(data):
+    try:
+        X = np.array([data["features"]], dtype=float)
+        proba = float(model_okr.predict_proba(X)[0][1])
+        level = risk_level(proba)
+        return jsonify({
+            "prediction":   "okr_risk",
+            "objective_id": data.get("objective_id"),
+            "risk_proba":   round(proba, 3),
+            "risk_level":   level,
+            "risk_label":   f"Risque Non-Atteinte OKR — {risk_label_fr(level)}"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ── Health check ─────────────────────────────────────────────────────────
+@app.route("/health")
+def health():
+    return jsonify({"status":"ok","models_loaded":3,"version":"1.0.0"})
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001, debug=False)</code></pre>
+
+  <h3 class="sub3">Démarrage et test du microservice</h3>
+<pre><code># Installer les dépendances
+pip install flask scikit-learn pandas sqlalchemy joblib numpy
+
+# Démarrer le microservice
+python app.py
+# [FLASK] Tous les modèles chargés avec succès.
+# * Running on http://0.0.0.0:5001
+
+# Tester depuis curl
+curl -X POST http://localhost:5001/predict/absenteisme \
+  -H "Content-Type: application/json" \
+  -d '{"employee_id": 42, "features": [0.15, 0.12, 3, 1.2, 2, 1, 0, 0.08, 4, 32]}'
+
+# Réponse attendue :
+# {"prediction":"absenteisme","employee_id":42,"risk_proba":0.623,"risk_level":"MEDIUM",
+#  "risk_label":"Risque Absentéisme — Risque Moyen","threshold":{"HIGH":0.65,"MEDIUM":0.35}}</code></pre>
+
+
+  <!-- ══════════════════════════════════ SECTION 6 ══════════════════ -->
+  <h1 class="section">6. Intégration Spring Boot — Code Complet</h1>
+
+  <h2 class="subsection">6.1 DTO Unifié et Service Principal</h2>
+<pre><code>// ── PredictionResponseDTO.java ────────────────────────────────────────────
+package com.hranalytics.hrbackend.ia.dto;
+
+public record PredictionResponseDTO(
+    String  prediction,
+    Integer subjectId,
+    Double  riskProba,
+    String  riskLevel,    // "LOW" | "MEDIUM" | "HIGH"
+    String  riskLabel
+) {}
+
+// ── PredictionService.java ────────────────────────────────────────────────
+package com.hranalytics.hrbackend.ia.service;
+
+@Service
+public class PredictionService {
+    private final RestTemplate rest = new RestTemplate();
+    private static final String FLASK = "http://localhost:5001/predict";
+
+    // ── P1 : Absentéisme ─────────────────────────────────────────────
+    public PredictionResponseDTO predictAbsenteisme(Integer empId) {
+        List&lt;Double&gt; features = List.of(
+            attRepo.calcTauxAbsence(empId, 30),
+            attRepo.calcTauxAbsence(empId, 90),
+            (double) attRepo.countRetards(empId, 30),
+            attRepo.avgOvertime(empId, 30),
+            (double) absRepo.countByType(empId, "maladie", 12),
+            (double) absRepo.countByStatus(empId, "APPROVED", 12),
+            (double) absRepo.countByStatus(empId, "REJECTED", 12),
+            attRepo.calcDeptTaux(empId),
+            empRepo.calcAnciennete(empId),
+            empRepo.calcAge(empId)
+        );
+        return callFlask("/absenteisme", empId, features, "employee_id");
+    }
+
+    // ── P2 : Burnout ──────────────────────────────────────────────────
+    public PredictionResponseDTO predictBurnout(Integer empId) {
+        List&lt;Double&gt; features = List.of(
+            attRepo.avgOvertime(empId, 60),
+            attRepo.maxOvertime(empId, 60),
+            attRepo.calcTauxAbsence(empId, 60),
+            (double) attRepo.countRetards(empId, 60),
+            (double) attRepo.countWeekendPresences(empId, 60),
+            (double) absRepo.countByType(empId, "maladie", 2),
+            (double) absRepo.countRefusesDays(empId, 60),
+            absRepo.avgDurationRefused(empId),
+            evalRepo.getLastRating(empId),
+            evalRepo.getDeltaRating(empId),
+            attRepo.calcDeptOvertimeMoyen(empId),
+            empRepo.calcAnciennete(empId)
+        );
+        return callFlask("/burnout", empId, features, "employee_id");
+    }
+
+    // ── P3 : OKR ──────────────────────────────────────────────────────
+    public PredictionResponseDTO predictOkr(Long objId) {
+        List&lt;Double&gt; features = List.of(
+            okrRepo.getProgress(objId),
+            okrRepo.getRatioJalons(objId),
+            okrRepo.getJoursRestantsRatio(objId),
+            attRepo.calcTeamTaux(objId, 30),
+            (double) attRepo.countTeamAbsentToday(objId),
+            (double) okrRepo.countUpdates(objId, 30),
+            okrRepo.getDeltaProgress(objId, 30),
+            (double) okrRepo.countMembers(objId),
+            okrRepo.hasActionPlan(objId) ? 1.0 : 0.0,
+            (double) okrRepo.countDependances(objId),
+            attRepo.getManagerPresence(objId)
+        );
+        return callFlask("/okr", objId.intValue(), features, "objective_id");
+    }
+
+    // ── Appel générique Flask ──────────────────────────────────────────
+    private PredictionResponseDTO callFlask(
+            String endpoint, Integer id,
+            List&lt;Double&gt; features, String idKey) {
+        try {
+            Map&lt;String, Object&gt; body = new HashMap&lt;&gt;();
+            body.put(idKey, id);
+            body.put("features", features);
+            return rest.postForObject(FLASK + endpoint, body, PredictionResponseDTO.class);
+        } catch (Exception e) {
+            return new PredictionResponseDTO(
+                "unavailable", id, null, "UNKNOWN",
+                "Prédiction indisponible — service IA hors ligne");
+        }
+    }
+}</code></pre>
+
+  <h2 class="subsection">6.2 Controller REST</h2>
+<pre><code>// PredictionController.java
+@RestController
+@RequestMapping("/api/predictions")
+@CrossOrigin(originPatterns = {"http://localhost:*"})
+public class PredictionController {
+    private final PredictionService svc;
+
+    // GET /api/predictions/absenteisme/{employeeId}
+    @GetMapping("/absenteisme/{employeeId}")
+    public ResponseEntity&lt;PredictionResponseDTO&gt; absenceRisk(
+            @PathVariable Integer employeeId) {
+        return ResponseEntity.ok(svc.predictAbsenteisme(employeeId));
+    }
+
+    // GET /api/predictions/burnout/{employeeId}
+    @GetMapping("/burnout/{employeeId}")
+    public ResponseEntity&lt;PredictionResponseDTO&gt; burnoutRisk(
+            @PathVariable Integer employeeId) {
+        return ResponseEntity.ok(svc.predictBurnout(employeeId));
+    }
+
+    // GET /api/predictions/okr/{objectiveId}
+    @GetMapping("/okr/{objectiveId}")
+    public ResponseEntity&lt;PredictionResponseDTO&gt; okrRisk(
+            @PathVariable Long objectiveId) {
+        return ResponseEntity.ok(svc.predictOkr(objectiveId));
+    }
+
+    // GET /api/predictions/employee/{id}/all — les 2 scores employé en un seul appel
+    @GetMapping("/employee/{employeeId}/all")
+    public ResponseEntity&lt;Map&lt;String, PredictionResponseDTO&gt;&gt; allRisks(
+            @PathVariable Integer employeeId) {
+        return ResponseEntity.ok(Map.of(
+            "absenteisme", svc.predictAbsenteisme(employeeId),
+            "burnout",     svc.predictBurnout(employeeId)
+        ));
+    }
+}</code></pre>
+
+
+  <!-- ══════════════════════════════════ SECTION 7 ══════════════════ -->
+  <h1 class="section">7. Plan d'Action Complet — Feuille de Route Implémentation</h1>
+  <p>4 phases. Durée totale estimée avec outils IA : <strong>18 heures</strong>.</p>
+
+  <table>
+    <tr class="phase-header"><td colspan="5">PHASE 1 — Préparation des Données &amp; Entraînement des Modèles (~6h)</td></tr>
+    <tr><th>#</th><th>Tâche</th><th>Prédiction</th><th>Durée</th><th>Outil IA</th></tr>
+    <tr><td>1</td><td>Installer Python + librairies (pandas, sklearn, flask, joblib, sqlalchemy)</td><td>—</td><td>20 min</td><td>Manuel</td></tr>
+    <tr><td>2</td><td>Écrire et tester la requête SQL features Absentéisme</td><td>P1</td><td>1h</td><td>Claude</td></tr>
+    <tr><td>3</td><td>Générer la variable target Absentéisme (snapshots mensuels)</td><td>P1</td><td>45 min</td><td>Claude</td></tr>
+    <tr><td>4</td><td>Entraîner LR + RF + sauvegarder + courbe ROC Absentéisme</td><td>P1</td><td>45 min</td><td>ChatGPT</td></tr>
+    <tr><td>5</td><td>Écrire et tester la requête SQL features Burnout</td><td>P2</td><td>1h</td><td>Claude</td></tr>
+    <tr><td>6</td><td>Générer la target Burnout (règle des 3 signaux)</td><td>P2</td><td>30 min</td><td>Claude</td></tr>
+    <tr><td>7</td><td>Entraîner RF + Arbre de Décision + export_text Burnout</td><td>P2</td><td>45 min</td><td>ChatGPT</td></tr>
+    <tr><td>8</td><td>Écrire et tester la requête SQL features OKR</td><td>P3</td><td>1h</td><td>Claude</td></tr>
+    <tr><td>9</td><td>Entraîner RF OKR + feature importances</td><td>P3</td><td>30 min</td><td>Copilot</td></tr>
+  </table>
+
+  <table>
+    <tr class="phase-header"><td colspan="5">PHASE 2 — Microservice Flask (~2h)</td></tr>
+    <tr><th>#</th><th>Tâche</th><th>Prédiction</th><th>Durée</th><th>Outil IA</th></tr>
+    <tr><td>10</td><td>Créer app.py Flask avec les 3 endpoints + health check</td><td>Commun</td><td>45 min</td><td>Claude</td></tr>
+    <tr><td>11</td><td>Créer le dossier models/ et y déplacer les 3 fichiers .pkl</td><td>Commun</td><td>10 min</td><td>Manuel</td></tr>
+    <tr><td>12</td><td>Tester les 3 endpoints depuis Postman/curl</td><td>Commun</td><td>30 min</td><td>Manuel</td></tr>
+    <tr><td>13</td><td>Vérifier la gestion d'erreurs (payload invalide, modèle absent)</td><td>Commun</td><td>35 min</td><td>Copilot</td></tr>
+  </table>
+
+  <table>
+    <tr class="phase-header"><td colspan="5">PHASE 3 — Intégration Spring Boot (~5h)</td></tr>
+    <tr><th>#</th><th>Tâche</th><th>Prédiction</th><th>Durée</th><th>Outil IA</th></tr>
+    <tr><td>14</td><td>Créer package com.hranalytics.hrbackend.ia (dto, service, controller)</td><td>Commun</td><td>15 min</td><td>Manuel</td></tr>
+    <tr><td>15</td><td>Implémenter PredictionResponseDTO (record Java)</td><td>Commun</td><td>10 min</td><td>Copilot</td></tr>
+    <tr><td>16</td><td>Ajouter les méthodes manquantes dans AttendanceRepository (JPQL)</td><td>Commun</td><td>1h30</td><td>Cursor</td></tr>
+    <tr><td>17</td><td>Ajouter les méthodes dans AbsenceRequestRepository et EmployeeRepository</td><td>Commun</td><td>1h</td><td>Cursor</td></tr>
+    <tr><td>18</td><td>Implémenter PredictionService.predictAbsenteisme()</td><td>P1</td><td>30 min</td><td>Cursor</td></tr>
+    <tr><td>19</td><td>Implémenter PredictionService.predictBurnout()</td><td>P2</td><td>30 min</td><td>Cursor</td></tr>
+    <tr><td>20</td><td>Implémenter PredictionService.predictOkr()</td><td>P3</td><td>30 min</td><td>Cursor</td></tr>
+    <tr><td>21</td><td>Implémenter PredictionController</td><td>Commun</td><td>20 min</td><td>Copilot</td></tr>
+    <tr><td>22</td><td>Tester chaque endpoint Spring Boot via Postman</td><td>Commun</td><td>30 min</td><td>Manuel</td></tr>
+  </table>
+
+  <table>
+    <tr class="phase-header"><td colspan="5">PHASE 4 — Intégration Angular — Dashboard IA (~5h)</td></tr>
+    <tr><th>#</th><th>Tâche</th><th>Prédiction</th><th>Durée</th><th>Outil IA</th></tr>
+    <tr><td>23</td><td>Créer PredictionResult interface + PredictionService Angular</td><td>Commun</td><td>30 min</td><td>Copilot</td></tr>
+    <tr><td>24</td><td>Implémenter RiskCardComponent réutilisable</td><td>Commun</td><td>1h</td><td>Cursor</td></tr>
+    <tr><td>25</td><td>Ajouter colonne "Risque Absentéisme" dans le tableau employés du Manager</td><td>P1</td><td>45 min</td><td>Copilot</td></tr>
+    <tr><td>26</td><td>Ajouter section "Analyse Prédictive" dans la page détail employé</td><td>P1</td><td>45 min</td><td>Cursor</td></tr>
+    <tr><td>27</td><td>Créer onglet "Bien-être Équipe" avec widget Burnout</td><td>P2</td><td>1h</td><td>Cursor</td></tr>
+    <tr><td>28</td><td>Ajouter colonne Risque OKR dans le tableau des objectifs</td><td>P3</td><td>45 min</td><td>Copilot</td></tr>
+    <tr><td>29</td><td>Créer page "Rapports IA" pour l'Admin RH (tableau 3 scores tous employés)</td><td>Commun</td><td>1h</td><td>Cursor</td></tr>
+    <tr><td>30</td><td>Test end-to-end complet : BDD → Flask → Spring → Angular</td><td>Commun</td><td>30 min</td><td>Manuel</td></tr>
+  </table>
+
+  <table>
+    <tr><th>Phase</th><th>P1 Absentéisme</th><th>P2 Burnout</th><th>P3 OKR</th><th>Total</th></tr>
+    <tr><td>Phase 1 — Données &amp; Modèles</td><td>2h30</td><td>2h</td><td>1h30</td><td><strong>~6h</strong></td></tr>
+    <tr><td>Phase 2 — Flask</td><td colspan="3" style="text-align:center">—</td><td><strong>~2h</strong></td></tr>
+    <tr><td>Phase 3 — Spring Boot</td><td>30 min</td><td>30 min</td><td>30 min</td><td><strong>~5h</strong></td></tr>
+    <tr><td>Phase 4 — Angular</td><td>1h30</td><td>1h</td><td>45 min</td><td><strong>~5h</strong></td></tr>
+    <tr class="phase-total"><td><strong>TOTAL MODULE IA</strong></td><td><strong>~4h30</strong></td><td><strong>~3h30</strong></td><td><strong>~3h</strong></td><td><strong>~18h</strong></td></tr>
+  </table>
+
+  <div class="tips-box">
+    <strong>Conseils pour la Soutenance</strong>
+    <ul>
+      <li>Préparer 3 graphiques feature importance côte à côte (un par prédiction) — visuellement très fort, montre que le modèle a réellement appris des patterns dans tes données.</li>
+      <li>Préparer une démo live : choisir un employé avec beaucoup d'absences → le score doit être HIGH. Spectaculaire et convaincant.</li>
+      <li>Si les données réelles sont insuffisantes (&lt; 50 employés avec historique), générer un dataset synthétique avec Python (faker + règles métier). Valide académiquement pour un PFE.</li>
+      <li>Préparer une slide "Architecture IA" : PostgreSQL → Python → Flask → Spring Boot → Angular. Montre la maîtrise de l'écosystème full-stack IA.</li>
+      <li>Être prêt à expliquer : pourquoi Random Forest ? (robuste, feature importances) — Pourquoi 3 signaux pour le burnout ? (littérature RH, Maslach 1996) — Pourquoi 70% comme seuil OKR ? (standard méthodologie OKR).</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

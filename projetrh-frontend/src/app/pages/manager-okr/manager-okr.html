@@ -143,17 +143,17 @@
             <article class="kpi-card">
               <div class="kpi-card-head"><span class="kpi-label">On track</span></div>
               <strong class="kpi-value green">{{ onTrackPercent }}%</strong>
-              <span class="kpi-subvalue">objectifs dans les temps</span>
+              <span class="kpi-subvalue">objectifs en cours dans les temps</span>
             </article>
             <article class="kpi-card">
               <div class="kpi-card-head"><span class="kpi-label">At risk</span></div>
               <strong class="kpi-value orange">{{ atRiskPercent }}%</strong>
-              <span class="kpi-subvalue">nécessitent une attention</span>
+              <span class="kpi-subvalue">en cours nécessitant une attention</span>
             </article>
             <article class="kpi-card">
               <div class="kpi-card-head"><span class="kpi-label">Off track</span></div>
               <strong class="kpi-value red">{{ offTrackPercent }}%</strong>
-              <span class="kpi-subvalue">action requise</span>
+              <span class="kpi-subvalue">en cours — action requise</span>
             </article>
             <article class="kpi-card">
               <div class="kpi-card-head"><span class="kpi-label">Échus non atteints</span></div>
@@ -166,18 +166,30 @@
             <div class="section-title-row">
               <h2>Portefeuille d'objectifs</h2>
               <div class="filters">
-                <select [(ngModel)]="selectedScope">
+                <div class="portfolio-search">
+                  <svg class="portfolio-search-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <input
+                    type="search"
+                    class="portfolio-search-input"
+                    [(ngModel)]="searchTerm"
+                    (ngModelChange)="onPortfolioFilterChange()"
+                    placeholder="Rechercher par objectif ou propriétaire…"
+                    aria-label="Rechercher dans le portefeuille d'objectifs"
+                  />
+                </div>
+                <select [(ngModel)]="selectedScope" (ngModelChange)="onPortfolioFilterChange()">
                   <option value="all">Toutes les portées</option>
                   <option value="Équipe">Équipe</option>
                   <option value="Individuel">Individuel</option>
                 </select>
-                <select [(ngModel)]="selectedRisk">
+                <select [(ngModel)]="selectedRisk" (ngModelChange)="onPortfolioFilterChange()">
                   <option value="all">Tous les statuts</option>
                   <option value="on_track">On track</option>
                   <option value="at_risk">At risk</option>
                   <option value="off_track">Off track</option>
                 </select>
-                <button class="btn-reset-icon" type="button" (click)="resetPortfolioFilters()" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres">×</button>
                 <button class="btn-export-excel" type="button" (click)="exportPortfolioExcel()" title="Exporter le portefeuille en Excel">
                   <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -196,14 +208,13 @@
                     <th>Horizon</th>
                     <th>Progression %</th>
                     <th>Statut risque</th>
-                    <th class="th-alertes">Alertes</th>
                     <th>Dépendances</th>
-                    <th>Dernière mise à jour</th>
+                    <th>Échéance</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let objective of sortedObjectives">
+                  <tr *ngFor="let objective of pagedPortfolioObjectives">
                     <td>
                       <div class="owner-cell">
                         <strong>{{ ownerLabel(objective) }}</strong>
@@ -220,18 +231,8 @@
                       </div>
                     </td>
                     <td><span [class]="riskClass(objective.risk)">{{ riskLabel(objective.risk) }}</span></td>
-                    <td class="alertes-cell">
-                      <span
-                        *ngIf="hasAbsenceImpact(objective.id)"
-                        class="alert-dot-wrap"
-                        title="Absence détectée dans les 15j avant l'échéance — voir Analyse & Risques"
-                        (click)="setTab('analyse'); highlightedObjectiveId = objective.id"
-                      >
-                        <span class="alert-dot"></span>
-                      </span>
-                    </td>
                     <td class="deps">{{ dependencyLabel(objective) }}</td>
-                    <td>{{ fmtDate(objective.lastUpdate) }}</td>
+                    <td>{{ fmtDate(objective.dueDate) }}</td>
                     <td class="obj-actions-cell">
                       <button type="button" class="obj-btn-view" title="Afficher" (click)="onOpenViewObjective(objective)">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -254,11 +255,29 @@
                         </svg>
                       </button>
                     </td>
+                  </tr>
                   <tr *ngIf="!sortedObjectives.length">
-                    <td colspan="8" class="empty">Aucun objectif trouvé</td>
+                    <td colspan="7" class="empty">Aucun objectif trouvé</td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            <div class="portfolio-pagination" *ngIf="sortedObjectives.length">
+              <span class="portfolio-page-info">
+                Page <strong>{{ portfolioPage }}</strong> / {{ portfolioTotalPages }}
+                <span class="portfolio-page-count">({{ sortedObjectives.length }} objectif{{ sortedObjectives.length > 1 ? 's' : '' }})</span>
+              </span>
+              <div class="portfolio-pagination-actions">
+                <button type="button" class="portfolio-page-btn portfolio-page-btn--edge" title="Première page"
+                        (click)="portfolioFirstPage()" [disabled]="portfolioPage <= 1">&laquo;</button>
+                <button type="button" class="portfolio-page-btn" title="Page précédente"
+                        (click)="portfolioPreviousPage()" [disabled]="portfolioPage <= 1">Précédent</button>
+                <button type="button" class="portfolio-page-btn" title="Page suivante"
+                        (click)="portfolioNextPage()" [disabled]="portfolioPage >= portfolioTotalPages">Suivant</button>
+                <button type="button" class="portfolio-page-btn portfolio-page-btn--edge" title="Dernière page"
+                        (click)="portfolioLastPage()" [disabled]="portfolioPage >= portfolioTotalPages">&raquo;</button>
+              </div>
             </div>
           </section>
         </div>
@@ -269,72 +288,29 @@
           <section class="grid-2">
             <article class="card">
               <h2>Heatmap retard / risque</h2>
-              <p class="hint">Axes : proximité échéance × niveau de retard. Drilldown équipe/collaborateur via filtres.</p>
-              <div class="heatmap">
-                <div class="heat-head"></div>
-                <div class="heat-head">Élevé</div>
-                <div class="heat-head">Moyen</div>
-                <div class="heat-head">Faible</div>
-                <ng-container *ngFor="let prox of ['<= 14 jours', '15-30 jours', '> 30 jours']">
-                  <div class="axis">{{ prox }}</div>
-                  <ng-container *ngFor="let delay of ['Élevé', 'Moyen', 'Faible']">
-                    <div [class]="heatLevelClass((heatmapCells.find(c => c.proximity === prox && c.delay === delay)?.count ?? 0))">
-                      {{ heatmapCells.find(c => c.proximity === prox && c.delay === delay)?.count ?? 0 }}
-                    </div>
-                  </ng-container>
-                </ng-container>
+              <p class="hint">Objectifs en cours uniquement — proximité échéance × niveau de retard.</p>
+              <div class="heatmap-chart-wrap">
+                <canvas #riskHeatmapCanvas aria-label="Heatmap retard et risque des objectifs"></canvas>
+              </div>
+              <div class="heatmap-legend">
+                <span class="heatmap-legend-item"><i class="swatch low"></i> Aucun</span>
+                <span class="heatmap-legend-item"><i class="swatch medium"></i> 1 objectif</span>
+                <span class="heatmap-legend-item"><i class="swatch high"></i> 2+ objectifs</span>
               </div>
             </article>
 
             <article class="card">
-              <h2>Timeline des jalons</h2>
-              <div class="timeline">
-                <div class="timeline-item" *ngFor="let milestone of milestoneTimeline">
-                  <div class="dot" [class.future]="milestone.state === 'a_venir'"></div>
-                  <div class="timeline-content">
-                    <div class="row">
-                      <strong>{{ milestone.label }}</strong>
-                      <span class="gap" [class.bad]="milestone.gapLabel.includes('retard') || milestone.gapLabel.startsWith('+')">{{ milestone.gapLabel }}</span>
-                    </div>
-                    <div class="meta">{{ milestone.owner }} - planifié : {{ fmtDate(milestone.plannedDate) }} <span *ngIf="milestone.actualDate">- réalisé : {{ fmtDate(milestone.actualDate) }}</span></div>
-                  </div>
-                </div>
-                <div *ngIf="!milestoneTimeline.length" class="empty">Aucun jalon à afficher.</div>
+              <h2>Analyse graphique</h2>
+              <p class="hint">Visualisation des tendances OKR — disponible prochainement.</p>
+              <div class="chart-placeholder" aria-hidden="true">
+                <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                  <line x1="18" y1="20" x2="18" y2="10"/>
+                  <line x1="12" y1="20" x2="12" y2="4"/>
+                  <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                <p class="chart-placeholder-title">Graphique à venir</p>
+                <p class="chart-placeholder-text">Évolution des objectifs, progression et risques.</p>
               </div>
-            </article>
-          </section>
-
-          <section class="grid-2">
-            <article class="card">
-              <h2>Dépendances bloquantes</h2>
-              <div class="dependency-list" *ngIf="blockingDependencies.length; else noDeps">
-                <div class="dependency-item" *ngFor="let objective of blockingDependencies">
-                  <div>
-                    <strong>{{ objective.id }} - {{ objective.titre }}</strong>
-                    <p>Impacté par : {{ dependencyLabel(objective) }}</p>
-                  </div>
-                  <span [class]="riskClass(objective.risk)">{{ riskLabel(objective.risk) }}</span>
-                </div>
-              </div>
-              <ng-template #noDeps>
-                <div class="empty">Aucune dépendance bloquante en cours.</div>
-              </ng-template>
-            </article>
-
-            <article class="card">
-              <h2>Actions recommandées</h2>
-              <div class="reco-list" *ngIf="recommendedActions.length; else noReco">
-                <div class="reco-row" *ngFor="let action of recommendedActions">
-                  <span class="reco-badge" [class.reco-replan]="action.type === 'Replanifier'" [class.reco-escalade]="action.type === 'Escalader'" [class.reco-renfort]="action.type === 'Renforcer capacité'">{{ action.type }}</span>
-                  <div class="reco-text">
-                    <span class="reco-title">{{ action.objectiveId }} — {{ action.objectiveTitle }}</span>
-                    <span class="reco-reason">{{ action.reason }}</span>
-                  </div>
-                </div>
-              </div>
-              <ng-template #noReco>
-                <div class="empty">Pas d'action recommandée actuellement.</div>
-              </ng-template>
             </article>
           </section>
 
@@ -351,7 +327,7 @@
                 <span>Absences &amp; Capacité</span>
               </div>
               <span class="cross-badge" *ngIf="crossImpacts.length">{{ crossImpacts.length }} objectif(s) concerné(s)</span>
-              <span class="cross-hint" *ngIf="!crossImpacts.length">Aucune absence planifiée dans les 15 jours avant une échéance</span>
+              <span class="cross-hint" *ngIf="!crossImpacts.length">Aucune absence planifiée sur les objectifs en cours</span>
             </div>
 
             <div class="cross-absence-empty" *ngIf="!crossImpacts.length">
@@ -443,13 +419,6 @@
                   <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
                 </svg>
                 Mise à jour progression
-              </button>
-              <button type="button" class="actions-tab" [class.active]="activeActionTab === 'risk'" (click)="setActionTab('risk')">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-                </svg>
-                Risque &amp; Motif
               </button>
               <button type="button" class="actions-tab" [class.active]="activeActionTab === 'plan'" (click)="setActionTab('plan')">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -552,13 +521,9 @@
                     <label class="form-label">Description / contexte</label>
                     <textarea class="form-textarea" [(ngModel)]="newObjectiveDescription" placeholder="Décrivez l'objectif, les indicateurs clés de succès…"></textarea>
                   </div>
-                  <div class="form-group">
-                    <label class="form-label">Risque initial</label>
-                    <div class="risk-options">
-                      <div class="risk-opt on-track-opt" [class.selected]="newObjectiveInitialRisk === 'ON_TRACK'" (click)="newObjectiveInitialRisk = 'ON_TRACK'">On Track</div>
-                      <div class="risk-opt at-risk-opt" [class.selected]="newObjectiveInitialRisk === 'AT_RISK'" (click)="newObjectiveInitialRisk = 'AT_RISK'">At Risk</div>
-                      <div class="risk-opt off-track-opt" [class.selected]="newObjectiveInitialRisk === 'OFF_TRACK'" (click)="newObjectiveInitialRisk = 'OFF_TRACK'">Off Track</div>
-                    </div>
+                  <div class="alert-box-warning">
+                    <div class="alert-title">Statut de risque automatique</div>
+                    <div class="alert-text">Calculé à partir de la progression et de l'échéance (On Track / At Risk / Off Track).</div>
                   </div>
                 </div>
               </div>
@@ -625,58 +590,6 @@
               </div>
               <div *ngIf="progressSuccessMessage" class="plan-feedback plan-feedback--success">{{ progressSuccessMessage }}</div>
               <div *ngIf="progressErrorMessage" class="plan-feedback plan-feedback--error">{{ progressErrorMessage }}</div>
-            </div>
-
-            <!-- Sub-panel: Risque & Motif -->
-            <div class="action-sub-panel" [class.active]="activeActionTab === 'risk'">
-              <div class="form-split">
-                <div class="form-split-col">
-                  <div class="form-group">
-                    <label class="form-label">Objectif concerné *</label>
-                    <select class="form-select" [(ngModel)]="riskObjectiveId">
-                      <option [ngValue]="null">— Choisir —</option>
-                      <option *ngFor="let objective of objectives" [ngValue]="objective.id">{{ objective.code }} — {{ objective.titre }}</option>
-                    </select>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Nouveau statut de risque *</label>
-                    <div class="risk-options">
-                      <div class="risk-opt on-track-opt" [class.selected]="quickRiskStatus === 'ON_TRACK'" (click)="quickRiskStatus = 'ON_TRACK'">On Track</div>
-                      <div class="risk-opt at-risk-opt" [class.selected]="quickRiskStatus === 'AT_RISK'" (click)="quickRiskStatus = 'AT_RISK'">At Risk</div>
-                      <div class="risk-opt off-track-opt" [class.selected]="quickRiskStatus === 'OFF_TRACK'" (click)="quickRiskStatus = 'OFF_TRACK'">Off Track</div>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Motif du changement *</label>
-                    <textarea class="form-textarea" [(ngModel)]="quickRiskReason" placeholder="Justifiez le changement de statut : blocage, retard fournisseur, ressources insuffisantes…"></textarea>
-                  </div>
-                </div>
-                <div class="form-split-col">
-                  <div class="risk-guide-box">
-                    <div class="risk-guide-title">Guide des statuts</div>
-                    <div class="risk-guide-items">
-                      <div class="risk-guide-item">
-                        <span class="risk-pill on-track" style="min-width:72px;font-size:.7rem;flex-shrink:0;">On Track</span>
-                        <span>Progression conforme aux jalons planifiés.</span>
-                      </div>
-                      <div class="risk-guide-item">
-                        <span class="risk-pill at-risk" style="min-width:72px;font-size:.7rem;flex-shrink:0;">At Risk</span>
-                        <span>Risque identifié, plan de mitigation en place ou requis.</span>
-                      </div>
-                      <div class="risk-guide-item">
-                        <span class="risk-pill off-track" style="min-width:72px;font-size:.7rem;flex-shrink:0;">Off Track</span>
-                        <span>Objectif compromis. Escalade ou replanification nécessaire.</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="form-actions">
-                <button type="button" class="btn-secondary" (click)="quickRiskReason = ''; riskObjectiveId = null">Annuler</button>
-                <button type="button" class="btn-primary" (click)="onUpdateRiskStatus()">Enregistrer le statut</button>
-              </div>
-              <div *ngIf="riskSuccessMessage" class="plan-feedback plan-feedback--success">{{ riskSuccessMessage }}</div>
-              <div *ngIf="riskErrorMessage" class="plan-feedback plan-feedback--error">{{ riskErrorMessage }}</div>
             </div>
 
             <!-- Sub-panel: Plan d'action -->
@@ -857,20 +770,6 @@
       </div>
 
       <div class="edit-grp edit-grp--full">
-        <label>Statut risque</label>
-        <div class="risk-options">
-          <div class="risk-opt on-track-opt" [class.selected]="editRisk === 'ON_TRACK'" (click)="editRisk = 'ON_TRACK'">On Track</div>
-          <div class="risk-opt at-risk-opt" [class.selected]="editRisk === 'AT_RISK'" (click)="editRisk = 'AT_RISK'">At Risk</div>
-          <div class="risk-opt off-track-opt" [class.selected]="editRisk === 'OFF_TRACK'" (click)="editRisk = 'OFF_TRACK'">Off Track</div>
-        </div>
-      </div>
-
-      <div class="edit-grp edit-grp--full">
-        <label>Motif risque <span class="optional">(optionnel)</span></label>
-        <input type="text" [(ngModel)]="editRiskReason" placeholder="Décrivez le risque…" />
-      </div>
-
-      <div class="edit-grp edit-grp--full">
         <label>Dépendances <span class="optional">(séparées par virgule)</span></label>
         <input type="text" [(ngModel)]="editDependencies" placeholder="ex. OKR-02, OKR-05" />
       </div>
@@ -974,6 +873,12 @@
     <div class="import-modal-body">
 
       <button type="button" class="btn-download-template" (click)="onDownloadCsvTemplate()">⬇ Télécharger le modèle</button>
+
+      <p class="import-template-hint">
+        <code>scope</code> : <code>TEAM</code> / <code>EQUIPE</code> ou <code>INDIVIDUAL</code>.
+        Pour un objectif équipe, <code>owner_employee_id</code> accepte plusieurs IDs (ex. <code>12;15;18</code> ou <code>12|15|18</code> si CSV Excel français avec <code>;</code>).
+        <code>created_at</code> optionnel (AAAA-MM-JJ) pour les imports historiques. Le statut de risque est calculé automatiquement.
+      </p>
 
       <div class="import-file-zone">
         <input type="file" accept=".csv,.xlsx,.xls" (change)="onCsvFileChange($event)" [disabled]="importLoading"/>
