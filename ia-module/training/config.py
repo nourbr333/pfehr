@@ -82,3 +82,25 @@ OKR_FEATURES = [
 ]
 
 OKR_TARGET = "target_non_atteint"
+
+# ── Paramètres dataset Burnout (P2) ───────────────────────────────────────
+BURNOUT_SNAPSHOT_INTERVAL_DAYS = int(os.getenv("BURNOUT_SNAPSHOT_INTERVAL_DAYS", "14"))
+BURNOUT_FEATURE_HISTORY_DAYS = int(os.getenv("BURNOUT_FEATURE_HISTORY_DAYS", "30"))
+
+BURNOUT_DATASET_CSV = DATA_DIR / "dataset_burnout.csv"
+
+# Ordre des features — DOIT rester synchronisé avec le service Spring/Flask
+BURNOUT_FEATURES = [
+    "overtime_moyen_30j",
+    "nb_maladie_12m",
+    "nb_refus_12m",
+    "taux_absence_90j",
+    "score_perf_dernier",
+    "delta_score_perf",
+    "jours_conge_pris_6m",
+    "anciennete",
+    "age",
+    "nb_retards_30j",
+]
+
+BURNOUT_TARGET = "target_burnout"

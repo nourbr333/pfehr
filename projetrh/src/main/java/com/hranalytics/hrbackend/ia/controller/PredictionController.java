@@ -24,6 +24,12 @@ public class PredictionController {
         return predictionService.predictAbsenteisme(employeeId);
     }
 
+    /** P2 — Risque de burnout d'un employé. */
+    @GetMapping("/burnout/{employeeId}")
+    public PredictionResponseDTO burnout(@PathVariable Integer employeeId) {
+        return predictionService.predictBurnout(employeeId);
+    }
+
     /** P3 — Risque de non-atteinte d'un objectif OKR avant sa deadline. */
     @GetMapping("/okr/{objectiveId}")
     public PredictionResponseDTO okr(@PathVariable Long objectiveId) {

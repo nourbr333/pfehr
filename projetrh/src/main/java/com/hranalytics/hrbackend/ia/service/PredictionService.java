@@ -72,6 +72,38 @@ public class PredictionService {
         return toResponse(flask, employeeId);
     }
 
+    public PredictionResponseDTO predictBurnout(Integer employeeId) {
+        List<Object[]> rows = employeeRepository.findBurnoutFeatures(employeeId, LocalDate.now());
+        if (rows.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Employé introuvable : " + employeeId);
+        }
+
+        double[] features = toDoubleArray(rows.get(0));
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("employee_id", employeeId);
+        payload.put("features", features);
+
+        FlaskPredictionResponse flask;
+        try {
+            flask = restClient.post()
+                    .uri("/predict/burnout")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(payload)
+                    .retrieve()
+                    .body(FlaskPredictionResponse.class);
+        } catch (RestClientException ex) {
+            log.warn("Service IA injoignable pour burnout employé {} : {}", employeeId, ex.getMessage());
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                    "Service IA indisponible. Vérifiez que le microservice Flask est démarré.", ex);
+        }
+
+        if (flask == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Réponse vide du service IA.");
+        }
+        return toResponse(flask, employeeId);
+    }
+
     public PredictionResponseDTO predictOkr(Long objectiveId) {
         List<Object[]> rows = teamObjectiveRepository.findOkrFeatures(objectiveId, LocalDate.now());
         if (rows.isEmpty()) {

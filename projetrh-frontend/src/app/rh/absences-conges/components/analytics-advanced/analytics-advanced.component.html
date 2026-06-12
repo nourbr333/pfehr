@@ -376,7 +376,11 @@
         <span>Analyse IA en cours…</span>
       </div>
 
-      <div *ngIf="!iaLoading && iaUnavailable" class="empty-state ia-risk-empty">
+      <div *ngIf="!iaLoading && !employees.length" class="empty-state ia-risk-empty">
+        Aucun collaborateur chargé
+      </div>
+
+      <div *ngIf="!iaLoading && employees.length && iaUnavailable" class="empty-state ia-risk-empty">
         Données IA indisponibles
       </div>
 

@@ -1,8 +1,7 @@
 """Microservice Flask — Module IA Prédictif HR Analytics.
 
 Charge les modèles disponibles au démarrage et expose des endpoints de
-prédiction. P1 Absentéisme et P3 OKR. P2 Burnout répond 503 tant que son
-modèle n'est pas entraîné.
+prédiction. P1 Absentéisme, P2 Burnout et P3 OKR.
 
 Chaque modèle est un Pipeline auto-contenu (StandardScaler + RF) :
 on lui envoie le vecteur de features BRUT, le scaling est interne.
@@ -56,6 +55,19 @@ OKR_FEATURES = [
     "manager_taux_presence",
 ]
 
+BURNOUT_FEATURES = [
+    "overtime_moyen_30j",
+    "nb_maladie_12m",
+    "nb_refus_12m",
+    "taux_absence_90j",
+    "score_perf_dernier",
+    "delta_score_perf",
+    "jours_conge_pris_6m",
+    "anciennete",
+    "age",
+    "nb_retards_30j",
+]
+
 # ── Chargement des modèles ────────────────────────────────────────────────
 MODELS: dict[str, object] = {}
 TOP_FEATURES: dict[str, list[dict]] = {}
@@ -86,6 +98,7 @@ def _load(name: str, filename: str, feature_names: list[str]) -> None:
 
 _load("absenteisme", "model_absenteisme.pkl", ABSENTEISME_FEATURES)
 _load("okr",         "model_okr.pkl",         OKR_FEATURES)
+_load("burnout",     "model_burnout.pkl",     BURNOUT_FEATURES)
 
 # ── Seuils de risque (cohérents avec l'affichage) ─────────────────────────
 THRESHOLD_HIGH = 0.65
@@ -152,7 +165,7 @@ def predict_absenteisme():
 
 @app.post("/predict/burnout")
 def predict_burnout():
-    return jsonify({"error": "Modèle 'burnout' non encore entraîné (P2)."}), 503
+    return _predict("burnout", "Risque Burnout", BURNOUT_FEATURES, "employee_id")
 
 
 @app.post("/predict/okr")

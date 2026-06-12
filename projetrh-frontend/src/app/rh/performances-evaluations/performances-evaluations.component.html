@@ -549,6 +549,60 @@
 
         </div>
 
+        <!-- Risque de burnout par employé -->
+        <div class="card-section burnout-widget">
+          <div class="card-head burnout-widget-head">
+            <h3>Risque de burnout par employé</h3>
+            <span class="burnout-model-desc">RandomForest · 10 features · seuils HIGH≥65% / MED≥35%</span>
+          </div>
+
+          <div class="burnout-metrics">
+            <div class="burnout-metric">
+              <span class="burnout-metric-label">Profils à risque élevé</span>
+              <span class="burnout-metric-value">{{ highRiskBurnoutCount }}</span>
+              <span class="burnout-metric-sub">Score ≥ 70%</span>
+            </div>
+            <div class="burnout-metric">
+              <span class="burnout-metric-label">Score moyen équipe</span>
+              <span class="burnout-metric-value">{{ avgBurnoutScore }}%</span>
+              <span class="burnout-metric-sub">{{ burnoutResultsReady.length }} profils analysés</span>
+            </div>
+            <div class="burnout-metric">
+              <span class="burnout-metric-label">Signaux actifs</span>
+              <span class="burnout-metric-value">{{ activeSignalsCount }}</span>
+              <span class="burnout-metric-sub">Indicateurs détectés</span>
+            </div>
+          </div>
+
+          <div class="burnout-grid" *ngIf="!burnoutLoading && topBurnoutEmployees.length; else burnoutState">
+            <div class="burnout-emp-card"
+                 *ngFor="let emp of topBurnoutEmployees"
+                 [ngClass]="burnoutCardClass(emp.riskLevel)">
+              <div class="burnout-emp-top">
+                <span class="burnout-emp-name">{{ emp.employeeName }}</span>
+                <span class="burnout-score-badge" [ngClass]="burnoutScoreClass(emp.riskPct)">
+                  {{ emp.riskPct }}%
+                </span>
+              </div>
+              <div class="burnout-emp-meta">
+                <span>{{ emp.jobTitle }}</span>
+                <span class="burnout-signal-count">{{ emp.signalCount }} signal{{ emp.signalCount > 1 ? 'aux' : '' }}</span>
+              </div>
+              <div class="burnout-signal-badges">
+                <span class="burnout-signal-badge" *ngFor="let badge of emp.badges">{{ badge }}</span>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #burnoutState>
+            <div class="burnout-placeholder">
+              <span *ngIf="burnoutLoading">Analyse IA en cours…</span>
+              <span *ngIf="!burnoutLoading">Aucune prédiction burnout disponible pour la période sélectionnée.</span>
+            </div>
+          </ng-template>
+
+        </div>
+
         <!-- Row 3: Heatmap Département × Manager -->
         <div class="card-section">
           <div class="card-head">
@@ -589,8 +643,7 @@
         <!-- Row 4: Prédictions & signaux faibles -->
         <div class="card-section">
           <div class="card-head">
-            <h3>Prédictions &amp; signaux faibles</h3>
-            <span class="tab-badge blue">IA</span>
+            <h3>Opportunités &amp; signaux faibles</h3>
           </div>
           <ng-container *ngIf="weakSignals.length > 0; else noSignals">
             <div class="weak-signals-list">

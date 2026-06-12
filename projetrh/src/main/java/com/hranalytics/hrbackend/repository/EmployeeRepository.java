@@ -74,6 +74,86 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
     List<Object[]> findAbsenteeismFeatures(@Param("employeeId") Integer employeeId,
                                            @Param("ref") LocalDate ref);
 
+    /**
+     * Calcule le vecteur de 10 features Burnout (P2) dans l'ordre EXACT attendu par le modèle :
+     * overtime_moyen_30j, nb_maladie_12m, nb_refus_12m, taux_absence_90j,
+     * score_perf_dernier, delta_score_perf, jours_conge_pris_6m,
+     * anciennete, age, nb_retards_30j.
+     */
+    @Query(value = """
+            SELECT
+              COALESCE(a30.overtime_moyen_30j, 0)                                        AS f1,
+              COALESCE(ab.nb_maladie_12m, 0)                                             AS f2,
+              COALESCE(ab.nb_refus_12m, 0)                                               AS f3,
+              COALESCE(a90.taux_absence_90j, 0)                                          AS f4,
+              COALESCE(ev.score_perf_dernier, 0)                                         AS f5,
+              COALESCE(ev.delta_score_perf, 0)                                             AS f6,
+              COALESCE(cong.jours_conge_pris_6m, 0)                                      AS f7,
+              COALESCE(EXTRACT(YEAR FROM age(CAST(:ref AS date), e.hire_date)), 0)        AS f8,
+              COALESCE(EXTRACT(YEAR FROM age(CAST(:ref AS date), e.date_of_birth)), 0)   AS f9,
+              COALESCE(a30.nb_retards_30j, 0)                                            AS f10
+            FROM employees e
+            LEFT JOIN LATERAL (
+              SELECT
+                AVG(a.overtime_hours)                      AS overtime_moyen_30j,
+                COUNT(*) FILTER (WHERE a.is_late)          AS nb_retards_30j
+              FROM attendance a
+              WHERE a.employee_id = e.employee_id
+                AND a.attendance_date >= CAST(:ref AS date) - 30
+                AND a.attendance_date <  CAST(:ref AS date)
+            ) a30 ON true
+            LEFT JOIN LATERAL (
+              SELECT CAST(COUNT(*) FILTER (WHERE a.is_present = false) AS double precision)
+                    / NULLIF(COUNT(*), 0)                  AS taux_absence_90j
+              FROM attendance a
+              WHERE a.employee_id = e.employee_id
+                AND a.attendance_date >= CAST(:ref AS date) - 90
+                AND a.attendance_date <  CAST(:ref AS date)
+            ) a90 ON true
+            LEFT JOIN LATERAL (
+              SELECT
+                COUNT(*) FILTER (WHERE r.absence_type = 'maladie') AS nb_maladie_12m,
+                COUNT(*) FILTER (WHERE r.status = 'refusee')       AS nb_refus_12m
+              FROM absence_requests r
+              WHERE r.employee_id = e.employee_id
+                AND r.start_date >= CAST(:ref AS date) - 365
+                AND r.start_date <  CAST(:ref AS date)
+            ) ab ON true
+            LEFT JOIN LATERAL (
+              SELECT
+                COALESCE(MAX(CASE WHEN ee.evaluated_at <= CAST(:ref AS date) THEN ee.rating END), 0)
+                                                                                               AS score_perf_dernier,
+                COALESCE(MAX(CASE WHEN ee.evaluated_at <= CAST(:ref AS date) THEN ee.rating END), 0)
+                - COALESCE((
+                    SELECT ee2.rating
+                    FROM employee_evaluations ee2
+                    WHERE ee2.employee_id = e.employee_id
+                      AND ee2.evaluated_at <= CAST(:ref AS date)
+                      AND ee2.evaluated_at < (
+                          SELECT MAX(ee3.evaluated_at)
+                          FROM employee_evaluations ee3
+                          WHERE ee3.employee_id = e.employee_id
+                            AND ee3.evaluated_at <= CAST(:ref AS date)
+                      )
+                    ORDER BY ee2.evaluated_at DESC
+                    LIMIT 1
+                  ), 0)                                                                      AS delta_score_perf
+              FROM employee_evaluations ee
+              WHERE ee.employee_id = e.employee_id
+            ) ev ON true
+            LEFT JOIN LATERAL (
+              SELECT COALESCE(SUM((r.end_date - r.start_date) + 1), 0)                     AS jours_conge_pris_6m
+              FROM absence_requests r
+              WHERE r.employee_id = e.employee_id
+                AND r.status = 'approuvee'
+                AND r.start_date >= CAST(:ref AS date) - 180
+                AND r.start_date <  CAST(:ref AS date)
+            ) cong ON true
+            WHERE e.employee_id = :employeeId
+            """, nativeQuery = true)
+    List<Object[]> findBurnoutFeatures(@Param("employeeId") Integer employeeId,
+                                       @Param("ref") LocalDate ref);
+
 
     @Query("""
             SELECT e FROM Employee e

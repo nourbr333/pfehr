@@ -2,7 +2,6 @@
   Component,
   Input,
   OnChanges,
-  OnInit,
   SimpleChanges,
   AfterViewInit,
   OnDestroy,
@@ -93,7 +92,7 @@ interface TopRiskEmployee {
   templateUrl: './analytics-advanced.component.html',
   styleUrl: './analytics-advanced.component.scss'
 })
-export class AnalyticsAdvancedComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+export class AnalyticsAdvancedComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   // ===== Canvas refs =====
   @ViewChild('seasonalCanvas') seasonalCanvas?: ElementRef<HTMLCanvasElement>;
@@ -275,10 +274,6 @@ export class AnalyticsAdvancedComponent implements OnInit, OnChanges, AfterViewI
     }
   }
 
-  ngOnInit(): void {
-    this.loadIaPredictions();
-  }
-
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       setTimeout(() => this.renderAllCharts(), 0);
@@ -300,7 +295,7 @@ export class AnalyticsAdvancedComponent implements OnInit, OnChanges, AfterViewI
         setTimeout(() => this.renderAllCharts(), 0);
       }
     }
-    if (changes['employees'] && !changes['employees'].firstChange) {
+    if (changes['employees']) {
       this.loadIaPredictions();
     }
   }
@@ -1095,33 +1090,41 @@ export class AnalyticsAdvancedComponent implements OnInit, OnChanges, AfterViewI
       m <= curMonth ? (byYearMonth.get(`${curYear}-${m}`) ?? 0) : null
     );
 
-    const iaForecast = this.buildIaForecast(baseline, curMonth);
-    const forecast: (number | null)[] = iaForecast ?? Array.from({ length: 12 }, (_, m) =>
-      m > curMonth ? baseline[m] : null
-    );
+    const avgBaseline = baseline.reduce((a, b) => a + b, 0) / 12;
+    const iaForecast = this.buildIaForecast(baseline, curMonth, avgBaseline);
+    const forecast: (number | null)[] = iaForecast ?? Array.from({ length: 12 }, (_, m) => {
+      if (m <= curMonth) return null;
+      // Mois futurs sans historique : moyenne annuelle plutôt que 0
+      return baseline[m] > 0 ? baseline[m] : Math.round(avgBaseline * 10) / 10;
+    });
 
     return { labels: MONTH_LABELS, historical: baseline, currentYear: currentYearData, forecast, forecastYear: curYear };
   }
 
-  /** Prévision IA : moyenne pondérée des risk_proba × effectif, modulée par le profil saisonnier. */
+  /**
+   * Prévision IA : moyenne pondérée des risk_proba × effectif.
+   * Le profil saisonnier module la projection ; si un mois n'a pas d'historique, on garde la base IA.
+   */
   private buildIaForecast(
     historical: number[],
-    curMonth: number
+    curMonth: number,
+    avgBaseline: number
   ): (number | null)[] | null {
     if (!this.iaRisks.length) {
       return null;
     }
 
     const weightedAvg = this.iaRisks.reduce((s, r) => s + r.riskProba, 0) / this.iaRisks.length;
-    const avgHist = historical.reduce((a, b) => a + b, 0) / 12 || 1;
+    const avgHist = avgBaseline > 0 ? avgBaseline : 1;
     const empCount = Math.max(1, this.employees.length);
+    const baseMonthly = weightedAvg * empCount;
 
     return Array.from({ length: 12 }, (_, m) => {
       if (m <= curMonth) {
         return null;
       }
-      const seasonalWeight = historical[m] / avgHist;
-      const projected = weightedAvg * empCount * seasonalWeight;
+      const seasonalFactor = historical[m] > 0 ? historical[m] / avgHist : 1;
+      const projected = baseMonthly * seasonalFactor;
       return Math.round(projected * 10) / 10;
     });
   }

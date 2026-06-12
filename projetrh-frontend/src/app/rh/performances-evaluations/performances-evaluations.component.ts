@@ -25,18 +25,40 @@ import {
   PerformanceEvaluationCycle,
   PerformanceEvaluationsService
 } from '../../services/performance-evaluations.service';
-import { DepartmentService } from '../../services/department.service';
+import { Department, DepartmentService } from '../../services/department.service';
 import { EmployeeService } from '../../services/employee.service';
 import { NotificationsPanelComponent } from '../../components/notifications-panel/notifications-panel';
 import { EvaluationReminder, EvaluationReminderService } from '../../services/evaluation-reminder.service';
+import { PredictionService, PredictionResult, RiskLevel } from '../../services/prediction.service';
 
 export type TabId = 'vue' | 'cycles' | 'analytics' | 'actions';
 
 type SortKey = 'employeeName' | 'managerName' | 'departmentName' | 'jobTitle' | 'lastEvaluationDate' | 'score' | 'status';
 
+interface BurnoutRiskState {
+  loading: boolean;
+  error: boolean;
+  result: PredictionResult | null;
+}
+
+export interface BurnoutEmployeeCard {
+  employeeId: number;
+  employeeName: string;
+  jobTitle: string;
+  riskPct: number;
+  riskLevel: RiskLevel;
+  signalCount: number;
+  badges: string[];
+}
+
 export interface DeptAverage {
   label: string;
   score: number;
+}
+
+interface ManagerProfile {
+  id: number;
+  name: string;
 }
 
 @Component({
@@ -66,6 +88,7 @@ export class PerformancesEvaluationsComponent implements OnInit, AfterViewInit, 
   private readonly destroyRef      = inject(DestroyRef);
   private readonly platformId      = inject(PLATFORM_ID);
   private readonly reminderService = inject(EvaluationReminderService);
+  private readonly predictionService = inject(PredictionService);
 
   private deptChart:       Chart | null = null;
   private statusChart:     Chart | null = null;
@@ -80,10 +103,17 @@ export class PerformancesEvaluationsComponent implements OnInit, AfterViewInit, 
   readonly pageSize = 8;
   readonly currentYear = new Date().getFullYear();
   readonly scatterPalette = ['#2563eb', '#16a34a', '#dc2626', '#f59e0b', '#7c3aed'];
+  burnoutRiskMap: Record<number, BurnoutRiskState> = {};
+  burnoutLoading = false;
 
   allCycles: PerformanceEvaluationCycle[] = [];
+  allDepartments: Department[] = [];
   allDepartmentNames: string[] = [];
   allManagerNames: string[] = [];
+  managerProfiles: ManagerProfile[] = [];
+  employeeManagerIdMap = new Map<number, number | null>();
+  employeeDeptIdMap = new Map<number, number>();
+  employeeNameById = new Map<number, string>();
   selectedCycle: PerformanceEvaluationCycle | null = null;
   isLoading = true;
 
@@ -468,32 +498,81 @@ export class PerformancesEvaluationsComponent implements OnInit, AfterViewInit, 
   }
 
   get heatmapManagers(): string[] {
-    // Use allManagerNames (loaded from DB) when available; fall back to what's in cycles
-    if (this.allManagerNames.length > 0) return this.allManagerNames;
-    return Array.from(new Set(this.heatmapCycles.map((c) => c.managerName).filter(Boolean)))
-      .sort((a, b) => a.localeCompare(b));
+    return this.heatmapManagerProfiles().map((mgr) => mgr.name);
   }
 
   get heatmapData(): { dept: string; cells: { managerName: string; score: number | null }[] }[] {
-    const managers = this.heatmapManagers;
-    const depts = this.allDepartmentNames.length > 0
-      ? this.allDepartmentNames
-      : Array.from(new Set(this.heatmapCycles.map((c) => c.departmentName))).sort();
-    const source = this.heatmapCycles;
+    const managers = this.heatmapManagerProfiles();
+    const depts = this.heatmapDepartments();
+    const source = this.heatmapSourceCycles();
     return depts.map((dept) => ({
-      dept,
+      dept: dept.departmentName,
       cells: managers.map((mgr) => {
         const cycles = source.filter(
-          (c) => c.departmentName === dept && c.managerName === mgr
+          (c) => this.cycleMatchesDept(c, dept) && this.employeeManagerIdMap.get(c.employeeId) === mgr.id
         );
         return {
-          managerName: mgr,
+          managerName: mgr.name,
           score: cycles.length
             ? Math.round(cycles.reduce((s, c) => s + c.score, 0) / cycles.length)
             : null
         };
       })
     }));
+  }
+
+  private heatmapManagerProfiles(): ManagerProfile[] {
+    const byId = new Map(this.managerProfiles.map((mgr) => [mgr.id, mgr]));
+    for (const cycle of this.heatmapSourceCycles()) {
+      const mgrId = this.employeeManagerIdMap.get(cycle.employeeId);
+      if (mgrId == null || byId.has(mgrId)) continue;
+      byId.set(mgrId, {
+        id: mgrId,
+        name: this.employeeNameById.get(mgrId) ?? cycle.managerName ?? `Manager #${mgrId}`
+      });
+    }
+    if (byId.size > 0) {
+      return Array.from(byId.values()).sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return Array.from(
+      new Set(this.heatmapCycles.map((c) => c.managerName).filter((name) => name && name !== 'Sans manager'))
+    )
+      .sort((a, b) => a.localeCompare(b))
+      .map((name, index) => ({ id: -(index + 1), name }));
+  }
+
+  private heatmapDepartments(): Department[] {
+    if (this.allDepartments.length > 0) {
+      return this.selectedDepartment
+        ? this.allDepartments.filter((dept) => dept.departmentName === this.selectedDepartment)
+        : this.allDepartments;
+    }
+    return Array.from(new Set(this.heatmapCycles.map((c) => c.departmentName)))
+      .sort((a, b) => a.localeCompare(b))
+      .map((departmentName, index) => ({
+        departmentId: -(index + 1),
+        departmentName,
+        departmentHead: '',
+        employeeCount: 0
+      }));
+  }
+
+  private heatmapSourceCycles(): PerformanceEvaluationCycle[] {
+    const periodScoped = this.heatmapCycles.filter((cycle) => cycle.score > 0);
+    if (periodScoped.length > 0) return periodScoped;
+
+    return this.allCycles.filter((cycle) => {
+      if (cycle.score <= 0) return false;
+      return this.selectedDepartment ? cycle.departmentName === this.selectedDepartment : true;
+    });
+  }
+
+  private cycleMatchesDept(cycle: PerformanceEvaluationCycle, dept: Department): boolean {
+    const deptId = this.employeeDeptIdMap.get(cycle.employeeId);
+    if (deptId != null && dept.departmentId > 0) {
+      return deptId === dept.departmentId;
+    }
+    return cycle.departmentName === dept.departmentName;
   }
 
   get weakSignals(): { label: string; detail: string; type: 'risk' | 'opportunity' | 'warning' }[] {
@@ -523,6 +602,90 @@ export class PerformancesEvaluationsComponent implements OnInit, AfterViewInit, 
         type: 'opportunity'
       }));
     return signals;
+  }
+
+  get burnoutResultsReady(): PredictionResult[] {
+    return Object.values(this.burnoutRiskMap)
+      .filter((s) => !s.loading && !s.error && s.result)
+      .map((s) => s.result!);
+  }
+
+  get highRiskBurnoutCount(): number {
+    return this.burnoutResultsReady.filter((r) => r.riskLevel === 'HIGH').length;
+  }
+
+  get avgBurnoutScore(): number {
+    const results = this.burnoutResultsReady;
+    if (!results.length) return 0;
+    const avg = results.reduce((sum, r) => sum + r.riskProba, 0) / results.length;
+    return Math.round(avg * 100);
+  }
+
+  get activeSignalsCount(): number {
+    return this.burnoutResultsReady.reduce(
+      (sum, r) => sum + this.burnoutSignalBadges(r).length,
+      0
+    );
+  }
+
+  get topBurnoutEmployees(): BurnoutEmployeeCard[] {
+    const cycleByEmployee = new Map(
+      this.filteredCycles.map((c) => [c.employeeId, c])
+    );
+    return this.burnoutResultsReady
+      .filter((r) => cycleByEmployee.has(r.employeeId))
+      .sort((a, b) => b.riskProba - a.riskProba)
+      .slice(0, 4)
+      .map((r) => {
+        const cycle = cycleByEmployee.get(r.employeeId)!;
+        const badges = this.burnoutSignalBadges(r);
+        return {
+          employeeId: r.employeeId,
+          employeeName: cycle.employeeName,
+          jobTitle: cycle.jobTitle || '—',
+          riskPct: Math.round(r.riskProba * 100),
+          riskLevel: r.riskLevel,
+          signalCount: badges.length,
+          badges
+        };
+      });
+  }
+
+  burnoutRiskOf(employeeId: number): BurnoutRiskState {
+    return this.burnoutRiskMap[employeeId] ?? { loading: false, error: true, result: null };
+  }
+
+  burnoutScoreClass(pct: number): string {
+    if (pct >= 70) return 'high';
+    if (pct >= 40) return 'medium';
+    return 'low';
+  }
+
+  burnoutCardClass(level: RiskLevel): string {
+    return level.toLowerCase();
+  }
+
+  burnoutSignalBadges(result: PredictionResult): string[] {
+    const labels: Record<string, string> = {
+      overtime_moyen_30j: '+40h supp/mois',
+      nb_maladie_12m: 'Arrêts maladie ×3',
+      nb_refus_12m: 'Congé refusé',
+      taux_absence_90j: 'Absences récurrentes',
+      score_perf_dernier: 'Score perf. faible',
+      delta_score_perf: 'Performance en baisse',
+      jours_conge_pris_6m: 'Peu de congés pris',
+      anciennete: 'Ancienneté élevée',
+      age: 'Profil senior',
+      nb_retards_30j: 'Retards fréquents'
+    };
+    const top = (result.topFeatures ?? [])
+      .filter((f) => f.importance > 0)
+      .slice(0, 3)
+      .map((f) => labels[f.name] ?? f.name);
+    if (top.length) return top;
+    if (result.riskLevel === 'HIGH') return ['Signaux multiples'];
+    if (result.riskLevel === 'MEDIUM') return ['Vigilance recommandée'];
+    return ['Profil stable'];
   }
 
   get analyticsAlert(): { strong: string; text: string } | null {
@@ -565,6 +728,7 @@ export class PerformancesEvaluationsComponent implements OnInit, AfterViewInit, 
       if (tab === 'vue') {
         setTimeout(() => this.renderCharts());
       } else if (tab === 'analytics') {
+        this.loadBurnoutRisks();
         setTimeout(() => this.renderAnalyticsCharts());
       } else if (tab === 'actions') {
         this.loadReminderHistory();
@@ -643,6 +807,9 @@ export class PerformancesEvaluationsComponent implements OnInit, AfterViewInit, 
     this.currentPage = 1;
     if (this.selectedCycle && !this.filteredCycles.some((cycle) => cycle.cycleId === this.selectedCycle?.cycleId)) {
       this.selectedCycle = null;
+    }
+    if (this.activeTab === 'analytics') {
+      this.loadBurnoutRisks();
     }
     this.cdr.markForCheck();
     if (isPlatformBrowser(this.platformId)) {
@@ -764,21 +931,74 @@ export class PerformancesEvaluationsComponent implements OnInit, AfterViewInit, 
         this.clampLateCyclesPage();
         this.clampReminderHistoryPage();
         this.selectedCycle = null;
-        this.allDepartmentNames = departments
-          .map((d) => d.departmentName)
-          .filter(Boolean)
-          .sort((a, b) => a.localeCompare(b));
-        this.allManagerNames = employees
+        this.allDepartments = [...departments]
+          .filter((d) => d.departmentName)
+          .sort((a, b) => a.departmentName.localeCompare(b.departmentName));
+        this.allDepartmentNames = this.allDepartments.map((d) => d.departmentName);
+
+        this.employeeNameById = new Map(
+          employees.map((e) => [e.employeeId, `${e.firstName} ${e.lastName}`.trim()])
+        );
+        this.managerProfiles = employees
           .filter((e) => e.isManager === true)
-          .map((e) => `${e.firstName} ${e.lastName}`.trim())
-          .filter(Boolean)
-          .sort((a, b) => a.localeCompare(b));
+          .map((e) => ({
+            id: e.employeeId,
+            name: this.employeeNameById.get(e.employeeId) ?? ''
+          }))
+          .filter((mgr) => mgr.name)
+          .sort((a, b) => a.name.localeCompare(b.name));
+        this.allManagerNames = this.managerProfiles.map((mgr) => mgr.name);
+
+        this.employeeManagerIdMap = new Map(
+          employees
+            .filter((e) => e.isManager !== true)
+            .map((e) => [e.employeeId, e.managerId ?? null])
+        );
+        this.employeeDeptIdMap = new Map(
+          employees
+            .filter((e) => e.isManager !== true)
+            .map((e) => [e.employeeId, e.departmentId])
+        );
         this.isLoading = false;
         this.currentPage = 1;
+        this.loadBurnoutRisks();
         this.cdr.markForCheck();
         if (isPlatformBrowser(this.platformId)) {
           setTimeout(() => this.renderCharts());
         }
+      });
+  }
+
+  private loadBurnoutRisks(): void {
+    const employeeIds = [...new Set(this.filteredCycles.map((c) => c.employeeId))];
+    if (!employeeIds.length) {
+      this.burnoutRiskMap = {};
+      this.burnoutLoading = false;
+      return;
+    }
+
+    this.burnoutLoading = true;
+    for (const id of employeeIds) {
+      this.burnoutRiskMap[id] = { loading: true, error: false, result: null };
+    }
+
+    forkJoin(
+      employeeIds.map((id) =>
+        this.predictionService.getBurnoutRisk(id).pipe(
+          catchError(() => of(null as PredictionResult | null))
+        )
+      )
+    )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((results) => {
+        employeeIds.forEach((id, idx) => {
+          const result = results[idx];
+          this.burnoutRiskMap[id] = result
+            ? { loading: false, error: false, result }
+            : { loading: false, error: true, result: null };
+        });
+        this.burnoutLoading = false;
+        this.cdr.markForCheck();
       });
   }
 

@@ -1387,6 +1387,168 @@ $shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
   color: #6b7280;
 }
 
+/* ─── Widget Burnout IA ─── */
+.burnout-widget-head {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.burnout-model-desc {
+  font-size: 0.75rem;
+  color: $text-light;
+}
+
+.burnout-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0 16px 16px;
+}
+
+.burnout-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-color, $border);
+  border-radius: 10px;
+  background: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.1);
+    border-color: #bfdbfe;
+  }
+}
+
+.burnout-metric-label {
+  font-size: 0.75rem;
+  color: $text-mid;
+  font-weight: 500;
+}
+
+.burnout-metric-value {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: $text-dark;
+  line-height: 1.1;
+}
+
+.burnout-metric-sub {
+  font-size: 0.72rem;
+  color: $text-light;
+}
+
+.burnout-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0 16px 12px;
+}
+
+.burnout-emp-card {
+  border: 1px solid var(--border-color, $border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: box-shadow 0.15s ease;
+
+  &.high {
+    background: #fef2f2;
+    border-color: #fecaca;
+  }
+
+  &.medium {
+    background: #fff7ed;
+    border-color: #fed7aa;
+  }
+
+  &.low {
+    background: #f9fafb;
+    border-color: var(--border-color, $border);
+  }
+}
+
+.burnout-emp-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.burnout-emp-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: $text-dark;
+}
+
+.burnout-score-badge {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+
+  &.high {
+    color: #991b1b;
+    background: #fee2e2;
+  }
+
+  &.medium {
+    color: #92400e;
+    background: #fef3c7;
+  }
+
+  &.low {
+    color: #166534;
+    background: #dcfce7;
+  }
+}
+
+.burnout-emp-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: $text-mid;
+}
+
+.burnout-signal-count {
+  font-size: 0.72rem;
+  color: $text-light;
+}
+
+.burnout-signal-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.burnout-signal-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--border-color, $border);
+  color: $text-mid;
+}
+
+.burnout-placeholder {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: $text-light;
+}
+
 @media (max-width: 1300px) {
 }
 
@@ -1399,6 +1561,11 @@ $shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
   .kpi-row,
   .kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .burnout-metrics,
+  .burnout-grid {
+    grid-template-columns: 1fr;
   }
 }
 

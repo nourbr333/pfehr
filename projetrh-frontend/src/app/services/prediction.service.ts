@@ -45,6 +45,11 @@ export class PredictionService {
     return this.http.get<PredictionResult>(`${this.apiUrl}/okr/${objectiveId}`);
   }
 
+  /** P2 — Risque de burnout d'un employé. */
+  getBurnoutRisk(employeeId: number): Observable<PredictionResult> {
+    return this.http.get<PredictionResult>(`${this.apiUrl}/burnout/${employeeId}`);
+  }
+
   /**
    * P1 — Risques absentéisme pour tous les employés.
    * Tente d'abord GET Flask /predict/absenteisme/all, sinon forkJoin via le proxy Spring.
