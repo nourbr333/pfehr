@@ -160,6 +160,14 @@
               <strong class="kpi-value red">{{ overdueMissedCount }}</strong>
               <span class="kpi-subvalue">à traiter en priorité</span>
             </article>
+            <article class="kpi-card kpi-card--ia">
+              <div class="kpi-card-head">
+                <span class="kpi-badge-ia">IA · P3</span>
+                <span class="kpi-label">Risque de non-atteinte des objectifs</span>
+              </div>
+              <strong class="kpi-value red">{{ highRiskOkrCount }}</strong>
+              <span class="kpi-subvalue">OKR à risque élevé sur {{ objectives.length }} objectifs</span>
+            </article>
           </section>
 
           <section class="portfolio-card">
@@ -208,7 +216,7 @@
                     <th>Horizon</th>
                     <th>Progression %</th>
                     <th>Statut risque</th>
-                    <th>Dépendances</th>
+                    <th class="th-ia">Risque IA</th>
                     <th>Échéance</th>
                     <th>Actions</th>
                   </tr>
@@ -231,7 +239,14 @@
                       </div>
                     </td>
                     <td><span [class]="riskClass(objective.risk)">{{ riskLabel(objective.risk) }}</span></td>
-                    <td class="deps">{{ dependencyLabel(objective) }}</td>
+                    <td class="td-ia">
+                      <app-risk-card
+                        [result]="okrRiskOf(objective).result"
+                        [loading]="okrRiskOf(objective).loading"
+                        [error]="okrRiskOf(objective).error"
+                        [compact]="true">
+                      </app-risk-card>
+                    </td>
                     <td>{{ fmtDate(objective.dueDate) }}</td>
                     <td class="obj-actions-cell">
                       <button type="button" class="obj-btn-view" title="Afficher" (click)="onOpenViewObjective(objective)">

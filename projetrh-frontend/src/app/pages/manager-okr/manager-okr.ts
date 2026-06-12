@@ -22,6 +22,8 @@ import { NotificationsPanelComponent } from '../../components/notifications-pane
 import { Chart, ChartConfiguration, Plugin, registerables } from 'chart.js';
 import { MatrixController, MatrixElement } from 'chartjs-chart-matrix';
 import { isActiveOkrForAnalysis } from '../../utils/okr-active';
+import { PredictionService, PredictionResult } from '../../services/prediction.service';
+import { RiskCardComponent } from '../../components/risk-card/risk-card.component';
 
 Chart.register(...registerables, MatrixController, MatrixElement);
 
@@ -85,7 +87,7 @@ interface ObjectiveItem {
 @Component({
   selector: 'app-manager-okr',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive, NotificationsPanelComponent, CommonModule],
+  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive, NotificationsPanelComponent, RiskCardComponent],
   templateUrl: './manager-okr.html',
   styleUrl: './manager-okr.scss'
 })
@@ -200,6 +202,9 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
   continuityPlans: ContinuityPlanResult[] = [];
   highlightedObjectiveId: number | null = null;
 
+  /** IA P3 — état de la prédiction OKR par objectiveId */
+  okrRiskMap: Record<number, { loading: boolean; error: boolean; result: PredictionResult | null }> = {};
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -208,7 +213,8 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
     private managerOkrService: ManagerOkrService,
     private crossAnalysisService: ManagerCrossAnalysisService,
     private advancedAbsencesService: ManagerAdvancedAbsencesService,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private predictionService: PredictionService
   ) {
     this.utilisateur = this.auth.getCurrentUser();
     if (!this.utilisateur) this.router.navigate(['/login']);
@@ -976,6 +982,31 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
     }, duration);
   }
 
+  /** IA P3 — nombre d'objectifs actifs avec risque HIGH. */
+  get highRiskOkrCount(): number {
+    return Object.values(this.okrRiskMap).filter(s => s.result?.riskLevel === 'HIGH').length;
+  }
+
+  /** IA P3 — état de prédiction pour un objectif donné. */
+  okrRiskOf(objective: ObjectiveItem): { loading: boolean; error: boolean; result: PredictionResult | null } {
+    return this.okrRiskMap[objective.id] ?? { loading: false, error: true, result: null };
+  }
+
+  /** IA P3 — charge les prédictions OKR pour tous les objectifs de la liste. */
+  private loadOkrRisks(): void {
+    for (const objective of this.objectives) {
+      this.okrRiskMap[objective.id] = { loading: true, error: false, result: null };
+      this.predictionService.getOkrRisk(objective.id).subscribe({
+        next: (result) => {
+          this.okrRiskMap[objective.id] = { loading: false, error: false, result };
+        },
+        error: () => {
+          this.okrRiskMap[objective.id] = { loading: false, error: true, result: null };
+        }
+      });
+    }
+  }
+
   private loadDashboard(): void {
     if (!this.managerEmployeeId) return;
     this.isLoading = true;
@@ -991,6 +1022,7 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
         }
         this.portfolioPage = Math.min(this.portfolioPage, this.portfolioTotalPages);
         this.isLoading = false;
+        this.loadOkrRisks();
         if (this.activeTab === 'analyse') {
           setTimeout(() => this.renderRiskHeatmap(), 0);
         }

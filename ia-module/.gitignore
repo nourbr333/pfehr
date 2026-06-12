@@ -1,0 +1,17 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Secrets
+.env
+
+# Artefacts générés
+data/*.csv
+models/*.pkl
+reports/*.png
+reports/*.json
+
+# Garder les dossiers
+!models/.gitkeep
+!reports/.gitkeep

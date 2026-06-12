@@ -2,6 +2,7 @@
   Component,
   Input,
   OnChanges,
+  OnInit,
   SimpleChanges,
   AfterViewInit,
   OnDestroy,
@@ -14,6 +15,13 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Chart, registerables, ChartDataset } from 'chart.js';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
+import {
+  PredictionService,
+  PredictionResult,
+  RiskLevel
+} from '../../../../services/prediction.service';
 import { Attendance } from '../../../../services/attendance.service';
 import { AuthService } from '../../../../services/auth';
 import { ToastService } from '../../../../components/toast/toast.service';
@@ -69,6 +77,13 @@ interface GanttRow {
   blocks: GanttBlock[];
 }
 
+interface TopRiskEmployee {
+  employeeId: number;
+  name: string;
+  riskProba: number;
+  riskLevel: RiskLevel;
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 @Component({
@@ -78,7 +93,7 @@ interface GanttRow {
   templateUrl: './analytics-advanced.component.html',
   styleUrl: './analytics-advanced.component.scss'
 })
-export class AnalyticsAdvancedComponent implements OnChanges, AfterViewInit, OnDestroy {
+export class AnalyticsAdvancedComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
 
   // ===== Canvas refs =====
   @ViewChild('seasonalCanvas') seasonalCanvas?: ElementRef<HTMLCanvasElement>;
@@ -109,7 +124,14 @@ export class AnalyticsAdvancedComponent implements OnChanges, AfterViewInit, OnD
   private readonly toastService = inject(ToastService);
   private readonly kpiThresholdService = inject(KpiThresholdService);
   private readonly notificationService = inject(NotificationService);
+  private readonly predictionService = inject(PredictionService);
   private charts = new Map<string, Chart>();
+
+  // ===== IA absentéisme (non-bloquant) =====
+  iaRisks: PredictionResult[] = [];
+  iaLoading = false;
+  iaUnavailable = false;
+  iaForecastActive = false;
 
   showThresholdModal = false;
   thresholdModalKpiKey: KpiKey = 'absenteisme';
@@ -253,6 +275,10 @@ export class AnalyticsAdvancedComponent implements OnChanges, AfterViewInit, OnD
     }
   }
 
+  ngOnInit(): void {
+    this.loadIaPredictions();
+  }
+
   ngAfterViewInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       setTimeout(() => this.renderAllCharts(), 0);
@@ -274,6 +300,49 @@ export class AnalyticsAdvancedComponent implements OnChanges, AfterViewInit, OnD
         setTimeout(() => this.renderAllCharts(), 0);
       }
     }
+    if (changes['employees'] && !changes['employees'].firstChange) {
+      this.loadIaPredictions();
+    }
+  }
+
+  /** Charge les prédictions IA en arrière-plan (ne bloque pas le reste de la page). */
+  private loadIaPredictions(): void {
+    const ids = this.employees.map((e) => e.id).filter((id) => Number.isFinite(id));
+    if (!ids.length) {
+      this.iaRisks = [];
+      this.iaUnavailable = false;
+      this.iaForecastActive = false;
+      return;
+    }
+
+    this.iaLoading = true;
+    this.iaUnavailable = false;
+    this.predictionService.getAllEmployeesAbsenteismeRisk(ids).pipe(
+      catchError(() => of([] as PredictionResult[]))
+    ).subscribe((results) => {
+      this.iaRisks = results;
+      this.iaLoading = false;
+      this.iaUnavailable = results.length === 0;
+      this.iaForecastActive = results.length > 0;
+      if (isPlatformBrowser(this.platformId)) {
+        setTimeout(() => this.renderSeasonalChart(), 0);
+      }
+    });
+  }
+
+  get topRiskEmployees(): TopRiskEmployee[] {
+    return this.iaRisks
+      .map((r) => {
+        const emp = this.employees.find((e) => e.id === r.employeeId);
+        return {
+          employeeId: r.employeeId,
+          name: emp?.fullName ?? `Collaborateur #${r.employeeId}`,
+          riskProba: r.riskProba,
+          riskLevel: r.riskLevel
+        };
+      })
+      .sort((a, b) => b.riskProba - a.riskProba)
+      .slice(0, 5);
   }
 
   // ─── Public event handlers ─────────────────────────────────────────────────
@@ -1026,11 +1095,35 @@ export class AnalyticsAdvancedComponent implements OnChanges, AfterViewInit, OnD
       m <= curMonth ? (byYearMonth.get(`${curYear}-${m}`) ?? 0) : null
     );
 
-    const forecast: (number | null)[] = Array.from({ length: 12 }, (_, m) =>
+    const iaForecast = this.buildIaForecast(baseline, curMonth);
+    const forecast: (number | null)[] = iaForecast ?? Array.from({ length: 12 }, (_, m) =>
       m > curMonth ? baseline[m] : null
     );
 
     return { labels: MONTH_LABELS, historical: baseline, currentYear: currentYearData, forecast, forecastYear: curYear };
+  }
+
+  /** Prévision IA : moyenne pondérée des risk_proba × effectif, modulée par le profil saisonnier. */
+  private buildIaForecast(
+    historical: number[],
+    curMonth: number
+  ): (number | null)[] | null {
+    if (!this.iaRisks.length) {
+      return null;
+    }
+
+    const weightedAvg = this.iaRisks.reduce((s, r) => s + r.riskProba, 0) / this.iaRisks.length;
+    const avgHist = historical.reduce((a, b) => a + b, 0) / 12 || 1;
+    const empCount = Math.max(1, this.employees.length);
+
+    return Array.from({ length: 12 }, (_, m) => {
+      if (m <= curMonth) {
+        return null;
+      }
+      const seasonalWeight = historical[m] / avgHist;
+      const projected = weightedAvg * empCount * seasonalWeight;
+      return Math.round(projected * 10) / 10;
+    });
   }
 
   private renderSeasonalChart(): void {
@@ -1148,6 +1241,33 @@ export class AnalyticsAdvancedComponent implements OnChanges, AfterViewInit, OnD
   getRiskLabel(level: string): string {
     const map: Record<string, string> = { low: 'Faible', medium: 'Modéré', high: 'Élevé', critical: 'Critique' };
     return map[level] ?? level;
+  }
+
+  getIaRiskBarColor(level: RiskLevel): string {
+    const map: Record<RiskLevel, string> = {
+      HIGH: '#ef4444',
+      MEDIUM: '#f59e0b',
+      LOW: '#22c55e'
+    };
+    return map[level];
+  }
+
+  getIaRiskBadgeLabel(level: RiskLevel): string {
+    const map: Record<RiskLevel, string> = {
+      HIGH: 'ÉLEVÉ',
+      MEDIUM: 'MOYEN',
+      LOW: 'FAIBLE'
+    };
+    return map[level];
+  }
+
+  getIaRiskBadgeClass(level: RiskLevel): string {
+    const map: Record<RiskLevel, string> = {
+      HIGH: 'risk-high',
+      MEDIUM: 'risk-medium',
+      LOW: 'risk-low'
+    };
+    return map[level];
   }
 
   getBalanceClass(remaining: number): string {

@@ -17,6 +17,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
 import java.util.List;
 
 @Configuration
@@ -69,6 +71,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/dashboard/rh/**").hasAnyRole("ADMIN", "RESPONSABLE_RH")
                 .requestMatchers(HttpMethod.GET, "/api/managers/okr/all-objectives")
                     .hasAnyRole("ADMIN", "RESPONSABLE_RH")
+                .requestMatchers(new AntPathRequestMatcher("/api/predictions/**"))
+                    .hasAnyRole("ADMIN", "RESPONSABLE_RH", "MANAGER")
                 .requestMatchers("/api/managers/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/api/leave-balances/**").hasAnyRole("ADMIN", "RESPONSABLE_RH")
                 .requestMatchers("/api/leave-policies/**").hasAnyRole("ADMIN", "RESPONSABLE_RH")

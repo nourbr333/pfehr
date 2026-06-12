@@ -14,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -35,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (!token.isEmpty() && jwtUtil.isValid(token)) {
                 Claims claims = jwtUtil.parseToken(token);
                 String email = claims.getSubject();
-                String role = claims.get("role", String.class);
+                String role = normalizeRole(claims.get("role"));
                 Long userId = readLongClaim(claims, "userId");
                 Integer employeeId = readIntegerClaim(claims, "employeeId");
 
@@ -65,5 +66,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return number.intValue();
         }
         return null;
+    }
+
+    /** Normalise le rôle JWT : trim, uppercase, retire le préfixe ROLE_ si déjà présent. */
+    private String normalizeRole(Object rawRole) {
+        if (rawRole == null) {
+            return null;
+        }
+        String role = rawRole.toString().trim();
+        if (role.isEmpty()) {
+            return null;
+        }
+        if (role.toUpperCase(Locale.ROOT).startsWith("ROLE_")) {
+            role = role.substring(5);
+        }
+        return role.toUpperCase(Locale.ROOT);
     }
 }

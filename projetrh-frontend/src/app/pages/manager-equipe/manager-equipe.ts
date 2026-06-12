@@ -9,6 +9,14 @@ import { EmployeeService } from '../../services/employee.service';
 import { NotificationService, CreateNotificationPayload } from '../../services/notification.service';
 import { NotificationsPanelComponent } from '../../components/notifications-panel/notifications-panel';
 import { ToastService } from '../../components/toast/toast.service';
+import { PredictionService, PredictionResult } from '../../services/prediction.service';
+import { RiskCardComponent } from '../../components/risk-card/risk-card.component';
+
+interface RiskState {
+  loading: boolean;
+  error: boolean;
+  result: PredictionResult | null;
+}
 
 interface TeamMemberUI extends ManagerTeamMember {
   firstName: string;
@@ -30,7 +38,7 @@ interface DepartmentFilterOption {
 @Component({
   selector: 'app-manager-equipe',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive, NotificationsPanelComponent],
+  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive, NotificationsPanelComponent, RiskCardComponent],
   templateUrl: './manager-equipe.html',
   styleUrl: './manager-equipe.scss'
 })
@@ -41,6 +49,9 @@ export class ManagerEquipeComponent implements OnInit {
   selectedDepartmentId: number | null = null;
   members: TeamMemberUI[] = [];
   filteredMembers: TeamMemberUI[] = [];
+
+  // Risque IA (Absentéisme) par employeeId
+  riskByEmployee: Record<string, RiskState> = {};
 
   currentPage = 1;
   readonly pageSize = 10;
@@ -71,7 +82,8 @@ export class ManagerEquipeComponent implements OnInit {
     private managerService: ManagerService,
     private employeeService: EmployeeService,
     private notificationService: NotificationService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private predictionService: PredictionService
   ) {
     this.utilisateur = this.auth.getCurrentUser();
     if (!this.utilisateur) this.router.navigate(['/login']);
@@ -171,6 +183,7 @@ export class ManagerEquipeComponent implements OnInit {
       next: (team) => {
         this.members = team.map(m => this.toUI(m));
         this.applyFilter();
+        this.loadRisks();
         this.isLoading = false;
       },
       error: () => {
@@ -179,6 +192,27 @@ export class ManagerEquipeComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  /** Charge le risque d'absentéisme IA pour chaque membre de l'équipe. */
+  private loadRisks() {
+    for (const member of this.members) {
+      const employeeId = Number(member.id);
+      if (!Number.isFinite(employeeId)) continue;
+      this.riskByEmployee[member.id] = { loading: true, error: false, result: null };
+      this.predictionService.getAbsenteeismRisk(employeeId).subscribe({
+        next: (result) => {
+          this.riskByEmployee[member.id] = { loading: false, error: false, result };
+        },
+        error: () => {
+          this.riskByEmployee[member.id] = { loading: false, error: true, result: null };
+        }
+      });
+    }
+  }
+
+  riskOf(member: TeamMemberUI): RiskState {
+    return this.riskByEmployee[member.id] ?? { loading: false, error: true, result: null };
   }
 
   applyFilter() {

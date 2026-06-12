@@ -152,6 +152,7 @@
               <th>Département</th>
               <th>Score Perf</th>
               <th>Taux Présence</th>
+              <th class="col-risk">Risque Absentéisme (IA)</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -174,6 +175,14 @@
                   <div class="presence-text">{{ m.attendance_rate }}%</div>
                 </div>
               </td>
+              <td class="col-risk">
+                <app-risk-card
+                  [compact]="true"
+                  [loading]="riskOf(m).loading"
+                  [error]="riskOf(m).error"
+                  [result]="riskOf(m).result">
+                </app-risk-card>
+              </td>
               <td>
                 <div class="actions">
                   <button class="icon-btn" type="button" title="Voir fiche" (click)="openDrawer(m)">
@@ -193,7 +202,7 @@
             </tr>
 
             <tr class="empty-row" *ngIf="filteredMembers.length === 0">
-              <td colspan="5">
+              <td colspan="6">
                 <div class="empty-inline">Aucun membre trouvé</div>
               </td>
             </tr>
@@ -309,6 +318,22 @@
           <div class="kpi-mini-label">ID EMPLOYÉ</div>
           <div class="kpi-mini-value">{{ selectedMember.id }}</div>
         </div>
+      </div>
+
+      <div class="ia-section">
+        <div class="ia-section-title">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M12 2a7 7 0 0 0-4 12.7V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.3A7 7 0 0 0 12 2z"/>
+            <line x1="9" y1="22" x2="15" y2="22"/>
+          </svg>
+          Analyse prédictive — Risque d'absentéisme (30 j)
+        </div>
+        <app-risk-card
+          [compact]="false"
+          [loading]="riskOf(selectedMember).loading"
+          [error]="riskOf(selectedMember).error"
+          [result]="riskOf(selectedMember).result">
+        </app-risk-card>
       </div>
     </div>
   </div>

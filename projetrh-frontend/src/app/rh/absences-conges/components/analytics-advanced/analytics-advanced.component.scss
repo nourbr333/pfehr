@@ -1029,6 +1029,79 @@ $radius:       10px;
   margin: 6px 0 0;
 }
 
+// ─── IA risk card ─────────────────────────────────────────────────────────────
+.spinner-inline {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border: 2px solid #cbd5e1;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.ia-risk-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: $text-mid;
+  padding: 12px 0;
+}
+
+.ia-risk-empty {
+  padding: 16px 0;
+}
+
+.ia-risk-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ia-risk-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
+}
+
+.ia-risk-name {
+  min-width: 130px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: $text-dark;
+}
+
+.ia-risk-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.ia-risk-bar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+
+.ia-risk-pct {
+  min-width: 36px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: right;
+}
+
 .radar-rh-body {
   display: flex;
   align-items: flex-start;

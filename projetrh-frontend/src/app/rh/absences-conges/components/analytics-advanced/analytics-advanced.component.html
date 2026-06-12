@@ -346,10 +346,56 @@
         <canvas #seasonalCanvas></canvas>
       </div>
       <p class="seasonal-note">
-        La prévision est calculée à partir de la moyenne mensuelle des années précédentes (référence saisonnière).
-        Les barres représentent la baseline historique ; la ligne pleine les absences réelles de l'année en cours ;
-        la ligne pointillée la prévision pour les mois restants.
+        <ng-container *ngIf="iaForecastActive; else seasonalNoteFallback">
+          La prévision (ligne pointillée) est calculée par le modèle IA P1 à partir de la moyenne pondérée des
+          probabilités de risque des collaborateurs, modulée par le profil saisonnier historique.
+        </ng-container>
+        <ng-template #seasonalNoteFallback>
+          La prévision est calculée à partir de la moyenne mensuelle des années précédentes (référence saisonnière).
+          Les barres représentent la baseline historique ; la ligne pleine les absences réelles de l'année en cours ;
+          la ligne pointillée la prévision pour les mois restants.
+        </ng-template>
       </p>
+    </div>
+
+    <!-- 7c-bis – Top employés à risque IA -->
+    <div class="card-section ia-risk-card">
+      <div class="card-head">
+        <h4>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+               style="vertical-align:-2px;margin-right:5px;color:#f59e0b">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          Risque d'absentéisme — Employés à surveiller
+        </h4>
+      </div>
+
+      <div *ngIf="iaLoading" class="ia-risk-loading">
+        <span class="spinner-inline"></span>
+        <span>Analyse IA en cours…</span>
+      </div>
+
+      <div *ngIf="!iaLoading && iaUnavailable" class="empty-state ia-risk-empty">
+        Données IA indisponibles
+      </div>
+
+      <div *ngIf="!iaLoading && !iaUnavailable && topRiskEmployees.length > 0" class="ia-risk-list">
+        <div *ngFor="let emp of topRiskEmployees" class="ia-risk-row">
+          <span class="ia-risk-name">{{ emp.name }}</span>
+          <div class="ia-risk-bar-bg">
+            <div class="ia-risk-bar"
+                 [style.width.%]="emp.riskProba * 100"
+                 [style.background-color]="getIaRiskBarColor(emp.riskLevel)"></div>
+          </div>
+          <span class="ia-risk-pct" [style.color]="getIaRiskBarColor(emp.riskLevel)">
+            {{ emp.riskProba * 100 | number:'1.0-0' }}%
+          </span>
+          <span class="risk-badge" [ngClass]="getIaRiskBadgeClass(emp.riskLevel)">
+            {{ getIaRiskBadgeLabel(emp.riskLevel) }}
+          </span>
+        </div>
+      </div>
     </div>
 
     <!-- 7e – Indice de tension RH -->
