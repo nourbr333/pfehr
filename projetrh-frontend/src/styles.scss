@@ -5,9 +5,60 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
 :root {
+  /* Legacy aliases */
   --primary-color: #2563eb;
   --border-color: #e5e7eb;
   --background-color: #f5f7fb;
+
+  /* Design tokens partagés (portails RH / Manager / Admin) */
+  --color-primary: #2563eb;
+  --color-primary-light: #eff6ff;
+  --color-primary-border: #bfdbfe;
+  --color-primary-hover: #dbeafe;
+  --color-primary-text: #1d4ed8;
+
+  --color-background-primary: #f5f7fb;
+  --color-background-secondary: #ffffff;
+  --color-background-tertiary: #f8fafc;
+  --color-background-muted: #fafafa;
+  --color-background-table-head: #fbfdff;
+
+  --color-text-primary: #111827;
+  --color-text-heading: #0f172a;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #64748b;
+  --color-text-light: #9ca3af;
+
+  --color-border-primary: #e5e7eb;
+  --color-border-secondary: #e2e8f0;
+  --color-border-focus: #bfdbfe;
+
+  --shadow-card: 0 4px 14px rgba(15, 23, 42, 0.06);
+  --shadow-card-hover: 0 8px 20px rgba(37, 99, 235, 0.14);
+  --shadow-table: 0 2px 12px rgba(0, 0, 0, 0.07);
+  --shadow-chart: 0 6px 18px rgba(15, 23, 42, 0.06);
+
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --radius-pill: 999px;
+
+  --sidebar-width: 240px;
+  --topbar-height: 64px;
+
+  --btn-primary-bg: #eff6ff;
+  --btn-primary-border: #bfdbfe;
+  --btn-primary-text: #1d4ed8;
+  --btn-primary-hover: #dbeafe;
+
+  --btn-secondary-bg: #f9fafb;
+  --btn-secondary-border: #d1d5db;
+  --btn-secondary-text: #374151;
+  --btn-secondary-hover: #f3f4f6;
+
+  --btn-danger-bg: #fef2f2;
+  --btn-danger-border: #fecaca;
+  --btn-danger-text: #dc2626;
+  --btn-danger-hover: #fee2e2;
 }
 
 /* DM Sans est la police unique de l'application : le !important neutralise
@@ -27,8 +78,8 @@ html, body {
 
 body {
   font-family: 'DM Sans', sans-serif !important;
-  background: #f5f7fb;
-  color: #111827;
+  background: var(--color-background-primary);
+  color: var(--color-text-primary);
 }
 
 app-root {
@@ -171,26 +222,26 @@ app-root {
 
 /* Blue — create, save, saisir, validate, submit */
 .btn-primary {
-  background: #eff6ff;
-  border-color: #bfdbfe;
-  color: #1d4ed8;
-  &:hover:not(:disabled) { background: #dbeafe; }
+  background: var(--btn-primary-bg);
+  border-color: var(--btn-primary-border);
+  color: var(--btn-primary-text);
+  &:hover:not(:disabled) { background: var(--btn-primary-hover); }
 }
 
 /* Grey — cancel, close, preview, reset */
 .btn-secondary {
-  background: #f9fafb;
-  border-color: #d1d5db;
-  color: #374151;
-  &:hover:not(:disabled) { background: #f3f4f6; }
+  background: var(--btn-secondary-bg);
+  border-color: var(--btn-secondary-border);
+  color: var(--btn-secondary-text);
+  &:hover:not(:disabled) { background: var(--btn-secondary-hover); }
 }
 
 /* Red — delete, reject */
 .btn-danger {
-  background: #fef2f2;
-  border-color: #fecaca;
-  color: #dc2626;
-  &:hover:not(:disabled) { background: #fee2e2; }
+  background: var(--btn-danger-bg);
+  border-color: var(--btn-danger-border);
+  color: var(--btn-danger-text);
+  &:hover:not(:disabled) { background: var(--btn-danger-hover); }
 }
 
 /* Small variant */

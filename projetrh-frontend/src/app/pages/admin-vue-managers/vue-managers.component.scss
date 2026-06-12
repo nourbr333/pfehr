@@ -1,49 +1,6 @@
 @use '../../../styles/admin-tokens' as *;
 @use '../../../styles/admin-page' as *;
 
-// ——— Table des managers ———
-.table-card {
-  background: #fff;
-  border: 1px solid $border-soft;
-  border-radius: $radius;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
-  overflow: hidden;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: $font-main;
-
-  thead th {
-    text-align: left;
-    font-size: 0.85rem;
-    color: $text-light;
-    padding: 14px 16px;
-    border-bottom: 1px solid $border-soft;
-    background: #fbfdff;
-    user-select: none;
-    white-space: nowrap;
-  }
-
-  tbody td {
-    padding: 14px 16px;
-    border-bottom: 1px solid $border-soft;
-    color: $text-mid;
-    font-size: 0.9rem;
-    vertical-align: middle;
-    white-space: nowrap;
-  }
-
-  tbody tr:hover td {
-    background: rgba(37, 99, 235, 0.05);
-  }
-
-  tbody tr:last-child td {
-    border-bottom: none;
-  }
-}
-
 .manager-cell {
   display: flex;
   align-items: center;
@@ -54,7 +11,7 @@
 .manager-avatar {
   width: 34px;
   height: 34px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill, 999px);
   background: $primary;
   color: #fff;
   display: flex;
@@ -71,7 +28,7 @@
 
 .manager-name {
   font-weight: 600;
-  color: #111827;
+  color: var(--color-text-primary, #111827);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -87,7 +44,6 @@
   color: $text-light;
 }
 
-// ——— Barre de progression OKR ———
 .okr-cell {
   display: flex;
   flex-direction: column;
@@ -104,25 +60,19 @@
 .progress-track {
   width: 140px;
   height: 6px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill, 999px);
   background: $border-soft;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--radius-pill, 999px);
   transition: width 0.3s ease;
 
-  &-green {
-    background: $green;
-  }
-  &-orange {
-    background: $orange;
-  }
-  &-red {
-    background: $red;
-  }
+  &-green { background: $green; }
+  &-orange { background: $orange; }
+  &-red { background: $red; }
 }
 
 @media (max-width: 950px) {

@@ -21,7 +21,7 @@ $font-main: tokens.$font-main;
 .modal-card {
   width: 780px;
   max-width: 94vw;
-  background: #fff;
+  background: var(--color-background-secondary, #fff);
   border-radius: 16px;
   border: 1px solid $border;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
@@ -40,7 +40,7 @@ $font-main: tokens.$font-main;
   font-family: $font-main;
   font-weight: 800;
   font-size: 1.05rem;
-  color: #111827;
+  color: var(--color-text-primary, #111827);
 }
 
 .modal-close {
@@ -61,28 +61,48 @@ $font-main: tokens.$font-main;
   justify-content: flex-end;
   gap: 10px;
   border-top: 1px solid $border;
-  background: #fafafa;
+  background: var(--color-background-muted, #fafafa);
+}
+
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+  border: 1px solid;
+  font-family: $font-main;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
 }
 
 .btn-primary {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 5px 12px; border-radius: 6px; font-size: .78rem; font-weight: 500;
-  cursor: pointer; white-space: nowrap; transition: background .15s; border: 1px solid;
-  background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8;
-  &:hover:not(:disabled) { background: #dbeafe; }
-  &:disabled { opacity: .55; cursor: not-allowed; }
+  background: var(--btn-primary-bg, #eff6ff);
+  border-color: var(--btn-primary-border, #bfdbfe);
+  color: var(--btn-primary-text, #1d4ed8);
+
+  &:hover:not(:disabled) {
+    background: var(--btn-primary-hover, #dbeafe);
+  }
 }
+
 .btn-secondary {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 5px 12px; border-radius: 6px; font-size: .78rem; font-weight: 500;
-  cursor: pointer; white-space: nowrap; transition: background .15s; border: 1px solid;
-  background: #f9fafb; border-color: #d1d5db; color: #374151;
-  &:hover:not(:disabled) { background: #f3f4f6; }
-  &:disabled { opacity: .55; cursor: not-allowed; }
-}
-.btn-primary:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+  background: var(--btn-secondary-bg, #f9fafb);
+  border-color: var(--btn-secondary-border, #d1d5db);
+  color: var(--btn-secondary-text, #374151);
+
+  &:hover:not(:disabled) {
+    background: var(--btn-secondary-hover, #f3f4f6);
+  }
 }
 
 .form-grid {

@@ -10,23 +10,19 @@ import com.hranalytics.hrbackend.entity.AdminAuditLog;
 import com.hranalytics.hrbackend.entity.AppUser;
 import com.hranalytics.hrbackend.repository.AdminAuditLogRepository;
 import com.hranalytics.hrbackend.repository.AppUserRepository;
-import com.hranalytics.hrbackend.util.PaginationSupport;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
 
 @Service
 public class AdminPortalService {
@@ -104,34 +100,41 @@ public class AdminPortalService {
             String sortDir,
             boolean unpaged
     ) {
-        if (unpaged) {
-            return PageResponse.unpaged(getLogs());
-        }
-
         LocalDateTime from = parseDateStart(dateFrom);
         LocalDateTime toExclusive = parseDateEndExclusive(dateTo);
-        String normalizedSearch = search == null ? "" : search.trim();
+        String normalizedSearch = search == null ? "" : search.trim().toLowerCase(Locale.ROOT);
         String normalizedTarget = targetName == null ? "" : targetName.trim();
         List<String> tabActions = actionsForTab(tab);
         boolean actionsEmpty = tabActions.isEmpty();
+        boolean ascending = "asc".equalsIgnoreCase(sortDir);
 
-        Sort sort = "asc".equalsIgnoreCase(sortDir)
-                ? Sort.by("createdAt").ascending()
-                : Sort.by("createdAt").descending();
+        List<AdminLogDTO> filtered = adminAuditLogRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .filter(log -> actionsEmpty || tabActions.contains(log.getAction()))
+                .filter(log -> normalizedTarget.isEmpty()
+                        || normalizedTarget.equalsIgnoreCase(safeTrim(log.getTargetName())))
+                .filter(log -> matchesLogSearch(log, normalizedSearch))
+                .filter(log -> matchesLogDateRange(log, from, toExclusive))
+                .map(this::toAdminLogDto)
+                .toList();
 
-        Page<AdminAuditLog> result = adminAuditLogRepository.findFiltered(
-                normalizedSearch,
-                normalizedTarget,
-                from,
-                toExclusive,
-                tabActions,
-                actionsEmpty,
-                PaginationSupport.pageable(page, size, sort)
-        );
+        List<AdminLogDTO> sorted = new ArrayList<>(filtered);
+        if (ascending) {
+            Collections.reverse(sorted);
+        }
 
-        PageResponse<AdminLogDTO> response = PageResponse.from(result.map(this::toAdminLogDto));
-        response.setTabCounts(computeTabCounts(normalizedSearch, normalizedTarget, from, toExclusive));
-        return response;
+        if (unpaged) {
+            return PageResponse.unpaged(sorted);
+        }
+
+        int safeSize = Math.max(1, size);
+        int total = sorted.size();
+        int totalPages = total == 0 ? 1 : (int) Math.ceil((double) total / safeSize);
+        int safePage = Math.min(Math.max(0, page), Math.max(0, totalPages - 1));
+        int fromIndex = safePage * safeSize;
+        int toIndex = Math.min(fromIndex + safeSize, total);
+        List<AdminLogDTO> pageContent = sorted.subList(fromIndex, toIndex);
+        return new PageResponse<>(pageContent, total, totalPages, safePage, safeSize);
     }
 
     public List<String> getLogTargetNames() {
@@ -378,29 +381,32 @@ public class AdminPortalService {
         };
     }
 
-    private Map<String, Long> computeTabCounts(
-            String search,
-            String targetName,
-            LocalDateTime dateFrom,
-            LocalDateTime dateToExclusive
-    ) {
-        Map<String, Long> byAction = new HashMap<>();
-        for (Object[] row : adminAuditLogRepository.countByActionFiltered(search, targetName, dateFrom, dateToExclusive)) {
-            String action = String.valueOf(row[0]);
-            long count = row[1] instanceof Number number ? number.longValue() : 0L;
-            byAction.put(action, count);
+    private boolean matchesLogSearch(AdminAuditLog log, String search) {
+        if (search.isEmpty()) {
+            return true;
         }
-
-        Map<String, Long> tabCounts = new LinkedHashMap<>();
-        tabCounts.put("TOUS", byAction.values().stream().mapToLong(Long::longValue).sum());
-        tabCounts.put("CONNEXIONS", sumActions(byAction, TAB_CONNEXIONS));
-        tabCounts.put("COMPTES", sumActions(byAction, TAB_COMPTES));
-        tabCounts.put("SECURITE", sumActions(byAction, TAB_SECURITE));
-        return tabCounts;
+        return containsIgnoreCase(log.getAction(), search)
+                || containsIgnoreCase(log.getTargetName(), search)
+                || containsIgnoreCase(log.getPerformedBy(), search)
+                || containsIgnoreCase(log.getDetails(), search);
     }
 
-    private long sumActions(Map<String, Long> byAction, List<String> actions) {
-        return actions.stream().mapToLong(action -> byAction.getOrDefault(action, 0L)).sum();
+    private boolean matchesLogDateRange(AdminAuditLog log, LocalDateTime from, LocalDateTime toExclusive) {
+        LocalDateTime createdAt = log.getCreatedAt();
+        if (createdAt == null) {
+            return from == null && toExclusive == null;
+        }
+        if (from != null && createdAt.isBefore(from)) {
+            return false;
+        }
+        if (toExclusive != null && !createdAt.isBefore(toExclusive)) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean containsIgnoreCase(String value, String search) {
+        return value != null && value.toLowerCase(Locale.ROOT).contains(search);
     }
 
     private LocalDateTime parseDateStart(String ymd) {

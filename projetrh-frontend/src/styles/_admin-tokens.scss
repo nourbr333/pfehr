@@ -4,21 +4,21 @@
 // Usage : @use '../../../styles/admin-tokens' as *;
 // =============================================
 
-// Couleurs principales
-$primary:       #2563eb;
-$primary-light: #eff6ff;
-$bg:            #f5f7fb;
-$card-bg:       #ffffff;
+// Couleurs principales (référencent les CSS custom properties globales)
+$primary:       var(--color-primary, #2563eb);
+$primary-light: var(--color-primary-light, #eff6ff);
+$bg:            var(--color-background-primary, #f5f7fb);
+$card-bg:       var(--color-background-secondary, #ffffff);
 
 // Texte
-$text-dark:  #0f172a;
-$text-mid:   #4b5563;
-$text-muted: #64748b;
-$text-light: #9ca3af;
+$text-dark:  var(--color-text-heading, #0f172a);
+$text-mid:   var(--color-text-secondary, #4b5563);
+$text-muted: var(--color-text-muted, #64748b);
+$text-light: var(--color-text-light, #9ca3af);
 
 // Bordures
-$border:      #e2e8f0;
-$border-soft: #e5e7eb;
+$border:      var(--color-border-secondary, #e2e8f0);
+$border-soft: var(--color-border-primary, #e5e7eb);
 
 // Couleurs sémantiques (pills, statuts)
 $green:      #22c55e;
@@ -37,15 +37,16 @@ $role-manager: #3498db;
 $role-resp:    #27ae60;
 
 // Layout
-$sidebar-w: 240px;
-$topbar-h:  64px;
-$radius:    12px;
+$sidebar-w: var(--sidebar-width, 240px);
+$topbar-h:  var(--topbar-height, 64px);
+$radius:      var(--radius-md, 12px);
+$radius-pill: var(--radius-pill, 999px);
 
 // Ombres
-$shadow-card:       0 4px 14px rgba(15, 23, 42, 0.06);
-$shadow-card-hover: 0 8px 20px rgba(37, 99, 235, 0.14);
+$shadow-card:       var(--shadow-card, 0 4px 14px rgba(15, 23, 42, 0.06));
+$shadow-card-hover: var(--shadow-card-hover, 0 8px 20px rgba(37, 99, 235, 0.14));
+$shadow-table:      var(--shadow-table, 0 2px 12px rgba(0, 0, 0, 0.07));
 
 // Typographie : DM Sans est la police unique de l'application
-// (titres, sous-titres et valeurs KPI compris).
 $font-main:    'DM Sans', sans-serif;
 $font-display: 'DM Sans', sans-serif;

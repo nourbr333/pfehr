@@ -74,8 +74,8 @@
             <div
               class="kpi-icon"
               aria-hidden="true"
-              [style.background]="pendingCount > 0 ? '#e74c3c26' : '#e5e7eb'"
-              [style.color]="pendingCount > 0 ? '#e74c3c' : '#9ca3af'"
+              [class.kpi-icon-red]="pendingCount > 0"
+              [class.kpi-icon-neutral]="pendingCount === 0"
             >
               <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10" />

@@ -28,15 +28,34 @@ public interface AdminAuditLogRepository extends JpaRepository<AdminAuditLog, Lo
                     OR LOWER(l.performedBy) LIKE LOWER(CONCAT('%', :search, '%'))
                     OR LOWER(l.details) LIKE LOWER(CONCAT('%', :search, '%'))
                   )
-              AND (:actionsEmpty = TRUE OR l.action IN :actions)
             """)
     Page<AdminAuditLog> findFiltered(
             @Param("search") String search,
             @Param("targetName") String targetName,
             @Param("dateFrom") LocalDateTime dateFrom,
             @Param("dateTo") LocalDateTime dateTo,
+            Pageable pageable);
+
+    @Query("""
+            SELECT l FROM AdminAuditLog l
+            WHERE (:targetName IS NULL OR TRIM(:targetName) = '' OR l.targetName = :targetName)
+              AND (:dateFrom IS NULL OR l.createdAt >= :dateFrom)
+              AND (:dateTo IS NULL OR l.createdAt < :dateTo)
+              AND (
+                    :search IS NULL OR TRIM(:search) = ''
+                    OR LOWER(l.action) LIKE LOWER(CONCAT('%', :search, '%'))
+                    OR LOWER(l.targetName) LIKE LOWER(CONCAT('%', :search, '%'))
+                    OR LOWER(l.performedBy) LIKE LOWER(CONCAT('%', :search, '%'))
+                    OR LOWER(l.details) LIKE LOWER(CONCAT('%', :search, '%'))
+                  )
+              AND l.action IN :actions
+            """)
+    Page<AdminAuditLog> findFilteredByActions(
+            @Param("search") String search,
+            @Param("targetName") String targetName,
+            @Param("dateFrom") LocalDateTime dateFrom,
+            @Param("dateTo") LocalDateTime dateTo,
             @Param("actions") List<String> actions,
-            @Param("actionsEmpty") boolean actionsEmpty,
             Pageable pageable);
 
     @Query("""

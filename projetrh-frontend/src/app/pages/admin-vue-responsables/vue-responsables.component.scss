@@ -29,7 +29,7 @@
 
 .movement-name {
   font-weight: 600;
-  color: #111827;
+  color: var(--color-text-primary, #111827);
   font-size: 0.9rem;
   white-space: nowrap;
   overflow: hidden;
