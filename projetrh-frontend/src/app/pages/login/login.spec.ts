@@ -22,7 +22,6 @@ describe('LoginComponent', () => {
           provide: AuthService,
           useValue: {
             connexion: authConnexion,
-            ssoConnexion: vi.fn(),
           },
         },
       ],

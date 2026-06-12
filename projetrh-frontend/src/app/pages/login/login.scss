@@ -240,52 +240,6 @@ $font-display: 'Sora', sans-serif;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-// ── SSO ─────────────────────────────────────
-.sso-separator {
-  display: flex; align-items: center; gap: 10px;
-  margin: 18px 0 12px;
-  &::before, &::after {
-    content: ''; flex: 1;
-    height: 1px; background: $border;
-  }
-  span { font-size: .78rem; color: $text-light; white-space: nowrap; }
-}
-
-.btn-sso {
-  width: 100%; height: 42px;
-  background: #fff; color: $text-dark;
-  border: 1.5px solid $border; border-radius: 8px;
-  font-family: $font-main; font-size: .875rem; font-weight: 500;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: border-color .2s, background .2s, box-shadow .2s;
-  &:hover {
-    border-color: $primary;
-    background: #f0f5ff;
-    box-shadow: 0 2px 8px rgba($primary, .12);
-  }
-}
-
-.sso-form {
-  margin-top: 16px;
-  padding: 16px;
-  background: #f8faff;
-  border: 1px solid #dbeafe;
-  border-radius: 10px;
-  animation: fadeUp .25s ease both;
-}
-
-.sso-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: .76rem; color: #1d4ed8;
-  background: #dbeafe; border-radius: 20px;
-  padding: 3px 10px; margin-bottom: 12px;
-}
-
-.sso-error { margin-bottom: 12px !important; }
-
-.btn-sso-submit { margin-top: 4px !important; }
-
 // ── COMPTES DE TEST ─────────────────────────
 .hints {
   margin-top: 24px;

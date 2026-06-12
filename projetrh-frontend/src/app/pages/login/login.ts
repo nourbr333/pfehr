@@ -21,14 +21,6 @@ export class LoginComponent {
   chargement: boolean = false;
   showPassword: boolean = false;
 
-  // ── Connexion SSO ────────────────────────────
-  ssoUsername: string = '';
-  ssoPassword: string = '';
-  ssoErreur: string = '';
-  ssoChargement: boolean = false;
-  showSsoPassword: boolean = false;
-  showSsoForm: boolean = false;
-
   constructor(private router: Router, private auth: AuthService) {}
 
   onConnexion() {
@@ -50,32 +42,7 @@ export class LoginComponent {
     });
   }
 
-  onSsoConnexion() {
-    this.ssoErreur = '';
-    if (!this.ssoUsername || !this.ssoPassword) {
-      this.ssoErreur = 'Veuillez saisir votre identifiant et mot de passe Windows.';
-      return;
-    }
-    this.ssoChargement = true;
-    this.auth.ssoConnexion(this.ssoUsername.trim(), this.ssoPassword).pipe(
-      finalize(() => { this.ssoChargement = false; })
-    ).subscribe({
-      next: (utilisateur) => {
-        this.router.navigate([utilisateur.route]);
-      },
-      error: (err: Error) => {
-        this.ssoErreur = err.message;
-      }
-    });
-  }
-
-  toggleSsoForm() {
-    this.showSsoForm = !this.showSsoForm;
-    this.ssoErreur = '';
-  }
-
   togglePassword() { this.showPassword = !this.showPassword; }
-  toggleSsoPassword() { this.showSsoPassword = !this.showSsoPassword; }
 
   onMotDePasseOublie() {
     alert('Un email de réinitialisation vous sera envoyé à votre adresse.');
