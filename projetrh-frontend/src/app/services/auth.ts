@@ -181,8 +181,14 @@ export class AuthService {
       return this.INVALID_LOGIN_MSG;
     }
     if (err instanceof HttpErrorResponse) {
-      if (err.status === 401 || err.status === 403) {
+      if (err.status === 401) {
         return this.INVALID_LOGIN_MSG;
+      }
+      if (err.status === 403) {
+        // Cas légitime où le mot de passe est correct mais le compte n'est pas encore
+        // validé par un administrateur : le message backend est explicite et sûr à afficher.
+        const bodyErr = this.readBodyError(err);
+        return bodyErr ?? this.INVALID_LOGIN_MSG;
       }
       if (err.status === 0) {
         return this.NETWORK_MSG;

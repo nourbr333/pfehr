@@ -29,39 +29,57 @@ public class AuthenticationService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * @throws ResponseStatusException(FORBIDDEN) si les identifiants sont corrects mais que le
+     *         compte est encore en attente de validation par un administrateur.
+     */
     public Optional<AppUser> authenticateWithPassword(String email, String rawPassword) {
         String login = email == null ? "" : email.trim();
-        Optional<AppUser> byAccountEmail = appUserRepository.findByEmailIgnoreCaseAndIsActiveTrue(login)
-                .filter(user -> passwordEncoder.matches(rawPassword, user.getPasswordHash()));
-        if (byAccountEmail.isPresent()) {
-            return byAccountEmail;
+        AppUser user = appUserRepository.findByEmailIgnoreCaseAndIsActiveTrue(login)
+                .filter(u -> passwordEncoder.matches(rawPassword, u.getPasswordHash()))
+                .or(() -> appUserRepository.findActiveByLinkedEmployeeEmail(login)
+                        .filter(u -> passwordEncoder.matches(rawPassword, u.getPasswordHash())))
+                .orElse(null);
+
+        if (user == null) {
+            return Optional.empty();
         }
-        return appUserRepository.findActiveByLinkedEmployeeEmail(login)
-                .filter(user -> passwordEncoder.matches(rawPassword, user.getPasswordHash()));
+        requireValidated(user);
+        return Optional.of(user);
     }
 
+    /**
+     * @throws ResponseStatusException(FORBIDDEN) si l'utilisateur AD est provisionné mais que
+     *         son compte est encore en attente de validation par un administrateur.
+     */
     public Optional<AppUser> findProvisionedUser(String loginIdentifier) {
         String normalized = normalize(loginIdentifier);
         if (normalized.isBlank()) {
             return Optional.empty();
         }
 
-        Optional<AppUser> exactEmail = appUserRepository.findByEmailIgnoreCaseAndIsActiveTrue(normalized);
-        if (exactEmail.isPresent()) {
-            return exactEmail;
-        }
+        AppUser user = appUserRepository.findByEmailIgnoreCaseAndIsActiveTrue(normalized)
+                .or(() -> normalized.contains("@")
+                        ? appUserRepository.findActiveByLinkedEmployeeEmail(normalized)
+                        : Optional.empty())
+                .or(() -> appUserRepository.findByIsActiveTrue()
+                        .stream()
+                        .filter(u -> localPart(u.getEmail()).equals(normalized))
+                        .findFirst())
+                .orElse(null);
 
-        if (normalized.contains("@")) {
-            Optional<AppUser> byEmployeeEmail = appUserRepository.findActiveByLinkedEmployeeEmail(normalized);
-            if (byEmployeeEmail.isPresent()) {
-                return byEmployeeEmail;
-            }
+        if (user == null) {
+            return Optional.empty();
         }
+        requireValidated(user);
+        return Optional.of(user);
+    }
 
-        return appUserRepository.findByIsActiveTrue()
-                .stream()
-                .filter(user -> localPart(user.getEmail()).equals(normalized))
-                .findFirst();
+    private void requireValidated(AppUser user) {
+        if (!Boolean.TRUE.equals(user.getValidated())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Compte en attente de validation par un administrateur.");
+        }
     }
 
     public void markSuccessfulLogin(AppUser user) {
@@ -69,15 +87,35 @@ public class AuthenticationService {
         appUserRepository.save(user);
     }
 
-    public void changePassword(AppUser user, String currentPassword, String newPassword) {
-        // Vérifier que l'ancien mot de passe est correct
+    /**
+     * Valide et applique un changement de mot de passe pour l'utilisateur authentifié.
+     * Point d'entrée unique pour cette règle métier — évite toute duplication entre
+     * les contrôleurs qui exposent cette fonctionnalité.
+     *
+     * @throws ResponseStatusException(BAD_REQUEST) si une règle de validation échoue.
+     */
+    @Transactional
+    public void changePassword(AppUser user, String currentPassword, String newPassword, String confirmPassword) {
+        if (isBlank(currentPassword) || isBlank(newPassword) || isBlank(confirmPassword)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tous les champs sont requis.");
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Les mots de passe ne correspondent pas.");
+        }
+        if (newPassword.equals(currentPassword)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Le nouveau mot de passe doit être différent du mot de passe actuel.");
+        }
         if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
-            throw new IllegalArgumentException("Mot de passe actuel incorrect.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mot de passe actuel incorrect.");
         }
 
-        // Encoder et sauvegarder le nouveau mot de passe
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         appUserRepository.save(user);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     /**

@@ -39,33 +39,14 @@ public class UserController {
      * POST /api/users/change-password
      * Permet à un utilisateur authentifié de changer son propre mot de passe.
      * Requiert de connaître le mot de passe actuel pour des raisons de sécurité.
+     * Toute la validation métier (champs requis, correspondance, mot de passe actuel)
+     * est centralisée dans {@link AuthenticationService#changePassword}.
      */
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
-        // Validations basiques
-        if (request.currentPassword() == null || request.currentPassword().isBlank()
-                || request.newPassword() == null || request.newPassword().isBlank()
-                || request.confirmPassword() == null || request.confirmPassword().isBlank()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Tous les champs sont requis."));
-        }
-
-        // Vérifier que newPassword et confirmPassword matchent
-        if (!request.newPassword().equals(request.confirmPassword())) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Les mots de passe ne correspondent pas."));
-        }
-
-        // Vérifier que le nouveau mot de passe est différent de l'ancien
-        if (request.newPassword().equals(request.currentPassword())) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Le nouveau mot de passe doit être différent du mot de passe actuel."));
-        }
-
         try {
             // Récupérer l'utilisateur authentifié via son userId (plus fiable qu'email)
             var authenticatedUser = SecurityUtils.requireAuthenticated();
-            logger.info("Authenticated user: " + authenticatedUser.getEmail() + ", userId: " + authenticatedUser.getUserId());
 
             if (authenticatedUser.getUserId() == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -73,29 +54,22 @@ public class UserController {
             }
 
             AppUser user = appUserRepository.findById(authenticatedUser.getUserId())
-                    .orElseThrow(() -> new IllegalArgumentException("Utilisateur non trouvé avec ID: " + authenticatedUser.getUserId()));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé."));
 
-            logger.info("User found: " + user.getEmail());
+            authenticationService.changePassword(
+                    user, request.currentPassword(), request.newPassword(), request.confirmPassword());
 
-            // Changer le mot de passe (vérifiera l'ancien mot de passe)
-            authenticationService.changePassword(user, request.currentPassword(), request.newPassword());
-
-            logger.info("Password changed successfully for: " + user.getEmail());
-            
-            // Logger l'action
             adminPortalService.logPasswordChange(user);
-            
+
             return ResponseEntity.ok(Map.of("message", "Mot de passe mis à jour avec succès."));
 
-        } catch (IllegalArgumentException e) {
-            logger.warning("IllegalArgumentException: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(Map.of("error", e.getReason()));
         } catch (Exception e) {
             logger.severe("Exception in changePassword: " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Erreur lors de la modification du mot de passe: " + e.getMessage()));
+                    .body(Map.of("error", "Erreur lors de la modification du mot de passe."));
         }
     }
 

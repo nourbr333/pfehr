@@ -41,6 +41,7 @@ public class AdminPortalService {
     private static final List<String> TAB_SECURITE = List.of(
             "MODIFICATION_ROLE",
             "REINITIALISATION_MDP",
+            "CHANGEMENT_MDP",
             "SUPPRESSION"
     );
 
