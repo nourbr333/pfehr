@@ -22,10 +22,12 @@ export class ProfilComponent {
   showNewPw = false;
   showConfirmPw = false;
   passwordSuccess = false;
+  passwordLoading = false;
   passwordForm: FormGroup;
 
   fieldError: string | null = null;
   fieldStatusField: string | null = null;
+  fieldLoading = false;
 
   private fieldSuccessTimeout?: number;
   private passwordSuccessTimeout?: number;
@@ -142,7 +144,7 @@ export class ProfilComponent {
   }
 
   saveEdit(field: string): void {
-    if (!this.utilisateur) return;
+    if (!this.utilisateur || this.fieldLoading) return;
 
     const value = this.editValue.trim();
     this.fieldError = null;
@@ -159,40 +161,86 @@ export class ProfilComponent {
       return;
     }
 
-    if (field === 'nom') this.utilisateur.nom = value;
-    if (field === 'prenom') this.utilisateur.prenom = value;
-    if (field === 'email') this.utilisateur.email = value;
+    const prenom = field === 'prenom' ? value : this.utilisateur.prenom;
+    const nom = field === 'nom' ? value : this.utilisateur.nom;
+    const email = field === 'email' ? value : this.utilisateur.email;
 
-    this.utilisateur.initiales = this.computeInitials(this.utilisateur.prenom, this.utilisateur.nom);
-    this.fieldSuccess = `${this.getFieldLabel(field)} mis à jour`;
-    this.editingField = null;
-    this.editValue = '';
+    this.fieldLoading = true;
 
-    if (this.fieldSuccessTimeout) {
-      window.clearTimeout(this.fieldSuccessTimeout);
-    }
-    this.fieldSuccessTimeout = window.setTimeout(() => {
-      this.fieldSuccess = null;
-      this.fieldStatusField = null;
-    }, 2000);
+    this.auth.updateProfile(prenom, nom, email).subscribe({
+      next: (res) => {
+        this.fieldLoading = false;
+        if (!this.utilisateur) return;
+
+        this.utilisateur.prenom = res.firstName;
+        this.utilisateur.nom = res.lastName;
+        this.utilisateur.email = res.email;
+        this.utilisateur.initiales = this.computeInitials(this.utilisateur.prenom, this.utilisateur.nom);
+        this.auth.updateStoredUser(this.utilisateur);
+
+        this.fieldSuccess = `${this.getFieldLabel(field)} mis à jour`;
+        this.editingField = null;
+        this.editValue = '';
+
+        if (this.fieldSuccessTimeout) {
+          window.clearTimeout(this.fieldSuccessTimeout);
+        }
+        this.fieldSuccessTimeout = window.setTimeout(() => {
+          this.fieldSuccess = null;
+          this.fieldStatusField = null;
+        }, 2000);
+      },
+      error: (err) => {
+        this.fieldLoading = false;
+        this.fieldError = err?.message || 'Erreur lors de la mise à jour.';
+      }
+    });
   }
 
   onChangePassword(): void {
+    if (this.passwordLoading) return;
+
     this.passwordForm.markAllAsTouched();
     if (this.passwordForm.invalid) return;
 
-    this.passwordSuccess = true;
-    this.passwordForm.reset();
-    this.showCurrentPw = false;
-    this.showNewPw = false;
-    this.showConfirmPw = false;
+    const currentPw = this.passwordForm.get('currentPw')?.value;
+    const newPw = this.passwordForm.get('newPw')?.value;
+    const confirmPw = this.passwordForm.get('confirmPw')?.value;
 
-    if (this.passwordSuccessTimeout) {
-      window.clearTimeout(this.passwordSuccessTimeout);
-    }
-    this.passwordSuccessTimeout = window.setTimeout(() => {
-      this.passwordSuccess = false;
-    }, 3000);
+    this.passwordLoading = true;
+    this.fieldError = null;
+
+    // Appel de l'API pour changer le mot de passe
+    this.auth.changePassword(currentPw, newPw, confirmPw).subscribe({
+      next: () => {
+        this.passwordLoading = false;
+        this.passwordSuccess = true;
+        this.passwordForm.reset();
+        this.showCurrentPw = false;
+        this.showNewPw = false;
+        this.showConfirmPw = false;
+
+        if (this.passwordSuccessTimeout) {
+          window.clearTimeout(this.passwordSuccessTimeout);
+        }
+        this.passwordSuccessTimeout = window.setTimeout(() => {
+          this.passwordSuccess = false;
+        }, 3000);
+      },
+      error: (err) => {
+        this.passwordLoading = false;
+        // Erreur - afficher le message d'erreur du backend ou un message par défaut
+        const errorMsg = err?.message || 'Erreur lors de la modification du mot de passe';
+        this.fieldError = errorMsg;
+
+        if (this.fieldSuccessTimeout) {
+          window.clearTimeout(this.fieldSuccessTimeout);
+        }
+        this.fieldSuccessTimeout = window.setTimeout(() => {
+          this.fieldError = null;
+        }, 5000);
+      }
+    });
   }
 
   getPasswordError(controlName: 'currentPw' | 'newPw' | 'confirmPw'): string | null {

@@ -562,6 +562,26 @@
   background: var(--primary-color, #2563eb);
   border-color: var(--primary-color, #2563eb);
   color: #ffffff;
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary .spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: profil-spin 0.7s linear infinite;
+}
+
+@keyframes profil-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .btn-outline {

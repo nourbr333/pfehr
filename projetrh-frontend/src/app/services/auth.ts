@@ -97,6 +97,41 @@ export class AuthService {
     }
   }
 
+  changePassword(currentPassword: string, newPassword: string, confirmPassword: string): Observable<any> {
+    return this.http.post(`http://localhost:8080/api/users/change-password`, {
+      currentPassword,
+      newPassword,
+      confirmPassword
+    }).pipe(
+      timeout(this.REQUEST_TIMEOUT_MS),
+      catchError((err) =>
+        throwError(() => new Error(this.resolveChangePasswordError(err))))
+    );
+  }
+
+  /** Persiste le prénom/nom/email en base via l'API, puis reflète le résultat côté client. */
+  updateProfile(firstName: string, lastName: string, email: string): Observable<{ email: string; firstName: string; lastName: string }> {
+    return this.http.put<{ email: string; firstName: string; lastName: string }>(`http://localhost:8080/api/users/me`, {
+      firstName,
+      lastName,
+      email
+    }).pipe(
+      timeout(this.REQUEST_TIMEOUT_MS),
+      catchError((err) =>
+        throwError(() => new Error(this.resolveUpdateProfileError(err))))
+    );
+  }
+
+  /** Met à jour l'utilisateur courant en mémoire et dans le stockage local (source de vérité UI). */
+  updateStoredUser(partial: Partial<Utilisateur>): void {
+    if (!this._utilisateurConnecte) return;
+    this._utilisateurConnecte = { ...this._utilisateurConnecte, ...partial };
+    const storage = this.getStorage();
+    if (storage) {
+      storage.setItem(this.STORAGE_KEY, JSON.stringify(this._utilisateurConnecte));
+    }
+  }
+
   private getStorage(): Storage | null {
     const g: any = typeof globalThis !== 'undefined' ? globalThis : undefined;
     if (!g || !g.localStorage) return null;
@@ -186,5 +221,42 @@ export class AuthService {
       if (typeof e === 'string' && e.trim()) return e.trim();
     }
     return null;
+  }
+
+  private resolveChangePasswordError(err: unknown): string {
+    if (err instanceof TimeoutError) {
+      return 'Délai dépassé. Vérifiez votre réseau ou réessayez.';
+    }
+    if (err instanceof HttpErrorResponse) {
+      if (err.status === 400) {
+        const bodyErr = this.readBodyError(err);
+        if (bodyErr) return bodyErr;
+      }
+      if (err.status === 401) {
+        return 'Mot de passe actuel incorrect.';
+      }
+      if (err.status === 0) {
+        return this.NETWORK_MSG;
+      }
+      return 'Erreur lors de la modification du mot de passe.';
+    }
+    return 'Erreur lors de la modification du mot de passe.';
+  }
+
+  private resolveUpdateProfileError(err: unknown): string {
+    if (err instanceof TimeoutError) {
+      return 'Délai dépassé. Vérifiez votre réseau ou réessayez.';
+    }
+    if (err instanceof HttpErrorResponse) {
+      if (err.status === 400 || err.status === 409) {
+        const bodyErr = this.readBodyError(err);
+        if (bodyErr) return bodyErr;
+      }
+      if (err.status === 0) {
+        return this.NETWORK_MSG;
+      }
+      return 'Erreur lors de la mise à jour du profil.';
+    }
+    return 'Erreur lors de la mise à jour du profil.';
   }
 }

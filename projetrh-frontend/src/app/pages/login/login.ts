@@ -20,6 +20,7 @@ export class LoginComponent {
   erreur: string = '';
   chargement: boolean = false;
   showPassword: boolean = false;
+  showForgotPasswordInfo: boolean = false;
 
   constructor(private router: Router, private auth: AuthService) {}
 
@@ -45,6 +46,6 @@ export class LoginComponent {
   togglePassword() { this.showPassword = !this.showPassword; }
 
   onMotDePasseOublie() {
-    alert('Un email de réinitialisation vous sera envoyé à votre adresse.');
+    this.showForgotPasswordInfo = !this.showForgotPasswordInfo;
   }
 }

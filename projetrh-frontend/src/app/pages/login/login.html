@@ -54,6 +54,17 @@
           <label for="motDePasse">Mot de passe</label>
           <button type="button" class="forgot-link" (click)="onMotDePasseOublie()">Mot de passe oublié ?</button>
         </div>
+
+        <div class="forgot-info" *ngIf="showForgotPasswordInfo">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          <span>Cette fonctionnalité sera assurée par votre administrateur RH. Contactez-le pour réinitialiser votre mot de passe.</span>
+          <button type="button" class="forgot-info-close" (click)="showForgotPasswordInfo = false" aria-label="Fermer">✕</button>
+        </div>
+
         <div class="input-password-wrapper">
           <input id="motDePasse" [type]="showPassword ? 'text' : 'password'" placeholder="••••••••"
             [(ngModel)]="motDePasse" name="motDePasse" autocomplete="current-password"/>

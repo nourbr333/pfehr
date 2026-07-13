@@ -211,6 +211,7 @@ export class LogsComponent {
       case 'ACTIVATION_COMPTE': return 'Activation';
       case 'VALIDATION_COMPTE': return 'Validation';
       case 'REINITIALISATION_MDP': return 'Réinit. MDP';
+      case 'CHANGEMENT_MDP': return 'Modif. MDP';
       case 'CONNEXION': return 'Connexion';
       default: return action;
     }
@@ -225,7 +226,8 @@ export class LogsComponent {
       case 'DESACTIVATION_COMPTE': return 'status-badge status-muted';
       case 'ACTIVATION_COMPTE': return 'status-badge status-active';
       case 'VALIDATION_COMPTE': return 'status-badge status-validated';
-      case 'REINITIALISATION_MDP': return 'status-badge status-security';
+      case 'REINITIALISATION_MDP':
+      case 'CHANGEMENT_MDP': return 'status-badge status-security';
       case 'CONNEXION': return 'status-badge status-login';
       default: return 'status-badge';
     }

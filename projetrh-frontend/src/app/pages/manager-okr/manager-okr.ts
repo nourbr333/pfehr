@@ -93,9 +93,11 @@ interface ObjectiveItem {
 })
 export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('riskHeatmapCanvas') riskHeatmapCanvas?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('riskDistributionCanvas') riskDistributionCanvas?: ElementRef<HTMLCanvasElement>;
 
   utilisateur: Utilisateur | null;
   private riskHeatmapChart: Chart<'matrix'> | null = null;
+  private riskDistributionChart: Chart<'bar'> | null = null;
   isLoading = false;
   loadError = '';
   managerEmployeeId: number | null = null;
@@ -240,7 +242,7 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
       if (this.activeTab === 'analyse') {
-        setTimeout(() => this.renderRiskHeatmap(), 0);
+        setTimeout(() => this.renderAnalyseCharts(), 0);
       }
     });
     const mid = this.managerEmployeeId;
@@ -535,7 +537,7 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
   setTab(tab: string): void {
     this.activeTab = tab;
     if (tab === 'analyse') {
-      setTimeout(() => this.renderRiskHeatmap(), 0);
+      setTimeout(() => this.renderAnalyseCharts(), 0);
     }
   }
 
@@ -730,13 +732,14 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (this.activeTab === 'analyse') {
-      setTimeout(() => this.renderRiskHeatmap(), 0);
+      setTimeout(() => this.renderAnalyseCharts(), 0);
     }
   }
 
   ngOnDestroy(): void {
     this.previewSub?.unsubscribe();
     this.destroyRiskHeatmap();
+    this.destroyRiskDistributionChart();
   }
 
   exportPortfolioExcel(): void {
@@ -1024,7 +1027,7 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
         this.isLoading = false;
         this.loadOkrRisks();
         if (this.activeTab === 'analyse') {
-          setTimeout(() => this.renderRiskHeatmap(), 0);
+          setTimeout(() => this.renderAnalyseCharts(), 0);
         }
       },
       error: () => {
@@ -1032,7 +1035,7 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loadError = 'Impossible de charger les objectifs.';
         this.isLoading = false;
         if (this.activeTab === 'analyse') {
-          setTimeout(() => this.renderRiskHeatmap(), 0);
+          setTimeout(() => this.renderAnalyseCharts(), 0);
         }
       }
     });
@@ -1167,6 +1170,89 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
   private destroyRiskHeatmap(): void {
     this.riskHeatmapChart?.destroy();
     this.riskHeatmapChart = null;
+  }
+
+  /** Rendu de tous les graphiques de l'onglet Analyse (heatmap + répartition des risques). */
+  private renderAnalyseCharts(): void {
+    this.renderRiskHeatmap();
+    this.renderRiskDistributionChart();
+  }
+
+  /** Barres horizontales : répartition réelle des objectifs actifs par niveau de risque. */
+  private renderRiskDistributionChart(): void {
+    const canvas = this.riskDistributionCanvas?.nativeElement;
+    if (!canvas || this.activeTab !== 'analyse') return;
+
+    const labels = ['On track', 'At risk', 'Off track'];
+    const values = [this.onTrackPercent, this.atRiskPercent, this.offTrackPercent];
+    const colors = ['#16a34a', '#d97706', '#dc2626'];
+
+    if (this.riskDistributionChart) {
+      const dataset = this.riskDistributionChart.data.datasets[0];
+      dataset.data = values;
+      this.riskDistributionChart.update();
+      return;
+    }
+
+    const config: ChartConfiguration<'bar'> = {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Objectifs actifs',
+          data: values,
+          backgroundColor: colors,
+          borderRadius: 6,
+          barThickness: 24
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1e293b',
+            titleFont: { size: 12, weight: 'bold' },
+            bodyFont: { size: 12 },
+            padding: 10,
+            cornerRadius: 8,
+            callbacks: {
+              label: (ctx) => `${ctx.parsed.x}% des objectifs actifs`
+            }
+          }
+        },
+        scales: {
+          x: {
+            min: 0,
+            max: 100,
+            ticks: {
+              color: '#9ca3af',
+              font: { size: 11 },
+              callback: (value) => `${value}%`
+            },
+            grid: { color: '#f1f5f9' },
+            border: { display: false }
+          },
+          y: {
+            ticks: {
+              color: '#374151',
+              font: { size: 11, weight: 'bold' }
+            },
+            grid: { display: false },
+            border: { display: false }
+          }
+        }
+      }
+    };
+
+    this.riskDistributionChart = new Chart(canvas, config);
+  }
+
+  private destroyRiskDistributionChart(): void {
+    this.riskDistributionChart?.destroy();
+    this.riskDistributionChart = null;
   }
 
   private loadCrossAnalysis(): void {

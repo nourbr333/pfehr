@@ -37,6 +37,7 @@ export interface AdminLog {
     | 'ACTIVATION_COMPTE'
     | 'VALIDATION_COMPTE'
     | 'REINITIALISATION_MDP'
+    | 'CHANGEMENT_MDP'
     | 'CONNEXION';
   cible: string;
   effectuePar: string;

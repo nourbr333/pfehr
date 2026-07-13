@@ -284,6 +284,10 @@ public class AdminPortalService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur introuvable."));
     }
 
+    public void logPasswordChange(AppUser user) {
+        addLog("CHANGEMENT_MDP", user, "Utilisateur a changé son mot de passe", user.getEmail());
+    }
+
     private void addLog(String action, AppUser targetUser, String details) {
         addLog(action, targetUser, details, DEFAULT_ADMIN_NAME);
     }
