@@ -80,7 +80,12 @@ export class DashboardAdminComponent implements OnDestroy {
 
   private categoryOf(action: AdminLog['action']): 'CONNEXIONS' | 'COMPTES' | 'SECURITE' {
     if (action === 'CONNEXION') return 'CONNEXIONS';
-    if (action === 'MODIFICATION_ROLE' || action === 'REINITIALISATION_MDP' || action === 'SUPPRESSION') {
+    if (
+      action === 'MODIFICATION_ROLE' ||
+      action === 'REINITIALISATION_MDP' ||
+      action === 'CHANGEMENT_MDP' ||
+      action === 'SUPPRESSION'
+    ) {
       return 'SECURITE';
     }
     return 'COMPTES';
@@ -321,14 +326,6 @@ export class DashboardAdminComponent implements OnDestroy {
     this.router.navigate(['/admin/utilisateurs']);
   }
 
-  onGoVueResponsables() {
-    this.router.navigate(['/admin/vue-responsables']);
-  }
-
-  onGoVueManagers() {
-    this.router.navigate(['/admin/vue-managers']);
-  }
-
   onValidateUser(userId: string) {
     this.admin.validateAccount(userId).subscribe({
       next: () => {
@@ -389,6 +386,7 @@ export class DashboardAdminComponent implements OnDestroy {
       case 'VALIDATION_COMPTE':
         return 'action-pill action-pill-blue';
       case 'REINITIALISATION_MDP':
+      case 'CHANGEMENT_MDP':
         return 'action-pill action-pill-blue-light';
       case 'CONNEXION':
         return 'action-pill action-pill-violet';
@@ -413,6 +411,8 @@ export class DashboardAdminComponent implements OnDestroy {
         return 'Validation';
       case 'REINITIALISATION_MDP':
         return 'Réinit. MDP';
+      case 'CHANGEMENT_MDP':
+        return 'Modif. MDP';
       case 'CONNEXION':
         return 'Connexion';
       default:

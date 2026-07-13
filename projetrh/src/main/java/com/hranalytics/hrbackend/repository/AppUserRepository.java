@@ -14,9 +14,21 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
     Optional<AppUser> findByEmailIgnoreCaseAndIsActiveTrue(String email);
 
     @EntityGraph(attributePaths = {"employee"})
+    Optional<AppUser> findByEmailIgnoreCase(String email);
+
+    @EntityGraph(attributePaths = {"employee"})
     @Query("SELECT u FROM AppUser u JOIN u.employee e "
             + "WHERE LOWER(TRIM(e.email)) = LOWER(TRIM(:email)) AND u.isActive = true")
     Optional<AppUser> findActiveByLinkedEmployeeEmail(@Param("email") String email);
+
+    /**
+     * Variante sans filtre sur isActive : nécessaire pour distinguer, après vérification
+     * du mot de passe, un compte désactivé (message explicite) d'un identifiant inexistant.
+     */
+    @EntityGraph(attributePaths = {"employee"})
+    @Query("SELECT u FROM AppUser u JOIN u.employee e "
+            + "WHERE LOWER(TRIM(e.email)) = LOWER(TRIM(:email))")
+    Optional<AppUser> findByLinkedEmployeeEmail(@Param("email") String email);
 
     @EntityGraph(attributePaths = {"employee"})
     List<AppUser> findByIsActiveTrue();

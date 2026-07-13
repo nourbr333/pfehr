@@ -31,26 +31,27 @@ public class AuthenticationService {
 
     /**
      * @throws ResponseStatusException(FORBIDDEN) si les identifiants sont corrects mais que le
-     *         compte est encore en attente de validation par un administrateur.
+     *         compte est désactivé, ou encore en attente de validation par un administrateur.
      */
     public Optional<AppUser> authenticateWithPassword(String email, String rawPassword) {
         String login = email == null ? "" : email.trim();
-        AppUser user = appUserRepository.findByEmailIgnoreCaseAndIsActiveTrue(login)
+        AppUser user = appUserRepository.findByEmailIgnoreCase(login)
                 .filter(u -> passwordEncoder.matches(rawPassword, u.getPasswordHash()))
-                .or(() -> appUserRepository.findActiveByLinkedEmployeeEmail(login)
+                .or(() -> appUserRepository.findByLinkedEmployeeEmail(login)
                         .filter(u -> passwordEncoder.matches(rawPassword, u.getPasswordHash())))
                 .orElse(null);
 
         if (user == null) {
             return Optional.empty();
         }
+        requireActive(user);
         requireValidated(user);
         return Optional.of(user);
     }
 
     /**
      * @throws ResponseStatusException(FORBIDDEN) si l'utilisateur AD est provisionné mais que
-     *         son compte est encore en attente de validation par un administrateur.
+     *         son compte est désactivé, ou encore en attente de validation par un administrateur.
      */
     public Optional<AppUser> findProvisionedUser(String loginIdentifier) {
         String normalized = normalize(loginIdentifier);
@@ -58,11 +59,11 @@ public class AuthenticationService {
             return Optional.empty();
         }
 
-        AppUser user = appUserRepository.findByEmailIgnoreCaseAndIsActiveTrue(normalized)
+        AppUser user = appUserRepository.findByEmailIgnoreCase(normalized)
                 .or(() -> normalized.contains("@")
-                        ? appUserRepository.findActiveByLinkedEmployeeEmail(normalized)
+                        ? appUserRepository.findByLinkedEmployeeEmail(normalized)
                         : Optional.empty())
-                .or(() -> appUserRepository.findByIsActiveTrue()
+                .or(() -> appUserRepository.findAllByOrderByUserIdDesc()
                         .stream()
                         .filter(u -> localPart(u.getEmail()).equals(normalized))
                         .findFirst())
@@ -71,8 +72,16 @@ public class AuthenticationService {
         if (user == null) {
             return Optional.empty();
         }
+        requireActive(user);
         requireValidated(user);
         return Optional.of(user);
+    }
+
+    private void requireActive(AppUser user) {
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Compte désactivé. Contactez votre administrateur.");
+        }
     }
 
     private void requireValidated(AppUser user) {
