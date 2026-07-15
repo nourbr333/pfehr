@@ -406,6 +406,41 @@ $shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
   font-size: 0.85rem;
 }
 
+// ——— Historique compact (tableau, utilisé dans l'embed admin) ———
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'DM Sans', sans-serif;
+
+  thead th {
+    text-align: left;
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    font-weight: 600;
+    padding: 8px 10px;
+    border-bottom: 1px solid $border;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    color: #374151;
+    border-bottom: 1px solid $border;
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover td {
+    background: #f8fafc;
+  }
+}
+
 .history-load-more {
   display: flex;
   justify-content: center;

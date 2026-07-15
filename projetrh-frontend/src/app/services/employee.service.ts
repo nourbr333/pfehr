@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map, timeout } from 'rxjs/operators';
 import { PageResponse } from '../models/page-response.model';
 
@@ -52,6 +52,11 @@ export interface EmployeeUpdatePayload {
   departmentId?: number;
   managerId?: number | null;
   isManager?: boolean;
+}
+
+export interface EmployeePerformanceScore {
+  employeeId: number;
+  performanceScore: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -120,6 +125,27 @@ export class EmployeeService {
 
   filterByDepartment(deptId: number): Observable<Employee[]> {
     return this.http.get<Employee[]>(`${this.apiUrl}/department/${deptId}`);
+  }
+
+  getPerformanceScores(employeeIds: number[]): Observable<Record<number, number>> {
+    if (!employeeIds.length) {
+      return of({});
+    }
+    const params = new HttpParams().set('ids', employeeIds.join(','));
+    return this.http.get<EmployeePerformanceScore[]>(`${this.apiUrl}/performance-scores`, { params }).pipe(
+      timeout(15000),
+      map((rows) => {
+        const scores: Record<number, number> = {};
+        (rows ?? []).forEach((row) => {
+          const employeeId = Number(row.employeeId ?? (row as any).employee_id);
+          const performanceScore = Number(row.performanceScore ?? (row as any).performance_score);
+          if (Number.isFinite(employeeId) && Number.isFinite(performanceScore)) {
+            scores[employeeId] = performanceScore;
+          }
+        });
+        return scores;
+      })
+    );
   }
 
   importExcel(file: File): Observable<EmployeeImportResult> {

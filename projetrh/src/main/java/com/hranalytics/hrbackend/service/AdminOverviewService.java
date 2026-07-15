@@ -9,6 +9,7 @@ import com.hranalytics.hrbackend.entity.EmployeeEvaluation;
 import com.hranalytics.hrbackend.entity.TeamObjective;
 import com.hranalytics.hrbackend.repository.AbsenceRequestRepository;
 import com.hranalytics.hrbackend.repository.AppUserRepository;
+import com.hranalytics.hrbackend.repository.DepartmentRepository;
 import com.hranalytics.hrbackend.repository.EmployeeEvaluationRepository;
 import com.hranalytics.hrbackend.repository.EmployeeRepository;
 import com.hranalytics.hrbackend.repository.KpiThresholdRepository;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -39,6 +41,7 @@ public class AdminOverviewService {
     private final TeamObjectiveRepository teamObjectiveRepository;
     private final AbsenceRequestRepository absenceRequestRepository;
     private final AppUserRepository appUserRepository;
+    private final DepartmentRepository departmentRepository;
 
     public AdminOverviewService(JdbcTemplate jdbc,
                                 EmployeeRepository employeeRepository,
@@ -46,7 +49,8 @@ public class AdminOverviewService {
                                 KpiThresholdRepository kpiThresholdRepository,
                                 TeamObjectiveRepository teamObjectiveRepository,
                                 AbsenceRequestRepository absenceRequestRepository,
-                                AppUserRepository appUserRepository) {
+                                AppUserRepository appUserRepository,
+                                DepartmentRepository departmentRepository) {
         this.jdbc = jdbc;
         this.employeeRepository = employeeRepository;
         this.employeeEvaluationRepository = employeeEvaluationRepository;
@@ -54,6 +58,7 @@ public class AdminOverviewService {
         this.teamObjectiveRepository = teamObjectiveRepository;
         this.absenceRequestRepository = absenceRequestRepository;
         this.appUserRepository = appUserRepository;
+        this.departmentRepository = departmentRepository;
     }
 
     public AdminRhOverviewDTO getRhOverview() {
@@ -75,11 +80,18 @@ public class AdminOverviewService {
 
         double tauxPresence30Jours = computePresenceRate(thirtyDaysAgo);
 
-        long evaluationsAnnee = employeeEvaluationRepository.findAll().stream()
+        List<EmployeeEvaluation> allEvaluations = employeeEvaluationRepository.findAll();
+        long evaluationsAnnee = allEvaluations.stream()
                 .filter(ev -> ev.getEvaluatedAt() != null && ev.getEvaluatedAt().getYear() == currentYear)
                 .count();
 
         long seuilsKpi = kpiThresholdRepository.count();
+        long departementsCount = departmentRepository.count();
+        long soldesEnAlerte = countLeaveBalancesEnAlerte();
+
+        Map<Integer, Employee> employeesById = employees.stream()
+                .filter(e -> e.getEmployeeId() != null)
+                .collect(Collectors.toMap(Employee::getEmployeeId, e -> e, (a, b) -> a));
 
         return new AdminRhOverviewDTO(
                 effectifTotal,
@@ -90,8 +102,11 @@ public class AdminOverviewService {
                 tauxPresence30Jours,
                 evaluationsAnnee,
                 seuilsKpi,
+                departementsCount,
+                soldesEnAlerte,
                 computeMonthlyLeaveRequests(),
-                fetchRecentMovements());
+                fetchRecentMovements(),
+                fetchRecentEvaluations(allEvaluations, employeesById));
     }
 
     public AdminManagersOverviewDTO getManagersOverview() {
@@ -242,12 +257,13 @@ public class AdminOverviewService {
 
     private List<AdminRhOverviewDTO.RhMovement> fetchRecentMovements() {
         return jdbc.query(
-                "SELECT CONCAT(e.first_name, ' ', e.last_name) AS employe, lr.type, lr.status, "
+                "SELECT lr.id AS request_id, CONCAT(e.first_name, ' ', e.last_name) AS employe, lr.type, lr.status, "
                         + "lr.start_date, lr.end_date, lr.requested_at "
                         + "FROM leave_requests lr "
                         + "LEFT JOIN employees e ON e.employee_id = lr.employee_id "
                         + "ORDER BY lr.requested_at DESC LIMIT 8",
                 (rs, rowNum) -> new AdminRhOverviewDTO.RhMovement(
+                        rs.getInt("request_id"),
                         safe(rs.getString("employe")),
                         safe(rs.getString("type")),
                         safe(rs.getString("status")),
@@ -255,6 +271,38 @@ public class AdminOverviewService {
                         rs.getDate("end_date") == null ? "" : rs.getDate("end_date").toLocalDate().toString(),
                         rs.getTimestamp("requested_at") == null ? ""
                                 : rs.getTimestamp("requested_at").toLocalDateTime().toString()));
+    }
+
+    /** Nombre de soldes de congés en alerte (moins de 5 jours restants). */
+    private long countLeaveBalancesEnAlerte() {
+        Long count = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM leave_balances "
+                        + "WHERE GREATEST(0, entitled + carry_over - used - pending) < 5",
+                Long.class);
+        return count == null ? 0L : count;
+    }
+
+    /** Dernières évaluations réalisées dans l'entreprise, toutes équipes confondues. */
+    private List<AdminRhOverviewDTO.RecentEvaluation> fetchRecentEvaluations(
+            List<EmployeeEvaluation> allEvaluations,
+            Map<Integer, Employee> employeesById) {
+        return allEvaluations.stream()
+                .filter(ev -> ev.getEvaluatedAt() != null)
+                .sorted(Comparator.comparing(EmployeeEvaluation::getEvaluatedAt).reversed())
+                .limit(8)
+                .map(ev -> {
+                    Employee employee = employeesById.get(ev.getEmployeeId());
+                    Employee manager = employeesById.get(ev.getManagerId());
+                    return new AdminRhOverviewDTO.RecentEvaluation(
+                            employee == null ? "Collaborateur #" + ev.getEmployeeId() : fullName(employee),
+                            employee == null || employee.getDepartment() == null
+                                    ? "" : safe(employee.getDepartment().getDepartmentName()),
+                            manager == null ? "" : fullName(manager),
+                            safe(ev.getPeriod()),
+                            ev.getRating(),
+                            ev.getEvaluatedAt().toString());
+                })
+                .toList();
     }
 
     private String fullName(Employee employee) {

@@ -1,0 +1,11 @@
+@use '../../../../styles/admin-tokens' as *;
+@use '../../../../styles/admin-page' as *;
+@use '../../../../styles/admin-embed' as *;
+
+:host {
+  display: block;
+}
+
+.cell-muted {
+  color: $text-light;
+}

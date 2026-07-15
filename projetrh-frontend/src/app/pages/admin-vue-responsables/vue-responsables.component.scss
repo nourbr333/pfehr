@@ -1,5 +1,11 @@
 @use '../../../styles/admin-tokens' as *;
 @use '../../../styles/admin-page' as *;
+@use '../../../styles/admin-embed' as *;
+
+// ——— Sous-section (ex: soldes de congés dans l'onglet Congés) ———
+.admin-embed-subsection {
+  margin-top: 20px;
+}
 
 // ——— Liste des derniers mouvements ———
 .movement-list {

@@ -93,27 +93,59 @@
   <div class="card-head">
     <h3>Historique</h3>
   </div>
-  <div class="history-list" *ngIf="historyRequests.length > 0; else noHistory">
-    <div class="history-month-group" *ngFor="let group of historyGroupedByMonth">
-      <div class="history-month-separator">
-        <span class="history-month-label">{{ group.monthLabel }}</span>
-        <span class="history-month-count">{{ group.requests.length }} demande{{ group.requests.length > 1 ? 's' : '' }}</span>
-      </div>
-      <div class="history-item" *ngFor="let req of group.requests">
-        <span class="status-dot" [ngClass]="getStatusClass(effectiveStatus(req))"></span>
-        <div class="history-info">
-          <strong>{{ req.employeeName || 'Collaborateur #' + req.employeeId }}</strong>
-          <span class="type-badge-sm" [style.background]="typeColors[req.type]?.bg" [style.color]="typeColors[req.type]?.text">
-            {{ typeColors[req.type]?.label }}
-          </span>
-          <span>{{ req.requestedDays }}j — {{ req.startDate }} → {{ req.endDate }}</span>
+  <div *ngIf="historyRequests.length > 0; else noHistory">
+    <!-- Historique compact (tableau) — utilisé dans l'embed admin -->
+    <table class="history-table" *ngIf="compactHistory">
+      <thead>
+        <tr>
+          <th>Collaborateur</th>
+          <th>Type</th>
+          <th>Période</th>
+          <th>Jours</th>
+          <th>Statut</th>
+          <th>Décidé le</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let req of historyRequests">
+          <td>{{ req.employeeName || 'Collaborateur #' + req.employeeId }}</td>
+          <td>
+            <span class="type-badge-sm" [style.background]="typeColors[req.type]?.bg" [style.color]="typeColors[req.type]?.text">
+              {{ typeColors[req.type]?.label }}
+            </span>
+          </td>
+          <td>{{ req.startDate }} → {{ req.endDate }}</td>
+          <td>{{ req.requestedDays }}j</td>
+          <td><span class="status-label" [ngClass]="getStatusClass(effectiveStatus(req))">{{ getStatusLabel(effectiveStatus(req)) }}</span></td>
+          <td>{{ req.reviewedAt ? (req.reviewedAt | date:'dd/MM/yyyy') : '—' }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Historique groupé par mois (par défaut — portail RH) -->
+    <div class="history-list" *ngIf="!compactHistory">
+      <div class="history-month-group" *ngFor="let group of historyGroupedByMonth">
+        <div class="history-month-separator">
+          <span class="history-month-label">{{ group.monthLabel }}</span>
+          <span class="history-month-count">{{ group.requests.length }} demande{{ group.requests.length > 1 ? 's' : '' }}</span>
         </div>
-        <div class="history-meta">
-          <span class="status-label" [ngClass]="getStatusClass(effectiveStatus(req))">{{ getStatusLabel(effectiveStatus(req)) }}</span>
-          <small *ngIf="req.reviewedAt">{{ req.reviewedAt | date:'dd/MM/yyyy HH:mm' }}</small>
+        <div class="history-item" *ngFor="let req of group.requests">
+          <span class="status-dot" [ngClass]="getStatusClass(effectiveStatus(req))"></span>
+          <div class="history-info">
+            <strong>{{ req.employeeName || 'Collaborateur #' + req.employeeId }}</strong>
+            <span class="type-badge-sm" [style.background]="typeColors[req.type]?.bg" [style.color]="typeColors[req.type]?.text">
+              {{ typeColors[req.type]?.label }}
+            </span>
+            <span>{{ req.requestedDays }}j — {{ req.startDate }} → {{ req.endDate }}</span>
+          </div>
+          <div class="history-meta">
+            <span class="status-label" [ngClass]="getStatusClass(effectiveStatus(req))">{{ getStatusLabel(effectiveStatus(req)) }}</span>
+            <small *ngIf="req.reviewedAt">{{ req.reviewedAt | date:'dd/MM/yyyy HH:mm' }}</small>
+          </div>
         </div>
       </div>
     </div>
+
     <div class="history-load-more" *ngIf="showHistoryToggle">
       <button
         type="button"

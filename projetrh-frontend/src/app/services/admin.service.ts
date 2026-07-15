@@ -61,12 +61,22 @@ export interface MonthlyCount {
 }
 
 export interface RhMovement {
+  id: number;
   employe: string;
   type: string;
   statut: string;
   dateDebut: string;
   dateFin: string;
   demandeLe: string;
+}
+
+export interface RhRecentEvaluation {
+  employe: string;
+  departement: string;
+  manager: string;
+  periode: string;
+  note: number | null;
+  evalueLe: string;
 }
 
 export interface RhOverview {
@@ -78,8 +88,11 @@ export interface RhOverview {
   tauxPresence30Jours: number;
   evaluationsAnnee: number;
   seuilsKpiConfigures: number;
+  departementsCount: number;
+  soldesEnAlerte: number;
   demandesCongesParMois: MonthlyCount[];
   derniersMouvements: RhMovement[];
+  evaluationsRecentes: RhRecentEvaluation[];
 }
 
 export interface ManagerOverviewRow {

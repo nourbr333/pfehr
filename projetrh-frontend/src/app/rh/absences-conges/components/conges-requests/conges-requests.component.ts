@@ -22,6 +22,8 @@ export class CongesRequestsComponent implements OnChanges {
   @Input() typeColors!: TypeColorMap;
   @Input() leaveRequests: LeaveRequest[] = [];
   @Input() leaveBalances: LeaveBalance[] = [];
+  /** Affiche l'historique sous forme de tableau compact (vue admin) au lieu des cartes groupées par mois. */
+  @Input() compactHistory = false;
   @Output() requestApproved = new EventEmitter<{ id: number; status: LeaveStatus }>();
   @Output() requestRejected = new EventEmitter<{ id: number; status: LeaveStatus; reason?: string }>();
   @Output() requestCancelled = new EventEmitter<{ id: number; status: LeaveStatus }>();

@@ -94,6 +94,7 @@ export class EmployesComponent implements OnInit, OnDestroy {
   isEmployeePanelOpen = false;
   selectedEmployee: Employee | null = null;
   attendanceByEmployeeId: Record<number, Attendance[]> = {};
+  performanceScoreByEmployeeId: Record<number, number> = {};
 
   // Assign manager modal
   managers: Employee[] = [];
@@ -556,6 +557,7 @@ export class EmployesComponent implements OnInit, OnDestroy {
         this.totalElements = page.totalElements ?? 0;
         this.serverTotalPages = Math.max(1, page.totalPages ?? 1);
         this.currentPage = (page.page ?? 0) + 1;
+        this.loadPerformanceScoresForTable();
 
         const idParam = this.route.snapshot.queryParamMap.get('employeeId');
         const managerParam = this.route.snapshot.queryParamMap.get('manager');
@@ -580,6 +582,7 @@ export class EmployesComponent implements OnInit, OnDestroy {
         this.totalElements = 0;
         this.serverTotalPages = 1;
         this.currentPage = 1;
+        this.performanceScoreByEmployeeId = {};
       }
     });
   }
@@ -711,9 +714,30 @@ export class EmployesComponent implements OnInit, OnDestroy {
     }).length;
   }
 
-  // TODO: implement once the performance formula is defined.
-  performanceScore(_employee: Employee): number | null {
-    return null;
+  private loadPerformanceScoresForTable() {
+    const employeeIds = this.employees
+      .map((employee) => employee.employeeId)
+      .filter((id) => Number.isFinite(id));
+    this.employeeService.getPerformanceScores(employeeIds).subscribe({
+      next: (scores) => {
+        this.performanceScoreByEmployeeId = scores ?? {};
+      },
+      error: () => {
+        this.performanceScoreByEmployeeId = {};
+      }
+    });
+  }
+
+  // Score composite (présence 40% · évaluation 40% · ponctualité 20%, mois courant).
+  performanceScore(employee: Employee): number | null {
+    const score = this.performanceScoreByEmployeeId[employee.employeeId];
+    return score == null ? null : score;
+  }
+
+  performanceScoreLabel(employee: Employee): string | null {
+    const score = this.performanceScore(employee);
+    if (score == null) return null;
+    return Number.isInteger(score) ? String(score) : score.toFixed(1);
   }
 
   // Returns only attendance rows for the current calendar month (table presence column).

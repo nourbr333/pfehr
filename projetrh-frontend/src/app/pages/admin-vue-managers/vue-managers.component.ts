@@ -3,11 +3,12 @@ import { Component } from '@angular/core';
 import { SidebarAdminComponent } from '../../components/sidebar-admin/sidebar-admin.component';
 import { AdminService, ManagersOverview, ManagerOverviewRow } from '../../services/admin.service';
 import { ToastService } from '../../components/toast/toast.service';
+import { AdminManagerActionsPanelComponent } from './admin-manager-actions-panel/admin-manager-actions-panel.component';
 
 @Component({
   selector: 'app-vue-managers',
   standalone: true,
-  imports: [CommonModule, SidebarAdminComponent],
+  imports: [CommonModule, SidebarAdminComponent, AdminManagerActionsPanelComponent],
   templateUrl: './vue-managers.component.html',
   styleUrl: './vue-managers.component.scss'
 })
@@ -16,12 +17,22 @@ export class VueManagersComponent {
   loading = true;
   todayLabel = '';
 
+  selectedManagerId: number | null = null;
+
   constructor(private admin: AdminService, private toast: ToastService) {
     this.refresh();
   }
 
   get managers(): ManagerOverviewRow[] {
     return this.overview?.managers ?? [];
+  }
+
+  get selectedManager(): ManagerOverviewRow | null {
+    return this.managers.find((m) => m.employeeId === this.selectedManagerId) ?? null;
+  }
+
+  toggleManage(manager: ManagerOverviewRow): void {
+    this.selectedManagerId = this.selectedManagerId === manager.employeeId ? null : manager.employeeId;
   }
 
   private refresh() {

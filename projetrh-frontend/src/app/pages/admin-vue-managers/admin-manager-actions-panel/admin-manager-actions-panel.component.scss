@@ -1,0 +1,100 @@
+@use '../../../../styles/admin-tokens' as *;
+@use '../../../../styles/admin-page' as *;
+@use '../../../../styles/admin-embed' as *;
+
+// Ce composant est rendu dans un <td class="panel-cell"> (padding: 0) de Vue Managers.
+// Les styles de padding/marge du contenu doivent donc être portés ici, sur :host,
+// car les règles CSS écrites dans le composant parent ne peuvent pas cibler le DOM
+// interne de ce composant (encapsulation de vues Angular).
+:host {
+  display: block;
+  padding: 16px;
+}
+
+.admin-manager-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  h3 {
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: $text-dark;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    word-break: break-word;
+  }
+}
+
+.admin-embed-tabs {
+  margin-bottom: 16px;
+}
+
+.admin-embed-tab-panel {
+  padding-top: 0;
+}
+
+.okr-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 140px;
+}
+
+.okr-meta {
+  font-size: 0.82rem;
+  color: $text-mid;
+  font-weight: 500;
+}
+
+.progress-track {
+  width: 100%;
+  max-width: 140px;
+  height: 6px;
+  border-radius: var(--radius-pill, 999px);
+  background: $border-soft;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: var(--radius-pill, 999px);
+  transition: width 0.3s ease;
+
+  &-green { background: $green; }
+  &-orange { background: $orange; }
+  &-red { background: $red; }
+}
+
+.admin-embed-inline-form {
+  background: var(--color-background-secondary, #fff);
+  border-color: $border-soft;
+}
+
+.admin-embed-inline-input-sm {
+  width: 70px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid $border-soft;
+  padding: 0 8px;
+  font-family: $font-main;
+  font-size: 0.82rem;
+}
+
+.admin-embed-inline-input-flex {
+  flex: 1;
+  min-width: 160px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid $border-soft;
+  padding: 0 10px;
+  font-family: $font-main;
+  font-size: 0.82rem;
+}
+
+.cell-muted {
+  color: $text-light;
+}

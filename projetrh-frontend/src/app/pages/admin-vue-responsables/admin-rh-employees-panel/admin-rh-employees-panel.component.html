@@ -1,0 +1,115 @@
+<div class="admin-embed-toolbar">
+  <div class="admin-embed-search">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+    <input
+      type="search"
+      placeholder="Rechercher un collaborateur..."
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="onFilterChange()"
+    />
+  </div>
+  <select class="admin-embed-select" [(ngModel)]="selectedDepartmentId" (ngModelChange)="onFilterChange()">
+    <option [ngValue]="null">Tous les départements</option>
+    <option *ngFor="let dept of departments" [ngValue]="dept.departmentId">{{ dept.departmentName }}</option>
+  </select>
+</div>
+
+<div class="table-card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Poste</th>
+        <th>Département</th>
+        <th>Manager</th>
+        <th>Rôle</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let employee of pagedEmployees">
+        <td>{{ employee.firstName }} {{ employee.lastName }}</td>
+        <td>{{ employee.jobTitle || '—' }}</td>
+        <td>{{ departmentNameOf(employee) }}</td>
+        <td>{{ managerNameOf(employee) }}</td>
+        <td>
+          <span class="log-type-pill log-type-pill-blue" *ngIf="employee.isManager">Manager</span>
+          <span class="cell-muted" *ngIf="!employee.isManager">Collaborateur</span>
+        </td>
+        <td>
+          <ng-container *ngIf="deleteConfirmId !== employee.employeeId; else confirmRow">
+            <div class="admin-embed-row-actions">
+              <button type="button" class="admin-embed-btn-icon" (click)="openEdit(employee)">Modifier</button>
+              <button type="button" class="admin-embed-btn-icon danger" (click)="askDelete(employee)">Supprimer</button>
+            </div>
+          </ng-container>
+          <ng-template #confirmRow>
+            <div class="admin-embed-inline-confirm">
+              <span>Confirmer ?</span>
+              <button type="button" class="admin-embed-btn-icon danger" [disabled]="isDeleting" (click)="confirmDelete(employee)">Oui, supprimer</button>
+              <button type="button" class="admin-embed-btn-icon" [disabled]="isDeleting" (click)="cancelDelete()">Annuler</button>
+            </div>
+          </ng-template>
+        </td>
+      </tr>
+      <tr *ngIf="!loading && pagedEmployees.length === 0">
+        <td colspan="6">
+          <div class="empty-row">Aucun collaborateur ne correspond à la recherche.</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="admin-embed-pagination" *ngIf="totalPages > 1">
+  <span>Page {{ currentPage }} / {{ totalPages }}</span>
+  <button type="button" class="admin-embed-pagination-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">‹ Précédent</button>
+  <button type="button" class="admin-embed-pagination-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Suivant ›</button>
+</div>
+
+<div class="admin-embed-modal-backdrop" *ngIf="showEditModal" (click)="closeEdit()">
+  <div class="admin-embed-modal-card" (click)="$event.stopPropagation()">
+    <div class="admin-embed-modal-header">
+      <h3>Modifier le collaborateur</h3>
+      <button type="button" class="admin-embed-modal-close" (click)="closeEdit()" [disabled]="isSaving">✕</button>
+    </div>
+    <div class="admin-embed-modal-body">
+      <label class="admin-embed-form-field">
+        <span>Prénom</span>
+        <input type="text" [(ngModel)]="editForm.firstName" [disabled]="isSaving" />
+      </label>
+      <label class="admin-embed-form-field">
+        <span>Nom</span>
+        <input type="text" [(ngModel)]="editForm.lastName" [disabled]="isSaving" />
+      </label>
+      <label class="admin-embed-form-field">
+        <span>Poste</span>
+        <input type="text" [(ngModel)]="editForm.jobTitle" [disabled]="isSaving" />
+      </label>
+      <label class="admin-embed-form-field">
+        <span>Département</span>
+        <select [(ngModel)]="editForm.departmentId" [disabled]="isSaving">
+          <option [ngValue]="null">— Sélectionner —</option>
+          <option *ngFor="let dept of departments" [ngValue]="dept.departmentId">{{ dept.departmentName }}</option>
+        </select>
+      </label>
+      <label class="admin-embed-form-field">
+        <span>Manager (identifiant, optionnel)</span>
+        <input type="text" [(ngModel)]="editForm.managerId" [disabled]="isSaving" />
+      </label>
+      <label class="admin-embed-form-field admin-embed-form-field--checkbox">
+        <input type="checkbox" [(ngModel)]="editForm.isManager" [disabled]="isSaving" />
+        <span>Ce collaborateur est manager</span>
+      </label>
+      <p class="admin-embed-error" *ngIf="editError">{{ editError }}</p>
+    </div>
+    <div class="admin-embed-modal-footer">
+      <button type="button" class="btn-secondary" (click)="closeEdit()" [disabled]="isSaving">Annuler</button>
+      <button type="button" class="btn-primary" (click)="saveEdit()" [disabled]="isSaving">
+        {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+</div>

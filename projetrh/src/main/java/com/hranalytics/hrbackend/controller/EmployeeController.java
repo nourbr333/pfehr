@@ -3,9 +3,11 @@ package com.hranalytics.hrbackend.controller;
 import com.hranalytics.hrbackend.dto.EmployeeDTO;
 import com.hranalytics.hrbackend.dto.EmployeeImportRowDTO;
 import com.hranalytics.hrbackend.dto.EmployeeImportSummaryDTO;
+import com.hranalytics.hrbackend.dto.EmployeePerformanceScoreDTO;
 import com.hranalytics.hrbackend.dto.PageResponse;
 import com.hranalytics.hrbackend.service.EmployeeService;
 import com.hranalytics.hrbackend.util.PaginationSupport;
+import java.util.Arrays;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,6 +51,16 @@ public class EmployeeController {
     @GetMapping("/managers")
     public List<EmployeeDTO> getManagers() {
         return employeeService.getManagers();
+    }
+
+    @GetMapping("/performance-scores")
+    public List<EmployeePerformanceScoreDTO> getPerformanceScores(@RequestParam("ids") String idsParam) {
+        List<Integer> ids = Arrays.stream(idsParam.split(","))
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .map(Integer::valueOf)
+                .toList();
+        return employeeService.getPerformanceScores(ids);
     }
 
     @GetMapping("/{id}")

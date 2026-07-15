@@ -188,6 +188,34 @@ export class ManagerService {
     );
   }
 
+  updateEvaluation(id: string, evaluationId: number, managerId: number, evaluation: Evaluation): Observable<Evaluation> {
+    const key = String(id);
+    const employeeId = Number(id);
+    if (!Number.isFinite(employeeId)) {
+      return throwError(() => new Error('Identifiant employe invalide.'));
+    }
+
+    const payload: CreateEmployeeEvaluationPayload = {
+      managerId,
+      evaluatedAt: evaluation.date || undefined,
+      period: null,
+      objectifs: evaluation.objectifs || null,
+      comments: evaluation.commentaire || null,
+      rating: this.clampScore(evaluation.score)
+    };
+
+    return this.evaluationService.updateForEmployee(employeeId, evaluationId, payload).pipe(
+      map((savedEvaluation) => {
+        const normalized = this.toEvaluation(savedEvaluation);
+        const list = this.dbEvaluationsByEmployee[key] ?? [];
+        const idx = list.findIndex((e) => e.evaluationId === evaluationId);
+        if (idx !== -1) list[idx] = normalized;
+        this.dbEvaluationsByEmployee[key] = list;
+        return normalized;
+      })
+    );
+  }
+
   deleteEvaluation(id: string, evaluationId: number): Observable<void> {
     const key = String(id);
     const employeeId = Number(id);

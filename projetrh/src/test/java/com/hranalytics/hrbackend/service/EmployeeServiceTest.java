@@ -30,6 +30,9 @@ class EmployeeServiceTest {
     @Mock
     private LeaveBalanceService leaveBalanceService;
 
+    @Mock
+    private PerformanceScoreService performanceScoreService;
+
     @InjectMocks
     private EmployeeService employeeService;
 

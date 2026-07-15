@@ -176,7 +176,13 @@
               <td>{{ employee.firstName }} {{ employee.lastName }}</td>
               <td>{{ employee.departmentName }}</td>
               <td>{{ employee.jobTitle }}</td>
-              <td class="score-na">—</td>
+              <td>
+                @if (performanceScore(employee) != null) {
+                  <span [class]="perfBadgeClass(performanceScore(employee)!)">{{ performanceScoreLabel(employee) }}</span>
+                } @else {
+                  <span class="score-na">—</span>
+                }
+              </td>
               <td>
                 <div class="presence-cell">
                   <div class="presence-track">

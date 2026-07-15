@@ -3,6 +3,7 @@ package com.hranalytics.hrbackend.service;
 import com.hranalytics.hrbackend.dto.EmployeeDTO;
 import com.hranalytics.hrbackend.dto.EmployeeImportRowDTO;
 import com.hranalytics.hrbackend.dto.EmployeeImportSummaryDTO;
+import com.hranalytics.hrbackend.dto.EmployeePerformanceScoreDTO;
 import com.hranalytics.hrbackend.dto.PageResponse;
 import com.hranalytics.hrbackend.entity.Department;
 import com.hranalytics.hrbackend.entity.Employee;
@@ -50,11 +51,17 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
     private final LeaveBalanceService leaveBalanceService;
+    private final PerformanceScoreService performanceScoreService;
 
-    public EmployeeService(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository, LeaveBalanceService leaveBalanceService) {
+    public EmployeeService(
+            EmployeeRepository employeeRepository,
+            DepartmentRepository departmentRepository,
+            LeaveBalanceService leaveBalanceService,
+            PerformanceScoreService performanceScoreService) {
         this.employeeRepository = employeeRepository;
         this.departmentRepository = departmentRepository;
         this.leaveBalanceService = leaveBalanceService;
+        this.performanceScoreService = performanceScoreService;
     }
 
     public List<EmployeeDTO> getAllEmployees() {
@@ -702,5 +709,9 @@ public class EmployeeService {
                 BAD_REQUEST,
                 "Ligne " + (rowIndex + 1) + ", colonne '" + column + "': " + message
         );
+    }
+
+    public List<EmployeePerformanceScoreDTO> getPerformanceScores(List<Integer> employeeIds) {
+        return performanceScoreService.getPerformanceScores(employeeIds);
     }
 }

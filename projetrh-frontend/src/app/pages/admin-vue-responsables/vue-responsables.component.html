@@ -2,7 +2,13 @@
   <div class="dashboard-header">
     <div>
       <h1>Vue Responsables</h1>
-      <p>Récap de l’activité RH : effectif, congés, présence et évaluations gérés par les Responsables RH.</p>
+      <p>Supervision et actions RH héritées du rôle Responsable.</p>
+      <div class="admin-embed-banner">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
+        </svg>
+        Mode admin — actions Responsable RH
+      </div>
     </div>
     <div class="dashboard-header-right">
       <span class="employee-muted">Mise à jour · {{ todayLabel }}</span>
@@ -28,7 +34,7 @@
             </div>
           </div>
           <strong class="kpi-value">{{ overview?.effectifTotal ?? 0 }}</strong>
-          <span class="kpi-subvalue">{{ overview?.embauches30Jours ?? 0 }} embauche(s) sur 30 jours</span>
+          <span class="kpi-subvalue">{{ overview?.departementsCount ?? 0 }} département(s) · {{ overview?.embauches30Jours ?? 0 }} embauche(s) / 30j</span>
         </article>
 
         <article class="kpi-card" [class.kpi-card-alert]="(overview?.congesEnAttente ?? 0) > 0">
@@ -60,7 +66,7 @@
           <span class="kpi-subvalue">Sur les 30 derniers jours</span>
         </article>
 
-        <article class="kpi-card">
+        <article class="kpi-card" [class.kpi-card-alert]="(overview?.soldesEnAlerte ?? 0) > 0">
           <div class="kpi-card-head">
             <span class="kpi-label">Évaluations cette année</span>
             <div class="kpi-icon" aria-hidden="true">
@@ -72,7 +78,7 @@
             </div>
           </div>
           <strong class="kpi-value">{{ overview?.evaluationsAnnee ?? 0 }}</strong>
-          <span class="kpi-subvalue">{{ overview?.seuilsKpiConfigures ?? 0 }} seuil(s) KPI configuré(s)</span>
+          <span class="kpi-subvalue">{{ overview?.soldesEnAlerte ?? 0 }} solde(s) de congés en alerte</span>
         </article>
       </div>
     </section>
@@ -107,7 +113,7 @@
             <div class="chart-head">
               <h3>Derniers mouvements</h3>
             </div>
-            <p class="chart-head-meta">Dernières demandes de congés enregistrées</p>
+            <p class="chart-head-meta">Dernières demandes de congés enregistrées — actions rapides possibles</p>
           </div>
           <div class="chart-body chart-body--list">
             <div class="movement-list" *ngIf="(overview?.derniersMouvements ?? []).length > 0; else noMovements">
@@ -116,7 +122,21 @@
                   <div class="movement-name">{{ m.employe || '—' }}</div>
                   <div class="movement-sub">{{ typeLabel(m.type) }} · {{ periodeLabel(m) }}</div>
                 </div>
-                <div class="movement-side">
+
+                <ng-container *ngIf="m.statut === 'pending' && rejectingMovementId !== m.id">
+                  <div class="admin-embed-row-actions">
+                    <button type="button" class="admin-embed-btn-icon approve" [disabled]="movementActionBusy" (click)="approveMovement(m)">Approuver</button>
+                    <button type="button" class="admin-embed-btn-icon reject" [disabled]="movementActionBusy" (click)="showRejectMovementInput(m)">Refuser</button>
+                  </div>
+                </ng-container>
+
+                <div class="admin-embed-inline-confirm" *ngIf="rejectingMovementId === m.id">
+                  <input type="text" placeholder="Motif du refus" [(ngModel)]="movementRejectReason" />
+                  <button type="button" class="admin-embed-btn-icon reject" [disabled]="movementActionBusy || !movementRejectReason.trim()" (click)="confirmRejectMovement(m)">Confirmer</button>
+                  <button type="button" class="admin-embed-btn-icon" [disabled]="movementActionBusy" (click)="cancelRejectMovement()">Annuler</button>
+                </div>
+
+                <div class="movement-side" *ngIf="m.statut !== 'pending' || rejectingMovementId === m.id">
                   <span [class]="statutPillClass(m.statut)">{{ statutLabel(m.statut) }}</span>
                   <span class="movement-date">{{ relativeDate(m.demandeLe) }}</span>
                 </div>
@@ -131,5 +151,92 @@
         </article>
       </div>
     </section>
+
+    <section class="section-block">
+      <div class="section-title-row">
+        <h2>Actions RH</h2>
+        <span class="section-title-hint">Actions héritées du rôle Responsable RH</span>
+      </div>
+
+      <div class="admin-embed-tabs">
+        <button type="button" class="admin-embed-tab" [class.active]="activeTab === 'conges'" (click)="setTab('conges')">Congés</button>
+        <button type="button" class="admin-embed-tab" [class.active]="activeTab === 'effectif'" (click)="setTab('effectif')">Effectif</button>
+        <button type="button" class="admin-embed-tab" [class.active]="activeTab === 'performances'" (click)="setTab('performances')">Performances</button>
+      </div>
+
+      <div class="admin-embed-tab-panel" *ngIf="activeTab === 'conges'">
+        <ng-container *ngIf="!congesLoading; else congesLoadingTpl">
+          <app-conges-requests
+            [employees]="employeeProfiles"
+            [typeColors]="typeColors"
+            [leaveRequests]="leaveRequests"
+            [leaveBalances]="leaveBalances"
+            [compactHistory]="true"
+            (requestApproved)="onRequestApproved($event)"
+            (requestRejected)="onRequestRejected($event)"
+            (requestCancelled)="onRequestCancelled($event)"
+            (newRequest)="openNewRequestModal()"
+          ></app-conges-requests>
+
+          <div class="section-title-row admin-embed-subsection">
+            <h2>Soldes de congés</h2>
+          </div>
+          <app-leave-balance
+            [employees]="employeeProfiles"
+            [typeColors]="typeColors"
+            [balances]="leaveBalances"
+          ></app-leave-balance>
+        </ng-container>
+        <ng-template #congesLoadingTpl>
+          <div class="admin-embed-empty">Chargement des congés...</div>
+        </ng-template>
+      </div>
+
+      <div class="admin-embed-tab-panel" *ngIf="activeTab === 'effectif'">
+        <app-admin-rh-employees-panel></app-admin-rh-employees-panel>
+      </div>
+
+      <div class="admin-embed-tab-panel" *ngIf="activeTab === 'performances'">
+        <div class="table-card">
+          <table class="data-table data-table-compact">
+            <thead>
+              <tr>
+                <th>Collaborateur</th>
+                <th>Département</th>
+                <th>Manager</th>
+                <th>Période</th>
+                <th>Note</th>
+                <th>Évalué le</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let evalItem of overview?.evaluationsRecentes">
+                <td>{{ evalItem.employe || '—' }}</td>
+                <td>{{ evalItem.departement || '—' }}</td>
+                <td>{{ evalItem.manager || '—' }}</td>
+                <td>{{ evalItem.periode || '—' }}</td>
+                <td>{{ noteLabel(evalItem.note) }}</td>
+                <td>{{ formatYmd(evalItem.evalueLe) }}</td>
+              </tr>
+              <tr *ngIf="(overview?.evaluationsRecentes ?? []).length === 0">
+                <td colspan="6">
+                  <div class="empty-row">Aucune évaluation récente.</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
   </div>
+
+  <app-leave-request-modal
+    *ngIf="showNewRequestModal"
+    [employees]="employeeProfiles"
+    [typeColors]="typeColors"
+    [policies]="leavePolicies"
+    [balances]="leaveBalances"
+    (submitted)="onNewRequestSubmitted($event)"
+    (closed)="onNewRequestClosed()"
+  ></app-leave-request-modal>
 </app-sidebar-admin>

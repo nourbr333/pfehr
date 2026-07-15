@@ -1,5 +1,22 @@
 @use '../../../styles/admin-tokens' as *;
 @use '../../../styles/admin-page' as *;
+@use '../../../styles/admin-embed' as *;
+
+.row-selected td {
+  background: $primary-light;
+}
+
+// Remarque : le contenu interne de <app-admin-manager-actions-panel> ne peut pas être
+// stylé depuis ce fichier (encapsulation de vues Angular — voir le :host de ce composant
+// pour son padding et l'espacement de son en-tête / ses onglets / ses panneaux).
+.panel-cell {
+  padding: 0 !important;
+  background: var(--color-background-tertiary, #f8fafc);
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  vertical-align: top;
+}
 
 .manager-cell {
   display: flex;
@@ -75,8 +92,10 @@
   &-red { background: $red; }
 }
 
-@media (max-width: 950px) {
-  .table-card {
-    overflow-x: auto;
+.table-card {
+  overflow-x: auto;
+
+  > .data-table {
+    min-width: 880px;
   }
 }

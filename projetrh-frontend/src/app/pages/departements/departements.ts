@@ -2,14 +2,26 @@
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 import { AuthService, Utilisateur } from '../../services/auth';
 import {
   Department,
+  DepartmentCreatePayload,
   DepartmentEmployee,
   DepartmentService,
-  DepartmentStats
+  DepartmentStats,
+  DepartmentUpdatePayload
 } from '../../services/department.service';
 import { NotificationsPanelComponent } from '../../components/notifications-panel/notifications-panel';
+
+type DepartmentFormMode = 'create' | 'edit';
+
+interface DepartmentFormState {
+  departmentName: string;
+  departmentHead: string;
+  description: string;
+  active: boolean;
+}
 
 type DepartmentPanelTab = 'members' | 'kpis' | 'notes';
 
@@ -51,6 +63,20 @@ export class DepartementsComponent implements OnInit {
   notePendingDeleteId: number | null = null;
   noteSavedMessage = '';
 
+  actionSuccessMessage = '';
+  actionErrorMessage = '';
+
+  showDepartmentFormModal = false;
+  departmentFormMode: DepartmentFormMode = 'create';
+  departmentBeingEdited: Department | null = null;
+  departmentForm: DepartmentFormState = { departmentName: '', departmentHead: '', description: '', active: true };
+  isSavingDepartment = false;
+  departmentFormError = '';
+
+  showDeleteDepartmentModal = false;
+  departmentToDelete: Department | null = null;
+  isDeletingDepartment = false;
+
   constructor(
     private router: Router,
     private auth: AuthService,
@@ -75,7 +101,9 @@ export class DepartementsComponent implements OnInit {
           departmentId: d.departmentId ?? d.department_id ?? 0,
           departmentName: d.departmentName ?? d.department_name ?? 'Non renseigné',
           departmentHead: d.departmentHead ?? d.department_head ?? 'Non renseigné',
-          employeeCount: d.employeeCount ?? d.employee_count ?? 0
+          employeeCount: d.employeeCount ?? d.employee_count ?? 0,
+          description: d.description ?? null,
+          active: d.active ?? d.isActive ?? true
         }));
         this.loadDepartmentStats();
         this.isLoading = false;
@@ -205,9 +233,7 @@ export class DepartementsComponent implements OnInit {
   }
 
   departmentEmployeeCount(department: Department): number {
-    const statsCount = this.getDepartmentStats(department).employeeCount ?? 0;
-    if (statsCount > 0) return statsCount;
-    return department.employeeCount ?? 0;
+    return this.getDepartmentStats(department).employeeCount ?? 0;
   }
 
   openDepartmentPanel(department: Department) {
@@ -247,6 +273,146 @@ export class DepartementsComponent implements OnInit {
     this.noteEditingId = null;
     this.notePendingDeleteId = null;
     this.noteSavedMessage = '';
+  }
+
+  openCreateDepartmentModal() {
+    this.departmentFormMode = 'create';
+    this.departmentBeingEdited = null;
+    this.departmentForm = { departmentName: '', departmentHead: '', description: '', active: true };
+    this.departmentFormError = '';
+    this.showDepartmentFormModal = true;
+  }
+
+  openEditDepartmentModal(department: Department, event: MouseEvent) {
+    event.stopPropagation();
+    this.departmentFormMode = 'edit';
+    this.departmentBeingEdited = department;
+    this.departmentForm = {
+      departmentName: department.departmentName ?? '',
+      departmentHead: department.departmentHead ?? '',
+      description: department.description ?? '',
+      active: department.active ?? true
+    };
+    this.departmentFormError = '';
+    this.showDepartmentFormModal = true;
+  }
+
+  closeDepartmentFormModal() {
+    if (this.isSavingDepartment) return;
+    this.showDepartmentFormModal = false;
+    this.departmentBeingEdited = null;
+    this.departmentFormError = '';
+  }
+
+  saveDepartmentForm() {
+    const departmentName = this.departmentForm.departmentName.trim();
+    if (!departmentName) {
+      this.departmentFormError = 'Le nom du département est obligatoire.';
+      return;
+    }
+
+    this.isSavingDepartment = true;
+    this.departmentFormError = '';
+
+    const request$ = this.departmentFormMode === 'create'
+      ? this.departmentService.createDepartment(this.buildCreatePayload(departmentName))
+      : this.departmentService.updateDepartment(
+          this.departmentBeingEdited!.departmentId,
+          this.buildUpdatePayload(departmentName)
+        );
+
+    request$.pipe(
+      finalize(() => {
+        this.isSavingDepartment = false;
+      })
+    ).subscribe({
+      next: (saved) => {
+        this.actionSuccessMessage = this.departmentFormMode === 'create'
+          ? `Département "${saved.departmentName}" créé avec succès.`
+          : `Département "${saved.departmentName}" modifié avec succès.`;
+        this.actionErrorMessage = '';
+        this.showDepartmentFormModal = false;
+        this.departmentBeingEdited = null;
+        this.loadDepartments();
+        this.dismissActionMessageLater();
+      },
+      error: (error) => {
+        this.departmentFormError = this.extractErrorMessage(error, 'Enregistrement impossible.');
+      }
+    });
+  }
+
+  private buildCreatePayload(departmentName: string): DepartmentCreatePayload {
+    return {
+      departmentName,
+      departmentHead: this.departmentForm.departmentHead.trim() || null,
+      description: this.departmentForm.description.trim() || null,
+      active: this.departmentForm.active
+    };
+  }
+
+  private buildUpdatePayload(departmentName: string): DepartmentUpdatePayload {
+    return {
+      departmentName,
+      departmentHead: this.departmentForm.departmentHead.trim() || null,
+      description: this.departmentForm.description.trim() || null,
+      active: this.departmentForm.active
+    };
+  }
+
+  onDeleteDepartment(department: Department, event: MouseEvent) {
+    event.stopPropagation();
+    this.actionErrorMessage = '';
+    this.actionSuccessMessage = '';
+    this.departmentToDelete = department;
+    this.showDeleteDepartmentModal = true;
+  }
+
+  closeDeleteDepartmentModal() {
+    if (this.isDeletingDepartment) return;
+    this.showDeleteDepartmentModal = false;
+    this.departmentToDelete = null;
+  }
+
+  confirmDeleteDepartment() {
+    if (!this.departmentToDelete) return;
+    const department = this.departmentToDelete;
+    this.isDeletingDepartment = true;
+
+    this.departmentService.deleteDepartment(department.departmentId).pipe(
+      finalize(() => {
+        this.isDeletingDepartment = false;
+      })
+    ).subscribe({
+      next: () => {
+        this.actionSuccessMessage = `Département "${department.departmentName}" supprimé avec succès.`;
+        this.actionErrorMessage = '';
+        this.showDeleteDepartmentModal = false;
+        this.departmentToDelete = null;
+        if (this.selectedDepartment?.departmentId === department.departmentId) {
+          this.closeDepartmentPanel();
+        }
+        this.loadDepartments();
+        this.dismissActionMessageLater();
+      },
+      error: (error) => {
+        this.actionErrorMessage = this.extractErrorMessage(error, 'Suppression impossible.');
+        this.actionSuccessMessage = '';
+        this.showDeleteDepartmentModal = false;
+        this.departmentToDelete = null;
+      }
+    });
+  }
+
+  private extractErrorMessage(error: any, fallback: string): string {
+    const raw = error?.error;
+    return (typeof raw === 'string' ? raw : null) ?? raw?.message ?? error?.message ?? fallback;
+  }
+
+  private dismissActionMessageLater() {
+    window.setTimeout(() => {
+      this.actionSuccessMessage = '';
+    }, 3500);
   }
 
   employeeInitials(employee: DepartmentEmployee): string {

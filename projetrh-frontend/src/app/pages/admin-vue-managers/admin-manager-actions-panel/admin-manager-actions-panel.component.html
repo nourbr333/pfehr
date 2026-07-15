@@ -1,0 +1,362 @@
+<div class="admin-manager-panel-header">
+  <h3>Gérer : {{ managerName }}</h3>
+</div>
+
+<div class="admin-embed-tabs">
+  <button type="button" class="admin-embed-tab" [class.active]="activeTab === 'equipe'" (click)="setTab('equipe')">Équipe</button>
+  <button type="button" class="admin-embed-tab" [class.active]="activeTab === 'objectifs'" (click)="setTab('objectifs')">Objectifs</button>
+  <button type="button" class="admin-embed-tab" [class.active]="activeTab === 'absences'" (click)="setTab('absences')">Absences</button>
+  <button type="button" class="admin-embed-tab" [class.active]="activeTab === 'evaluations'" (click)="setTab('evaluations')">Évaluations</button>
+</div>
+
+<!-- Équipe -->
+<div class="admin-embed-tab-panel" *ngIf="activeTab === 'equipe'">
+  <div class="admin-embed-toolbar">
+    <span class="section-title-hint">{{ team.length }} membre(s) d'équipe</span>
+    <button type="button" class="btn-primary btn-small admin-embed-toolbar-action" (click)="openInviteModal()">+ Inviter un collaborateur</button>
+  </div>
+
+  <div class="admin-embed-empty" *ngIf="teamLoading">Chargement de l'équipe...</div>
+
+  <div class="table-card" *ngIf="!teamLoading">
+    <table class="data-table data-table-compact">
+      <thead>
+        <tr>
+          <th>Collaborateur</th>
+          <th>Poste</th>
+          <th>Présence</th>
+          <th>Score éval.</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let member of pagedTeam">
+          <td>{{ member.name }}</td>
+          <td>{{ member.job_title || '—' }}</td>
+          <td>{{ member.attendance_rate }}%</td>
+          <td>{{ member.performance_score }}/100</td>
+          <td>
+            <ng-container *ngIf="removeConfirmId !== member.id; else confirmRemoveRow">
+              <button type="button" class="admin-embed-btn-icon danger" (click)="askRemove(member)">Retirer</button>
+            </ng-container>
+            <ng-template #confirmRemoveRow>
+              <div class="admin-embed-inline-confirm">
+                <span>Confirmer ?</span>
+                <button type="button" class="admin-embed-btn-icon danger" [disabled]="isRemoving" (click)="confirmRemove(member)">Oui</button>
+                <button type="button" class="admin-embed-btn-icon" [disabled]="isRemoving" (click)="cancelRemove()">Annuler</button>
+              </div>
+            </ng-template>
+          </td>
+        </tr>
+        <tr *ngIf="team.length === 0">
+          <td colspan="5"><div class="empty-row">Aucun membre dans cette équipe.</div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="admin-embed-pagination" *ngIf="teamTotalPages > 1">
+    <span>Page {{ teamPage }} / {{ teamTotalPages }}</span>
+    <button type="button" class="admin-embed-pagination-btn" [disabled]="teamPage === 1" (click)="goToTeamPage(teamPage - 1)">‹ Précédent</button>
+    <button type="button" class="admin-embed-pagination-btn" [disabled]="teamPage === teamTotalPages" (click)="goToTeamPage(teamPage + 1)">Suivant ›</button>
+  </div>
+</div>
+
+<!-- Objectifs -->
+<div class="admin-embed-tab-panel" *ngIf="activeTab === 'objectifs'">
+  <div class="admin-embed-toolbar">
+    <span class="section-title-hint">{{ objectives.length }} objectif(s)</span>
+  </div>
+
+  <div class="admin-embed-empty" *ngIf="objectivesLoading">Chargement des objectifs...</div>
+
+  <div class="table-card" *ngIf="!objectivesLoading">
+    <table class="data-table data-table-compact">
+      <thead>
+        <tr>
+          <th>Objectif</th>
+          <th>Propriétaire</th>
+          <th>Avancement</th>
+          <th>Statut</th>
+          <th>Échéance</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let objective of pagedObjectives">
+          <tr>
+            <td>{{ objective.title }}</td>
+            <td>{{ objective.ownerName }}</td>
+            <td>
+              <div class="okr-cell">
+                <div class="okr-meta">{{ objective.progressPercent }}%</div>
+                <div class="progress-track">
+                  <div [class]="progressClass(objective.progressPercent)" [style.width.%]="clampPercent(objective.progressPercent)"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="log-type-pill log-type-pill-green" *ngIf="objective.riskStatus === 'ON_TRACK'">OK</span>
+              <span class="log-type-pill log-type-pill-orange" *ngIf="objective.riskStatus === 'AT_RISK'">À risque</span>
+              <span class="log-type-pill log-type-pill-red" *ngIf="objective.riskStatus === 'OFF_TRACK'">Hors piste</span>
+            </td>
+            <td>{{ objective.dueDate }}</td>
+            <td>
+              <ng-container *ngIf="deleteObjectiveConfirmId !== objective.objectiveId; else confirmDelObjective">
+                <div class="admin-embed-row-actions" *ngIf="updatingObjectiveId !== objective.objectiveId">
+                  <button type="button" class="admin-embed-btn-icon" (click)="openProgressUpdate(objective)">Modifier</button>
+                  <button type="button" class="admin-embed-btn-icon danger" (click)="askDeleteObjective(objective)">Supprimer</button>
+                </div>
+              </ng-container>
+              <ng-template #confirmDelObjective>
+                <div class="admin-embed-inline-confirm">
+                  <span>Confirmer ?</span>
+                  <button type="button" class="admin-embed-btn-icon danger" [disabled]="isDeletingObjective" (click)="confirmDeleteObjective(objective)">Oui</button>
+                  <button type="button" class="admin-embed-btn-icon" [disabled]="isDeletingObjective" (click)="cancelDeleteObjective()">Annuler</button>
+                </div>
+              </ng-template>
+            </td>
+          </tr>
+          <tr *ngIf="updatingObjectiveId === objective.objectiveId">
+            <td colspan="6">
+              <div class="admin-embed-inline-confirm admin-embed-inline-form">
+                <span>Nouvel avancement (%)</span>
+                <input type="number" min="0" max="100" [(ngModel)]="progressValue" class="admin-embed-inline-input-sm" />
+                <input type="text" placeholder="Commentaire (optionnel)" [(ngModel)]="progressComment" class="admin-embed-inline-input-flex" />
+                <button type="button" class="admin-embed-btn-icon approve" [disabled]="isSavingProgress" (click)="saveProgressUpdate(objective)">Enregistrer</button>
+                <button type="button" class="admin-embed-btn-icon" [disabled]="isSavingProgress" (click)="cancelProgressUpdate()">Annuler</button>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+        <tr *ngIf="objectives.length === 0">
+          <td colspan="6"><div class="empty-row">Aucun objectif pour ce manager.</div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="admin-embed-pagination" *ngIf="objectivesTotalPages > 1">
+    <span>Page {{ objectivesPage }} / {{ objectivesTotalPages }}</span>
+    <button type="button" class="admin-embed-pagination-btn" [disabled]="objectivesPage === 1" (click)="goToObjectivesPage(objectivesPage - 1)">‹ Précédent</button>
+    <button type="button" class="admin-embed-pagination-btn" [disabled]="objectivesPage === objectivesTotalPages" (click)="goToObjectivesPage(objectivesPage + 1)">Suivant ›</button>
+  </div>
+</div>
+
+<!-- Absences -->
+<div class="admin-embed-tab-panel" *ngIf="activeTab === 'absences'">
+  <div class="admin-embed-empty" *ngIf="absencesLoading">Chargement des absences...</div>
+
+  <ng-container *ngIf="!absencesLoading">
+    <div class="admin-embed-toolbar">
+      <span class="section-title-hint">{{ pendingAbsenceRequests.length }} demande(s) en attente pour cette équipe</span>
+    </div>
+
+    <div class="table-card">
+      <table class="data-table data-table-compact">
+        <thead>
+          <tr>
+            <th>Collaborateur</th>
+            <th>Type</th>
+            <th>Période</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let req of pagedPendingAbsences">
+            <tr>
+              <td>{{ req.employeeName }}</td>
+              <td>{{ req.absenceType }}</td>
+              <td>{{ req.startDate }} → {{ req.endDate }}</td>
+              <td>
+                <div class="admin-embed-row-actions">
+                  <button type="button" class="admin-embed-btn-icon" (click)="suggestAlternatives(req)">Alternative</button>
+                  <button type="button" class="admin-embed-btn-icon" (click)="openPlanModal(req)">Continuité</button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="suggestingRequestId === req.requestId">
+              <td colspan="4">
+                <div class="admin-embed-empty" *ngIf="isSuggesting">Recherche d'alternatives...</div>
+                <div class="admin-embed-inline-confirm admin-embed-inline-form" *ngIf="!isSuggesting">
+                  <div class="admin-embed-suggestions">
+                    <div *ngFor="let alt of suggestions">{{ alt.startDate }} → {{ alt.endDate }} ({{ alt.simultaneousAbsences }} absence(s) simultanée(s)) — {{ alt.note }}</div>
+                    <div *ngIf="suggestions.length === 0">Aucune alternative trouvée.</div>
+                  </div>
+                  <button type="button" class="admin-embed-btn-icon" (click)="closeSuggestions()">Fermer</button>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+          <tr *ngIf="pendingAbsenceRequests.length === 0">
+            <td colspan="4"><div class="empty-row">Aucune demande en attente.</div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="admin-embed-pagination" *ngIf="absencesTotalPages > 1">
+      <span>Page {{ absencesPage }} / {{ absencesTotalPages }}</span>
+      <button type="button" class="admin-embed-pagination-btn" [disabled]="absencesPage === 1" (click)="goToAbsencesPage(absencesPage - 1)">‹ Précédent</button>
+      <button type="button" class="admin-embed-pagination-btn" [disabled]="absencesPage === absencesTotalPages" (click)="goToAbsencesPage(absencesPage + 1)">Suivant ›</button>
+    </div>
+  </ng-container>
+</div>
+
+<!-- Évaluations : modification / suppression uniquement (pas de création côté admin) -->
+<div class="admin-embed-tab-panel" *ngIf="activeTab === 'evaluations'">
+  <div class="admin-embed-empty" *ngIf="teamLoading">Chargement de l'équipe...</div>
+
+  <div class="table-card" *ngIf="!teamLoading">
+    <table class="data-table data-table-compact">
+      <thead>
+        <tr>
+          <th>Collaborateur</th>
+          <th>Dernière évaluation</th>
+          <th>Note</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let member of pagedEvalTeam">
+          <tr>
+            <td>{{ member.name }}</td>
+            <ng-container *ngIf="latestEvaluation(member) as lastEval; else noEval">
+              <td>{{ lastEval.date }}</td>
+              <td>{{ lastEval.score }}/100</td>
+              <td>
+                <ng-container *ngIf="deleteEvalConfirmId !== lastEval.evaluationId; else confirmDelEval">
+                  <div class="admin-embed-row-actions">
+                    <button type="button" class="admin-embed-btn-icon" (click)="openEvalModal(member)">Modifier</button>
+                    <button type="button" class="admin-embed-btn-icon danger" (click)="askDeleteEval(lastEval)">Supprimer</button>
+                  </div>
+                </ng-container>
+                <ng-template #confirmDelEval>
+                  <div class="admin-embed-inline-confirm">
+                    <span>Confirmer ?</span>
+                    <button type="button" class="admin-embed-btn-icon danger" (click)="confirmDeleteEval(member, lastEval)">Oui</button>
+                    <button type="button" class="admin-embed-btn-icon" (click)="cancelDeleteEval()">Annuler</button>
+                  </div>
+                </ng-template>
+              </td>
+            </ng-container>
+            <ng-template #noEval>
+              <td class="cell-muted">—</td>
+              <td class="cell-muted">—</td>
+              <td class="cell-muted">Aucune évaluation</td>
+            </ng-template>
+          </tr>
+        </ng-container>
+        <tr *ngIf="team.length === 0">
+          <td colspan="4"><div class="empty-row">Aucun membre dans cette équipe.</div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="admin-embed-pagination" *ngIf="evalTotalPages > 1">
+    <span>Page {{ evalPage }} / {{ evalTotalPages }}</span>
+    <button type="button" class="admin-embed-pagination-btn" [disabled]="evalPage === 1" (click)="goToEvalPage(evalPage - 1)">‹ Précédent</button>
+    <button type="button" class="admin-embed-pagination-btn" [disabled]="evalPage === evalTotalPages" (click)="goToEvalPage(evalPage + 1)">Suivant ›</button>
+  </div>
+</div>
+
+<!-- Modal : inviter un collaborateur -->
+<div class="admin-embed-modal-backdrop" *ngIf="showInviteModal" (click)="closeInviteModal()">
+  <div class="admin-embed-modal-card" (click)="$event.stopPropagation()">
+    <div class="admin-embed-modal-header">
+      <h3>Inviter un collaborateur</h3>
+      <button type="button" class="admin-embed-modal-close" (click)="closeInviteModal()" [disabled]="isInviting">✕</button>
+    </div>
+    <div class="admin-embed-modal-body">
+      <label class="admin-embed-form-field">
+        <span>Rechercher un collaborateur</span>
+        <input type="text" [(ngModel)]="inviteSearch" (ngModelChange)="filterInviteList()" placeholder="Nom du collaborateur" />
+      </label>
+      <div class="table-card admin-embed-modal-table">
+        <table class="data-table data-table-compact">
+          <tbody>
+            <tr *ngFor="let employee of inviteFiltered">
+              <td>{{ employee.firstName }} {{ employee.lastName }}</td>
+              <td>{{ employee.jobTitle }}</td>
+              <td>
+                <button type="button" class="admin-embed-btn-icon" [disabled]="isInviting" (click)="inviteEmployee(employee)">Inviter</button>
+              </td>
+            </tr>
+            <tr *ngIf="inviteFiltered.length === 0">
+              <td colspan="3"><div class="empty-row">Aucun résultat.</div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="admin-embed-error" *ngIf="inviteError">{{ inviteError }}</p>
+      <p class="admin-embed-success" *ngIf="inviteFeedback">{{ inviteFeedback }}</p>
+    </div>
+    <div class="admin-embed-modal-footer">
+      <button type="button" class="btn-secondary" (click)="closeInviteModal()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : plan de continuité -->
+<div class="admin-embed-modal-backdrop" *ngIf="planModalRequest" (click)="closePlanModal()">
+  <div class="admin-embed-modal-card" (click)="$event.stopPropagation()">
+    <div class="admin-embed-modal-header">
+      <h3>Plan de continuité</h3>
+      <button type="button" class="admin-embed-modal-close" (click)="closePlanModal()" [disabled]="isSavingPlan">✕</button>
+    </div>
+    <div class="admin-embed-modal-body">
+      <label class="admin-embed-form-field">
+        <span>Collaborateur remplaçant (optionnel)</span>
+        <select [(ngModel)]="planBackupEmployeeId" [disabled]="isSavingPlan">
+          <option [ngValue]="null">— Aucun —</option>
+          <option *ngFor="let member of team" [ngValue]="memberId(member)">{{ member.name }}</option>
+        </select>
+      </label>
+      <label class="admin-embed-form-field">
+        <span>Notes</span>
+        <textarea [(ngModel)]="planNotes" [disabled]="isSavingPlan"></textarea>
+      </label>
+    </div>
+    <div class="admin-embed-modal-footer">
+      <button type="button" class="btn-secondary" (click)="closePlanModal()" [disabled]="isSavingPlan">Annuler</button>
+      <button type="button" class="btn-primary" (click)="savePlan()" [disabled]="isSavingPlan">
+        {{ isSavingPlan ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : modifier une évaluation existante -->
+<div class="admin-embed-modal-backdrop" *ngIf="evalModalMember" (click)="closeEvalModal()">
+  <div class="admin-embed-modal-card" (click)="$event.stopPropagation()">
+    <div class="admin-embed-modal-header">
+      <h3>Modifier l'évaluation de {{ evalModalMember.name }}</h3>
+      <button type="button" class="admin-embed-modal-close" (click)="closeEvalModal()" [disabled]="isSavingEval">✕</button>
+    </div>
+    <div class="admin-embed-modal-body">
+      <label class="admin-embed-form-field">
+        <span>Date</span>
+        <input type="date" [(ngModel)]="evalForm.date" [disabled]="isSavingEval" />
+      </label>
+      <label class="admin-embed-form-field">
+        <span>Note (/100)</span>
+        <input type="number" min="0" max="100" [(ngModel)]="evalForm.score" [disabled]="isSavingEval" />
+      </label>
+      <label class="admin-embed-form-field">
+        <span>Objectifs</span>
+        <textarea [(ngModel)]="evalForm.objectifs" [disabled]="isSavingEval"></textarea>
+      </label>
+      <label class="admin-embed-form-field">
+        <span>Commentaire</span>
+        <textarea [(ngModel)]="evalForm.commentaire" [disabled]="isSavingEval"></textarea>
+      </label>
+    </div>
+    <div class="admin-embed-modal-footer">
+      <button type="button" class="btn-secondary" (click)="closeEvalModal()" [disabled]="isSavingEval">Annuler</button>
+      <button type="button" class="btn-primary" (click)="saveEval()" [disabled]="isSavingEval">
+        {{ isSavingEval ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+</div>
