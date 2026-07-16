@@ -95,6 +95,19 @@
   font-size: 0.82rem;
 }
 
+.admin-embed-input-error {
+  border-color: #dc2626 !important;
+  background: #fef2f2;
+}
+
+.admin-embed-field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #dc2626;
+}
+
 .cell-muted {
   color: $text-light;
 }

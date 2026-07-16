@@ -107,7 +107,7 @@
     </div>
     <div class="admin-embed-modal-footer">
       <button type="button" class="btn-secondary" (click)="closeEdit()" [disabled]="isSaving">Annuler</button>
-      <button type="button" class="btn-primary" (click)="saveEdit()" [disabled]="isSaving">
+      <button type="button" class="btn-primary" (click)="saveEdit()" [disabled]="isSaving || !editFormValid">
         {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
       </button>
     </div>

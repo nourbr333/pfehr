@@ -471,11 +471,11 @@
       </label>
       <label class="form-field form-field--full">
         <span>Responsable</span>
-        <input type="text" [(ngModel)]="departmentForm.departmentHead" [disabled]="isSavingDepartment" placeholder="Ex. Nour Ben Romdhane"/>
+        <input type="text" [(ngModel)]="departmentForm.departmentHead" [disabled]="isSavingDepartment" maxlength="150" placeholder="Ex. Nour Ben Romdhane"/>
       </label>
       <label class="form-field form-field--full">
         <span>Description</span>
-        <textarea rows="3" [(ngModel)]="departmentForm.description" [disabled]="isSavingDepartment" placeholder="Rôle et périmètre du département…"></textarea>
+        <textarea rows="3" [(ngModel)]="departmentForm.description" [disabled]="isSavingDepartment" maxlength="500" placeholder="Rôle et périmètre du département…"></textarea>
       </label>
       <label class="form-field form-field--full toggle-label">
         <span>Département actif</span>
@@ -486,7 +486,7 @@
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-secondary" (click)="closeDepartmentFormModal()" [disabled]="isSavingDepartment">Annuler</button>
-      <button type="button" class="btn-primary" (click)="saveDepartmentForm()" [disabled]="isSavingDepartment">
+      <button type="button" class="btn-primary" (click)="saveDepartmentForm()" [disabled]="isSavingDepartment || !isDepartmentFormValid">
         {{ isSavingDepartment ? 'Enregistrement...' : 'Enregistrer' }}
       </button>
     </div>

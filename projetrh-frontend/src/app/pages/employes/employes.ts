@@ -34,7 +34,7 @@ interface EmployeeEditForm {
   firstName: string;
   lastName: string;
   jobTitle: string;
-  departmentId: string;
+  departmentId: number | null;
   managerId: string;
   isManager: boolean;
 }
@@ -86,7 +86,7 @@ export class EmployesComponent implements OnInit, OnDestroy {
     firstName: '',
     lastName: '',
     jobTitle: '',
-    departmentId: '',
+    departmentId: null,
     managerId: '',
     isManager: false
   };
@@ -158,7 +158,7 @@ export class EmployesComponent implements OnInit, OnDestroy {
       firstName: employee.firstName ?? '',
       lastName: employee.lastName ?? '',
       jobTitle: employee.jobTitle ?? '',
-      departmentId: String(employee.departmentId ?? ''),
+      departmentId: employee.departmentId ?? null,
       managerId: employee.managerId == null ? '' : String(employee.managerId),
       isManager: employee.isManager ?? false
     };
@@ -173,6 +173,18 @@ export class EmployesComponent implements OnInit, OnDestroy {
     this.employeeBeingEdited = null;
   }
 
+  get isEmployeeEditFormValid(): boolean {
+    const managerIdValue = this.employeeEditForm.managerId.trim();
+    const managerIdOk = managerIdValue === '' || /^\d+$/.test(managerIdValue);
+    return !!(
+      this.employeeEditForm.firstName.trim() &&
+      this.employeeEditForm.lastName.trim() &&
+      this.employeeEditForm.jobTitle.trim() &&
+      this.employeeEditForm.departmentId != null &&
+      managerIdOk
+    );
+  }
+
   saveEmployeeEdit() {
     if (!this.employeeBeingEdited) {
       return;
@@ -180,14 +192,10 @@ export class EmployesComponent implements OnInit, OnDestroy {
     const firstName = this.employeeEditForm.firstName.trim();
     const lastName = this.employeeEditForm.lastName.trim();
     const jobTitle = this.employeeEditForm.jobTitle.trim();
-    const departmentIdValue = this.employeeEditForm.departmentId.trim();
+    const departmentId = this.employeeEditForm.departmentId;
     const managerIdValue = this.employeeEditForm.managerId.trim();
-    if (!firstName || !lastName || !jobTitle || !departmentIdValue) {
+    if (!firstName || !lastName || !jobTitle || departmentId == null) {
       this.editEmployeeError = 'Les champs prénom, nom, poste et département sont obligatoires.';
-      return;
-    }
-    if (!/^\d+$/.test(departmentIdValue)) {
-      this.editEmployeeError = 'Le département doit être un identifiant numérique.';
       return;
     }
     if (managerIdValue !== '' && !/^\d+$/.test(managerIdValue)) {
@@ -206,7 +214,7 @@ export class EmployesComponent implements OnInit, OnDestroy {
       firstName,
       lastName,
       jobTitle,
-      departmentId: Number(departmentIdValue),
+      departmentId,
       managerId,
       isManager: this.employeeEditForm.isManager
     };

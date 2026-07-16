@@ -121,11 +121,14 @@
             <td colspan="6">
               <div class="admin-embed-inline-confirm admin-embed-inline-form">
                 <span>Nouvel avancement (%)</span>
-                <input type="number" min="0" max="100" [(ngModel)]="progressValue" class="admin-embed-inline-input-sm" />
+                <input type="number" min="0" max="100" [(ngModel)]="progressValue"
+                       [class.admin-embed-input-error]="progressValueError"
+                       class="admin-embed-inline-input-sm" />
                 <input type="text" placeholder="Commentaire (optionnel)" [(ngModel)]="progressComment" class="admin-embed-inline-input-flex" />
-                <button type="button" class="admin-embed-btn-icon approve" [disabled]="isSavingProgress" (click)="saveProgressUpdate(objective)">Enregistrer</button>
+                <button type="button" class="admin-embed-btn-icon approve" [disabled]="isSavingProgress || !!progressValueError" (click)="saveProgressUpdate(objective)">Enregistrer</button>
                 <button type="button" class="admin-embed-btn-icon" [disabled]="isSavingProgress" (click)="cancelProgressUpdate()">Annuler</button>
               </div>
+              <span class="admin-embed-field-error" *ngIf="progressValueError">{{ progressValueError }}</span>
             </td>
           </tr>
         </ng-container>
@@ -341,7 +344,9 @@
       </label>
       <label class="admin-embed-form-field">
         <span>Note (/100)</span>
-        <input type="number" min="0" max="100" [(ngModel)]="evalForm.score" [disabled]="isSavingEval" />
+        <input type="number" min="0" max="100" [(ngModel)]="evalForm.score" [disabled]="isSavingEval"
+               [class.admin-embed-input-error]="evalScoreError" />
+        <span class="admin-embed-field-error" *ngIf="evalScoreError">{{ evalScoreError }}</span>
       </label>
       <label class="admin-embed-form-field">
         <span>Objectifs</span>
@@ -354,7 +359,7 @@
     </div>
     <div class="admin-embed-modal-footer">
       <button type="button" class="btn-secondary" (click)="closeEvalModal()" [disabled]="isSavingEval">Annuler</button>
-      <button type="button" class="btn-primary" (click)="saveEval()" [disabled]="isSavingEval">
+      <button type="button" class="btn-primary" (click)="saveEval()" [disabled]="isSavingEval || !!evalScoreError">
         {{ isSavingEval ? 'Enregistrement...' : 'Enregistrer' }}
       </button>
     </div>

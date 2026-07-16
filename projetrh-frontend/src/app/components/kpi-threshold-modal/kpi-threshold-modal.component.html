@@ -48,22 +48,28 @@
             </div>
             <div class="threshold-field">
               <label class="threshold-field-label" for="kpiTSeuil">Seuil d'alerte (%)</label>
-              <input id="kpiTSeuil" type="number" class="threshold-input" min="0" max="100" step="0.1"
+              <input id="kpiTSeuil" type="number" class="threshold-input" [class.threshold-input-error]="seuilOutOfRange" min="0" max="100" step="0.1"
                      placeholder="Ex : 5"
                      [value]="seuil ?? ''"
                      (input)="seuil = $any($event.target).value ? +$any($event.target).value : null"/>
+              @if (seuilOutOfRange) {
+                <span class="threshold-field-error">Doit être compris entre 0 et 100.</span>
+              }
               <span class="threshold-field-hint">{{ definition?.thresholdHelp }}</span>
             </div>
             <div class="threshold-field">
               <label class="threshold-field-label" for="kpiTCible">Objectif cible (%)</label>
-              <input id="kpiTCible" type="number" class="threshold-input" min="0" max="100" step="0.1"
+              <input id="kpiTCible" type="number" class="threshold-input" [class.threshold-input-error]="cibleOutOfRange" min="0" max="100" step="0.1"
                      placeholder="Ex : 2"
                      [value]="cible ?? ''"
                      (input)="cible = $any($event.target).value ? +$any($event.target).value : null"/>
+              @if (cibleOutOfRange) {
+                <span class="threshold-field-error">Doit être compris entre 0 et 100.</span>
+              }
               <span class="threshold-field-hint">{{ definition?.targetHelp }}</span>
             </div>
           </div>
-          @if (validationError) {
+          @if (validationError && !seuilOutOfRange && !cibleOutOfRange) {
             <p class="threshold-validation-error">{{ validationError }}</p>
           }
         </div>
@@ -89,7 +95,7 @@
           <button class="note-btn note-btn--delete" type="button" (click)="deleteThreshold()">Supprimer</button>
         }
         <button class="note-btn note-btn--cancel" type="button" (click)="close()">Annuler</button>
-        <button class="note-btn note-btn--save" type="button" (click)="submit()">Enregistrer</button>
+        <button class="note-btn note-btn--save" type="button" [disabled]="!!validationError" (click)="submit()">Enregistrer</button>
       </div>
     </div>
   </div>

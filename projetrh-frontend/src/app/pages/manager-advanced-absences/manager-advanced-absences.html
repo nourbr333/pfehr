@@ -767,7 +767,7 @@
                   <div class="form-warn" *ngIf="backupConflictWarning">⚠ {{ backupConflictWarning }}</div>
                   <div class="form-group">
                     <div class="form-label">Notes de passation <span class="form-label-opt">(optionnel)</span></div>
-                    <textarea rows="3" [(ngModel)]="continuityNotes" placeholder="ex : accès tickets Jira, point hebdo mercredi, contact client à notifier, documentation à transmettre…"></textarea>
+                    <textarea rows="3" [(ngModel)]="continuityNotes" maxlength="1000" placeholder="ex : accès tickets Jira, point hebdo mercredi, contact client à notifier, documentation à transmettre…"></textarea>
                   </div>
                   <div style="display:flex;gap:8px">
                     <button class="btn-action primary" type="button" (click)="createContinuityPlan()" [disabled]="actionLoading || !selectedRequestIdForPlan">

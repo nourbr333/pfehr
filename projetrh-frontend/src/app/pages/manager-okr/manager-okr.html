@@ -443,12 +443,22 @@
                 <div class="form-split-col">
                   <div class="form-group">
                     <label class="form-label">Titre de l'objectif *</label>
-                    <input class="form-input" type="text" [(ngModel)]="newObjectiveTitle" placeholder="Ex : Améliorer le NPS équipe à 75+"/>
+                    <input class="form-input" type="text" [(ngModel)]="newObjectiveTitle" maxlength="255" placeholder="Ex : Améliorer le NPS équipe à 75+"
+                           [class.form-input-error]="newObjectiveTitleTouched && newObjectiveTitleError"
+                           (blur)="newObjectiveTitleTouched = true"/>
+                    @if (newObjectiveTitleTouched && newObjectiveTitleError) {
+                      <span class="form-field-error">{{ newObjectiveTitleError }}</span>
+                    }
                   </div>
                   <div class="form-row">
                     <div class="form-group">
                       <label class="form-label">Horizon *</label>
-                      <input class="form-input" type="text" [(ngModel)]="newObjectiveHorizon" placeholder="Ex : Q2 2026"/>
+                      <input class="form-input" type="text" [(ngModel)]="newObjectiveHorizon" maxlength="100" placeholder="Ex : Q2 2026"
+                             [class.form-input-error]="newObjectiveHorizonTouched && newObjectiveHorizonError"
+                             (blur)="newObjectiveHorizonTouched = true"/>
+                      @if (newObjectiveHorizonTouched && newObjectiveHorizonError) {
+                        <span class="form-field-error">{{ newObjectiveHorizonError }}</span>
+                      }
                     </div>
                     <div class="form-group">
                       <label class="form-label">Portée</label>
@@ -538,7 +548,7 @@
               </div>
               <div class="form-actions">
                 <button type="button" class="btn-secondary" (click)="resetCreateForm()" [disabled]="isCreating">Réinitialiser</button>
-                <button type="button" class="btn-primary" (click)="onCreateObjective()" [disabled]="isCreating">
+                <button type="button" class="btn-primary" (click)="onCreateObjective()" [disabled]="isCreating || !!newObjectiveTitleError || !!newObjectiveHorizonError">
                   <svg *ngIf="!isCreating" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                   </svg>
@@ -595,7 +605,7 @@
               </div>
               <div class="form-actions">
                 <button type="button" class="btn-secondary" (click)="onCancelProgressUpdate()">Annuler</button>
-                <button type="button" class="btn-primary" (click)="onSaveProgressComment()">Enregistrer la progression</button>
+                <button type="button" class="btn-primary" [disabled]="!selectedObjectiveId" (click)="onSaveProgressComment()">Enregistrer la progression</button>
               </div>
               <div *ngIf="progressSuccessMessage" class="plan-feedback plan-feedback--success">{{ progressSuccessMessage }}</div>
               <div *ngIf="progressErrorMessage" class="plan-feedback plan-feedback--error">{{ progressErrorMessage }}</div>
@@ -664,7 +674,7 @@
               </div>
               <div class="form-actions">
                 <button type="button" class="btn-secondary" (click)="planDescription = ''; planObjectiveId = null; planSuccessMessage = ''; planErrorMessage = ''">Annuler</button>
-                <button type="button" class="btn-primary" (click)="onCreateActionPlan()">
+                <button type="button" class="btn-primary" [disabled]="!(planObjectiveId ?? selectedObjectiveId)" (click)="onCreateActionPlan()">
                   <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
                   </svg>
@@ -738,7 +748,10 @@
 
       <div class="edit-grp edit-grp--full">
         <label>Titre</label>
-        <input type="text" [(ngModel)]="editTitle" placeholder="Titre de l'objectif" />
+        <input type="text" [(ngModel)]="editTitle" placeholder="Titre de l'objectif" required maxlength="255"
+               [class.edit-input-error]="editTitleTouched && editTitleError"
+               (blur)="editTitleTouched = true" />
+        <span class="edit-field-error" *ngIf="editTitleTouched && editTitleError">{{ editTitleError }}</span>
       </div>
 
       <div class="edit-row">
@@ -789,7 +802,7 @@
 
     <div class="obj-modal-ft">
       <button type="button" class="btn-secondary" (click)="onCloseEditObjective()">Annuler</button>
-      <button type="button" class="btn-primary" [disabled]="editLoading" (click)="onSaveEditObjective()">
+      <button type="button" class="btn-primary" [disabled]="editLoading || !editTitle?.trim()" (click)="onSaveEditObjective()">
         <svg *ngIf="!editLoading" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px">
           <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
           <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>

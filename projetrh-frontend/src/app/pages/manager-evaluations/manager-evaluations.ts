@@ -69,6 +69,18 @@ export class ManagerEvaluationsComponent implements OnInit, OnDestroy {
   modalEmpSearchFocused = false;
   evalForm: EvalForm = { period: '', rating: null, objectifs: '', comments: '' };
   isSaving = false;
+  ratingTouched = false;
+
+  get ratingError(): string {
+    const r = this.evalForm.rating;
+    if (r === null || r === undefined || (r as unknown as string) === '') {
+      return 'La note est obligatoire.';
+    }
+    if (!Number.isFinite(r) || r < 0 || r > 100) {
+      return 'La note doit être comprise entre 0 et 100.';
+    }
+    return '';
+  }
 
   // Delete confirm
   showDeleteConfirm = false;
@@ -331,6 +343,7 @@ export class ManagerEvaluationsComponent implements OnInit, OnDestroy {
     this.modalEmpSearchTerm = preRow?.member.name ?? '';
     this.modalEmpSearchFocused = false;
     this.evalForm = { period: '', rating: null, objectifs: '', comments: '' };
+    this.ratingTouched = false;
     this.showEvalModal = true;
   }
 
@@ -345,6 +358,7 @@ export class ManagerEvaluationsComponent implements OnInit, OnDestroy {
       objectifs: eval_.objectifs ?? '',
       comments: eval_.comments ?? '',
     };
+    this.ratingTouched = false;
     this.showEvalModal = true;
   }
 
@@ -369,6 +383,10 @@ export class ManagerEvaluationsComponent implements OnInit, OnDestroy {
 
   saveEval(): void {
     if (!this.modalEmployeeId || this.managerId === null || this.isSaving) return;
+    if (this.ratingError) {
+      this.ratingTouched = true;
+      return;
+    }
     this.isSaving = true;
     const payload: CreateEmployeeEvaluationPayload = {
       managerId: this.managerId,

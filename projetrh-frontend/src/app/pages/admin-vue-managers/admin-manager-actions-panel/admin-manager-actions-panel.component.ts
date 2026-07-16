@@ -319,6 +319,17 @@ export class AdminManagerActionsPanelComponent implements OnChanges, OnDestroy {
     return Math.max(0, Math.min(100, percent ?? 0));
   }
 
+  get progressValueError(): string {
+    const v = this.progressValue;
+    if (v === null || v === undefined || (v as unknown as string) === '') {
+      return "L'avancement est obligatoire.";
+    }
+    if (!Number.isFinite(v) || v < 0 || v > 100) {
+      return "L'avancement doit être compris entre 0 et 100.";
+    }
+    return '';
+  }
+
   openProgressUpdate(objective: ManagerObjective): void {
     this.updatingObjectiveId = objective.objectiveId;
     this.progressValue = objective.progressPercent;
@@ -330,6 +341,7 @@ export class AdminManagerActionsPanelComponent implements OnChanges, OnDestroy {
   }
 
   saveProgressUpdate(objective: ManagerObjective): void {
+    if (this.progressValueError) return;
     this.isSavingProgress = true;
     this.managerOkrService.updateObjectiveProgress(this.managerId, objective.objectiveId, {
       authorEmployeeId: objective.ownerEmployeeId,
@@ -455,8 +467,20 @@ export class AdminManagerActionsPanelComponent implements OnChanges, OnDestroy {
     this.editingEvaluationId = null;
   }
 
+  get evalScoreError(): string {
+    const v = this.evalForm.score;
+    if (v === null || v === undefined || (v as unknown as string) === '') {
+      return 'La note est obligatoire.';
+    }
+    if (!Number.isFinite(v) || v < 0 || v > 100) {
+      return 'La note doit être comprise entre 0 et 100.';
+    }
+    return '';
+  }
+
   saveEval(): void {
     if (!this.evalModalMember || this.editingEvaluationId == null) return;
+    if (this.evalScoreError) return;
     const member = this.evalModalMember;
     const evaluation: Evaluation = {
       date: this.evalForm.date,

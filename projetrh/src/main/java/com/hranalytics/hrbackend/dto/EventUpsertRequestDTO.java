@@ -2,6 +2,7 @@ package com.hranalytics.hrbackend.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -10,6 +11,7 @@ import lombok.Data;
 @Data
 public class EventUpsertRequestDTO {
     @NotBlank
+    @Size(max = 180)
     private String title;
 
     private String description;

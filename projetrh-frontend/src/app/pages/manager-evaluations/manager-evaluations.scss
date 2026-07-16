@@ -537,9 +537,14 @@ $font-main:     'DM Sans', sans-serif;
   &:focus { border-color: #185fa5; background: #fff; }
   &::placeholder { color: #9ca3af; }
   &:disabled { opacity: .6; cursor: not-allowed; }
+  &.eval-input-error { border-color: #dc2626; background: #fef2f2; }
 }
 
 textarea.eval-form-control { resize: none; min-height: 76px; }
+
+.eval-field-error {
+  font-size: 11px; font-weight: 500; color: #dc2626;
+}
 
 .eval-modal-footer {
   border-top: .5px solid #d4d9e2; padding: 1rem 1.5rem 1.5rem;

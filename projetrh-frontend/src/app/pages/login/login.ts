@@ -22,16 +22,27 @@ export class LoginComponent {
   showPassword: boolean = false;
   showForgotPasswordInfo: boolean = false;
 
+  private readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   constructor(private router: Router, private auth: AuthService) {}
+
+  get canSubmit(): boolean {
+    return !!this.email.trim() && !!this.motDePasse;
+  }
 
   onConnexion() {
     this.erreur = '';
-    if (!this.email || !this.motDePasse) {
+    const trimmedEmail = this.email.trim();
+    if (!trimmedEmail || !this.motDePasse) {
       this.erreur = 'Veuillez remplir tous les champs.';
       return;
     }
+    if (!this.emailPattern.test(trimmedEmail)) {
+      this.erreur = 'Adresse email invalide.';
+      return;
+    }
     this.chargement = true;
-    this.auth.connexion(this.email.trim(), this.motDePasse).pipe(
+    this.auth.connexion(trimmedEmail, this.motDePasse).pipe(
       finalize(() => { this.chargement = false; })
     ).subscribe({
       next: (utilisateur) => {

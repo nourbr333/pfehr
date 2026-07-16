@@ -82,7 +82,7 @@
         </div>
       </div>
 
-      <button class="btn-connexion" (click)="onConnexion()" [disabled]="chargement">
+      <button class="btn-connexion" (click)="onConnexion()" [disabled]="chargement || !canSubmit">
         <span *ngIf="!chargement">Se connecter</span>
         <span *ngIf="chargement" class="spinner"></span>
       </button>

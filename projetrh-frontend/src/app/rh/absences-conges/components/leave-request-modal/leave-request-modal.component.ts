@@ -45,6 +45,7 @@ export class LeaveRequestModalComponent implements OnInit, OnDestroy {
 
   filteredEmployees: EmployeeProfile[] = [];
   employeeSearch = '';
+  employeeTouched = false;
   showEmployeeDropdown = false;
   conflicts: LeaveConflict[] = [];
   submitting = false;
@@ -59,6 +60,26 @@ export class LeaveRequestModalComponent implements OnInit, OnDestroy {
     return this.policies.filter(p => p.isActive);
   }
 
+  get todayStr(): string {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  get employeeError(): string {
+    if (this.form.employeeId) return '';
+    return this.employeeSearch.trim() ? 'Collaborateur introuvable.' : 'Veuillez sélectionner un collaborateur.';
+  }
+
+  get dateRangeError(): string {
+    if (!this.form.startDate || !this.form.endDate) return '';
+    if (this.form.endDate < this.form.startDate) {
+      return 'La date de fin doit être postérieure ou égale à la date de début.';
+    }
+    if (this.form.requestedDays === 0) {
+      return 'Aucun jour ouvré dans la période sélectionnée (weekends exclus).';
+    }
+    return '';
+  }
+
   get isFormValid(): boolean {
     return !!(
       this.form.employeeId &&
@@ -71,6 +92,10 @@ export class LeaveRequestModalComponent implements OnInit, OnDestroy {
   }
 
   onEmployeeSearch(): void {
+    if (this.form.employeeId) {
+      this.form.employeeId = null;
+      this.recalculate();
+    }
     const query = this.employeeSearch.toLowerCase();
     this.filteredEmployees = this.employees
       .filter(e => e.fullName.toLowerCase().includes(query))
@@ -82,10 +107,12 @@ export class LeaveRequestModalComponent implements OnInit, OnDestroy {
     this.form.employeeId = employee.id;
     this.employeeSearch = employee.fullName;
     this.showEmployeeDropdown = false;
+    this.employeeTouched = false;
     this.recalculate();
   }
 
   closeEmployeeDropdownDelayed(): void {
+    this.employeeTouched = true;
     setTimeout(() => { this.showEmployeeDropdown = false; }, 150);
   }
 

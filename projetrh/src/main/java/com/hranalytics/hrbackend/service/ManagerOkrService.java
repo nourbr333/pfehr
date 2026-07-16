@@ -526,8 +526,12 @@ public class ManagerOkrService {
                 .findByObjectiveIdAndManagerEmployeeId(objectiveId, managerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Objectif introuvable."));
 
-        if (payload.getTitle() != null && !payload.getTitle().isBlank()) {
-            objective.setTitle(payload.getTitle().trim());
+        if (payload.getTitle() != null) {
+            String trimmedTitle = payload.getTitle().trim();
+            if (trimmedTitle.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le titre est obligatoire.");
+            }
+            objective.setTitle(trimmedTitle);
         }
         if (payload.getObjectiveScope() != null) {
             objective.setObjectiveScope(normalizeScope(payload.getObjectiveScope()));

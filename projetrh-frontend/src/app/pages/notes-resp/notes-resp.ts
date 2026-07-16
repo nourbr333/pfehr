@@ -135,8 +135,8 @@ export class NotesRespComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  saveEdit(noteId: number, textarea: HTMLTextAreaElement): void {
-    const value = textarea.value.trim();
+  saveEdit(noteId: number): void {
+    const value = this.editingContent.trim();
     if (!value) return;
     this.notesService.update(noteId, {
       title: this.editingTitle.trim() || null,

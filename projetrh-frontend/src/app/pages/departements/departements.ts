@@ -297,6 +297,10 @@ export class DepartementsComponent implements OnInit {
     this.showDepartmentFormModal = true;
   }
 
+  get isDepartmentFormValid(): boolean {
+    return !!this.departmentForm.departmentName.trim();
+  }
+
   closeDepartmentFormModal() {
     if (this.isSavingDepartment) return;
     this.showDepartmentFormModal = false;

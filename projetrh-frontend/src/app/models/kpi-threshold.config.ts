@@ -79,6 +79,12 @@ export function validateThresholdTarget(
   threshold: number | null,
   target: number | null
 ): string | null {
+  if (threshold != null && (!Number.isFinite(threshold) || threshold < 0 || threshold > 100)) {
+    return "Le seuil d'alerte doit être compris entre 0 et 100.";
+  }
+  if (target != null && (!Number.isFinite(target) || target < 0 || target > 100)) {
+    return "L'objectif cible doit être compris entre 0 et 100.";
+  }
   if (threshold == null || target == null) return null;
   const def = KPI_THRESHOLD_DEFINITIONS[key];
   if (def.higherIsBetter && target <= threshold) {

@@ -92,8 +92,8 @@ export class CalendrierComponent implements OnInit, OnDestroy {
     private leaveRequestService: LeaveRequestService
   ) {
     this.addForm = this.fb.group({
-      titre: ['', Validators.required],
-      description: [''],
+      titre: ['', [Validators.required, this.noWhitespaceValidator, Validators.maxLength(180)]],
+      description: ['', Validators.maxLength(2000)],
       date: ['', Validators.required],
       heure: [''],
       type: ['autre'],
@@ -749,5 +749,13 @@ export class CalendrierComponent implements OnInit, OnDestroy {
       if (!Array.isArray(value)) return { arrayMinLength: true };
       return value.length >= minLength ? null : { arrayMinLength: true };
     };
+  }
+
+  private noWhitespaceValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (typeof value === 'string' && value.trim().length === 0 && value.length > 0) {
+      return { required: true };
+    }
+    return null;
   }
 }

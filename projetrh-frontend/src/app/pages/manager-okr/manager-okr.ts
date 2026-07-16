@@ -111,8 +111,18 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedObjectiveId: number | null = null;
 
   newObjectiveTitle = '';
+  newObjectiveTitleTouched = false;
   newObjectiveScope: 'TEAM' | 'INDIVIDUAL' = 'TEAM';
   newObjectiveHorizon = 'Q2 2026';
+  newObjectiveHorizonTouched = false;
+
+  get newObjectiveTitleError(): string {
+    return this.newObjectiveTitle?.trim() ? '' : 'Le titre est obligatoire.';
+  }
+
+  get newObjectiveHorizonError(): string {
+    return this.newObjectiveHorizon?.trim() ? '' : "L'horizon est obligatoire.";
+  }
   newObjectiveDueDate = '';
   newObjectiveDependencies = '';
   newObjectiveOwnerEmployeeId: number | null = null;
@@ -182,6 +192,11 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
   editWeighting = 1;
   editLoading = false;
   editError = '';
+  editTitleTouched = false;
+
+  get editTitleError(): string {
+    return this.editTitle?.trim() ? '' : 'Le titre est obligatoire.';
+  }
 
   // Portfolio — delete confirmation modal
   confirmDeleteObjective: ObjectiveItem | null = null;
@@ -419,7 +434,13 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
     this.createSuccess = '';
 
     if (!this.newObjectiveTitle.trim()) {
+      this.newObjectiveTitleTouched = true;
       this.createValidationError = 'Le titre est obligatoire.';
+      return;
+    }
+    if (!this.newObjectiveHorizon.trim()) {
+      this.newObjectiveHorizonTouched = true;
+      this.createValidationError = "L'horizon est obligatoire.";
       return;
     }
     if (!this.managerEmployeeId) return;
@@ -464,6 +485,8 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
         this.createSuccess = '';
         this.createError = '';
         this.newObjectiveTitle = '';
+        this.newObjectiveTitleTouched = false;
+        this.newObjectiveHorizonTouched = false;
         this.newObjectiveDependencies = '';
         this.newObjectiveOwnerEmployeeId = null;
         this.ownerSearch = '';
@@ -547,7 +570,9 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
 
   resetCreateForm(): void {
     this.newObjectiveTitle = '';
+    this.newObjectiveTitleTouched = false;
     this.newObjectiveHorizon = 'Q2 2026';
+    this.newObjectiveHorizonTouched = false;
     this.newObjectiveScope = 'TEAM';
     this.newObjectiveDueDate = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
     this.newObjectiveDependencies = '';
@@ -649,6 +674,7 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
     this.editDependencies = obj.dependencies.join(', ');
     this.editWeighting = obj.weight;
     this.editError = '';
+    this.editTitleTouched = false;
   }
 
   onCloseEditObjective(): void {
@@ -658,10 +684,15 @@ export class ManagerOkrComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onSaveEditObjective(): void {
     if (!this.editingObjective || !this.managerEmployeeId) return;
+    const trimmedTitle = this.editTitle?.trim() ?? '';
+    if (!trimmedTitle) {
+      this.editTitleTouched = true;
+      return;
+    }
     this.editLoading = true;
     this.editError = '';
     const payload: UpdateObjectivePayload = {
-      title: this.editTitle,
+      title: trimmedTitle,
       objectiveScope: this.editScope,
       ownerEmployeeId: this.editOwnerId || undefined,
       horizonLabel: this.editHorizon,

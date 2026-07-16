@@ -545,7 +545,12 @@
           </label>
           <label class="full eval-form-group">
             Score (0-100)*
-            <input class="eval-form-control" type="number" min="0" max="100" [(ngModel)]="evalForm.rating"/>
+            <input class="eval-form-control" type="number" min="0" max="100" [(ngModel)]="evalForm.rating"
+                   [class.eval-input-error]="ratingTouched && ratingError"
+                   (blur)="ratingTouched = true"/>
+            @if (ratingTouched && ratingError) {
+              <span class="eval-field-error">{{ ratingError }}</span>
+            }
           </label>
           <label class="full eval-form-group">
             Objectifs
@@ -559,7 +564,7 @@
       </div>
       <div class="modal-footer eval-modal-footer">
         <button class="eval-modal-btn-cancel" type="button" (click)="closeModal()" [disabled]="isSaving">Annuler</button>
-        <button class="eval-modal-btn-add" type="button" (click)="saveEval()" [disabled]="isSaving">
+        <button class="eval-modal-btn-add" type="button" (click)="saveEval()" [disabled]="isSaving || !modalEmployeeId || !!ratingError">
           {{ isSaving ? 'Enregistrement...' : (editingEval ? 'Enregistrer les modifications' : 'Enregistrer l\'évaluation') }}
         </button>
       </div>

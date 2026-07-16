@@ -568,13 +568,14 @@
           · {{ selectedDepartmentName ?? 'Tous les départements' }}
           · {{ currentPeriodLabel }}
         </div>
-        <textarea #historyTextarea id="historyComment" class="note-modal-textarea" rows="3"
+        <textarea id="historyComment" class="note-modal-textarea" rows="3"
+                  [(ngModel)]="noteHistoryComment"
                   placeholder="Ex : Pic d'absences lié aux congés scolaires…"></textarea>
       </div>
 
       <div class="note-modal-footer">
         <button type="button" class="note-btn note-btn--cancel" (click)="closeHistoryModal()">Fermer</button>
-        <button type="button" class="note-btn note-btn--save" (click)="submitComment(historyTextarea)">Enregistrer</button>
+        <button type="button" class="note-btn note-btn--save" [disabled]="!noteHistoryComment?.trim()" (click)="submitComment()">Enregistrer</button>
       </div>
 
     </div>

@@ -318,7 +318,7 @@
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-secondary" (click)="closeEditEmployeeModal()" [disabled]="isSavingEmployeeEdit">Annuler</button>
-      <button type="button" class="btn-primary" (click)="saveEmployeeEdit()" [disabled]="isSavingEmployeeEdit">
+      <button type="button" class="btn-primary" (click)="saveEmployeeEdit()" [disabled]="isSavingEmployeeEdit || !isEmployeeEditFormValid">
         {{ isSavingEmployeeEdit ? 'Enregistrement...' : 'Enregistrer' }}
       </button>
     </div>

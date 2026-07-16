@@ -106,6 +106,25 @@ $shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
   &:focus {
     border-color: $primary;
   }
+
+  &.input-error {
+    border-color: #dc2626;
+    &:focus { border-color: #dc2626; }
+  }
+}
+
+.field-error {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #dc2626;
+}
+
+.autocomplete-empty {
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  color: #6b7280;
 }
 
 .form-textarea {

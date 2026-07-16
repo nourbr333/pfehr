@@ -1,6 +1,7 @@
 ﻿import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, ElementRef, OnDestroy, OnInit, PLATFORM_ID, ViewChild, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -62,7 +63,7 @@ interface DashboardEmployeeRecord {
 @Component({
   selector: 'app-accueil-resp',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, DashboardFiltersComponent, NotificationsPanelComponent, KpiThresholdModalComponent],
+  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive, DashboardFiltersComponent, NotificationsPanelComponent, KpiThresholdModalComponent],
   templateUrl: './accueil-resp.html',
   styleUrl: './accueil-resp.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -513,8 +514,8 @@ export class AccueilRespComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  submitComment(textarea: HTMLTextAreaElement): void {
-    const raw = textarea.value.trim();
+  submitComment(): void {
+    const raw = this.noteHistoryComment.trim();
     if (!raw) return;
     const val = this.round1(this.getKpiCurrentValue(this.noteHistoryKpiKey));
     const kpiValue = this.noteHistoryKpiKey === 'effectif' ? `${val} collaborateur${val > 1 ? 's' : ''}` : `${val}%`;
@@ -528,7 +529,7 @@ export class AccueilRespComponent implements OnInit, AfterViewInit, OnDestroy {
       content:   raw
     }).subscribe({
       next: () => {
-        textarea.value = '';
+        this.noteHistoryComment = '';
         this.toastService.success('Commentaire enregistré');
         this.cdr.markForCheck();
       },

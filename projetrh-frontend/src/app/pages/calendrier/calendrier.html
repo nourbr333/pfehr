@@ -292,7 +292,7 @@
               <div class="modal-col">
                 <div class="form-group">
                   <label for="event-titre">Titre</label>
-                  <input id="event-titre" type="text" class="form-control" formControlName="titre" placeholder="Titre.." />
+                  <input id="event-titre" type="text" class="form-control" formControlName="titre" maxlength="180" placeholder="Titre.." />
                   <div class="error-msg" *ngIf="submitted && addForm.get('titre')?.invalid">Le titre est requis</div>
                 </div>
 
@@ -406,7 +406,7 @@
 
                 <div class="form-group">
                   <label for="event-description">Description <span class="optional-label">(optionnel)</span></label>
-                  <textarea id="event-description" rows="6" class="form-control" formControlName="description" placeholder="Ajouter des détails, participants, lieu..."></textarea>
+                  <textarea id="event-description" rows="6" class="form-control" formControlName="description" maxlength="2000" placeholder="Ajouter des détails, participants, lieu..."></textarea>
                 </div>
               </div>
             </div>

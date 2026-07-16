@@ -36,7 +36,18 @@ export class KpiThresholdModalComponent implements OnChanges {
   seuil: number | null = null;
   cible: number | null = null;
   comment = '';
-  validationError = '';
+
+  get validationError(): string {
+    return validateThresholdTarget(this.kpiKey, this.seuil, this.cible) ?? '';
+  }
+
+  get seuilOutOfRange(): boolean {
+    return this.seuil != null && (!Number.isFinite(this.seuil) || this.seuil < 0 || this.seuil > 100);
+  }
+
+  get cibleOutOfRange(): boolean {
+    return this.cible != null && (!Number.isFinite(this.cible) || this.cible < 0 || this.cible > 100);
+  }
 
   get definition() {
     return getKpiDefinition(this.kpiKey);
@@ -72,7 +83,6 @@ export class KpiThresholdModalComponent implements OnChanges {
     this.seuil = existing?.thresholdValue != null ? Number(existing.thresholdValue) : null;
     this.cible = existing?.targetValue != null ? Number(existing.targetValue) : null;
     this.comment = '';
-    this.validationError = '';
   }
 
   close(): void {
@@ -87,7 +97,6 @@ export class KpiThresholdModalComponent implements OnChanges {
       return;
     }
 
-    this.validationError = validateThresholdTarget(this.kpiKey, this.seuil, this.cible) ?? '';
     if (this.validationError) return;
 
     const periodLabel = this.period

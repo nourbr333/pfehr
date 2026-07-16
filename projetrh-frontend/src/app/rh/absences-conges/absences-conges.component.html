@@ -386,7 +386,7 @@
     <p class="error-text" *ngIf="importFileError">{{ importFileError }}</p>
     <div class="modal-actions">
       <button type="button" class="btn-secondary" (click)="closeImportModal()">Annuler</button>
-      <button type="button" class="btn-primary" (click)="submitAttendanceImport()" [disabled]="importInProgress">
+      <button type="button" class="btn-primary" (click)="submitAttendanceImport()" [disabled]="importInProgress || !selectedImportFile">
         {{ importInProgress ? 'Import en cours...' : 'Valider' }}
       </button>
     </div>

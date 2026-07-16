@@ -22,6 +22,7 @@
         <label>Collaborateur</label>
         <div class="autocomplete-wrap">
           <input type="text" class="form-input" placeholder="Rechercher un collaborateur..."
+                 [class.input-error]="employeeTouched && employeeError"
                  [(ngModel)]="employeeSearch"
                  (input)="onEmployeeSearch()"
                  (focus)="showEmployeeDropdown = true"
@@ -35,7 +36,13 @@
               </div>
             </div>
           </div>
+          <div class="autocomplete-dropdown" *ngIf="showEmployeeDropdown && employeeSearch.trim() && filteredEmployees.length === 0">
+            <div class="autocomplete-empty">Aucun collaborateur trouvé</div>
+          </div>
         </div>
+        @if (employeeTouched && employeeError) {
+          <span class="field-error">{{ employeeError }}</span>
+        }
       </div>
 
       <div class="form-group">
@@ -51,12 +58,16 @@
       <div class="form-row">
         <div class="form-group">
           <label>Date de début</label>
-          <input type="date" class="form-input" [(ngModel)]="form.startDate" (ngModelChange)="onDatesChanged()" />
+          <input type="date" class="form-input" [(ngModel)]="form.startDate" [min]="todayStr" (ngModelChange)="onDatesChanged()" />
         </div>
         <div class="form-group">
           <label>Date de fin</label>
-          <input type="date" class="form-input" [(ngModel)]="form.endDate" (ngModelChange)="onDatesChanged()" />
+          <input type="date" class="form-input" [(ngModel)]="form.endDate" [min]="form.startDate || todayStr" (ngModelChange)="onDatesChanged()" />
         </div>
+      </div>
+
+      <div class="alert alert-danger" *ngIf="dateRangeError">
+        {{ dateRangeError }}
       </div>
 
       <div class="balance-summary" *ngIf="form.requestedDays > 0">

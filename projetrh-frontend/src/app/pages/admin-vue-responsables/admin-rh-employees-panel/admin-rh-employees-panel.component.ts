@@ -129,6 +129,18 @@ export class AdminRhEmployeesPanelComponent implements OnInit {
     this.showEditModal = true;
   }
 
+  get editFormValid(): boolean {
+    const managerIdValue = this.editForm.managerId.trim();
+    const managerIdOk = managerIdValue === '' || /^\d+$/.test(managerIdValue);
+    return !!(
+      this.editForm.firstName.trim() &&
+      this.editForm.lastName.trim() &&
+      this.editForm.jobTitle.trim() &&
+      this.editForm.departmentId != null &&
+      managerIdOk
+    );
+  }
+
   closeEdit(): void {
     if (this.isSaving) return;
     this.showEditModal = false;
