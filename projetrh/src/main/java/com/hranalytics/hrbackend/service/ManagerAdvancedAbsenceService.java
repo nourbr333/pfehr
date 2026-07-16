@@ -223,6 +223,15 @@ public class ManagerAdvancedAbsenceService {
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "demande introuvable.");
         }
+        if (!isApproved(request.getStatus())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "seules les absences approuvées peuvent avoir un plan de continuité.");
+        }
+        if (request.getEndDate() != null && request.getEndDate().isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "cette absence est déjà terminée, un plan de continuité ne peut plus être créé.");
+        }
         if (payload.getBackupEmployeeId() != null
                 && !employeeRepository.existsByEmployeeIdAndManagerId(payload.getBackupEmployeeId(), managerId)
                 && !Objects.equals(payload.getBackupEmployeeId(), managerId)) {
@@ -494,7 +503,11 @@ public class ManagerAdvancedAbsenceService {
     private List<ManagerAdvancedAbsenceDashboardDTO.ProjectImpactDTO> buildProjectImpacts(
             Integer managerId, List<Integer> teamIds, Map<Integer, Employee> employeeById,
             Set<Long> coveredRequestIds, Map<Long, String> backupNameByRequestId) {
-        List<TeamObjective> objectives = teamObjectiveRepository.findByManagerEmployeeIdOrderByDueDateAsc(managerId);
+        LocalDate today = LocalDate.now();
+        List<TeamObjective> objectives = teamObjectiveRepository.findByManagerEmployeeIdOrderByDueDateAsc(managerId)
+                .stream()
+                .filter(objective -> isActiveObjective(objective, today))
+                .toList();
         if (objectives.isEmpty()) return List.of();
 
         // Fetch all approved absences for the team (not period-limited — we filter by 15-day window per objective)
@@ -699,6 +712,16 @@ public class ManagerAdvancedAbsenceService {
 
     private boolean isApproved(String rawStatus) {
         return APPROVED_STATUSES.contains(clean(rawStatus).toLowerCase());
+    }
+
+    /** En cours = échéance non dépassée et progression < 100 %. Les objectifs échus sont ignorés
+     * (alignement avec ManagerCrossAnalysisService#isActiveForAnalysis). */
+    private boolean isActiveObjective(TeamObjective objective, LocalDate today) {
+        if (objective.getDueDate() == null || objective.getDueDate().isBefore(today)) {
+            return false;
+        }
+        int progress = objective.getProgressPercent() != null ? objective.getProgressPercent().intValue() : 0;
+        return progress < 100;
     }
 
     private boolean isPending(String rawStatus) {

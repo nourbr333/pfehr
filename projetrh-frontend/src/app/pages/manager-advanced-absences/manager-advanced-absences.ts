@@ -254,7 +254,10 @@ export class ManagerAdvancedAbsencesComponent implements OnInit, AfterViewInit {
   }
 
   get approvedRequests(): PipelineRequestItem[] {
-    return this.pipelineRequests.filter((request) => request.status === 'approuvee');
+    const today = this.parseDate(this.referenceDate);
+    return this.pipelineRequests.filter(
+      (request) => request.status === 'approuvee' && this.parseDate(request.endDate) >= today
+    );
   }
 
   get cumulativeAbsenceDays(): number {
@@ -561,6 +564,11 @@ export class ManagerAdvancedAbsencesComponent implements OnInit, AfterViewInit {
     return 'pill pending';
   }
 
+  planStatusLabel(status: string): string {
+    if (status === 'created') return 'Créé';
+    return status;
+  }
+
   riskLabel(riskStatus: string): string {
     const normalized = (riskStatus ?? '').toLowerCase();
     if (normalized === 'off_track') return 'Off track';
@@ -643,7 +651,9 @@ export class ManagerAdvancedAbsencesComponent implements OnInit, AfterViewInit {
     if (!req) return;
     const reqStart = this.parseDate(req.startDate);
     const reqEnd = this.parseDate(req.endDate);
-    const backupIsAbsent = this.calendarItems.some(
+    // On vérifie sur l'ensemble des demandes approuvées de l'équipe (pas seulement le calendrier de la
+    // période affichée) afin de détecter un chevauchement même hors du mois/semaine visible à l'écran.
+    const backupIsAbsent = this.pipelineRequests.some(
       (item) =>
         item.employeeId === this.selectedBackupEmployeeId &&
         item.status === 'approuvee' &&
@@ -651,7 +661,7 @@ export class ManagerAdvancedAbsencesComponent implements OnInit, AfterViewInit {
         this.parseDate(item.endDate) >= reqStart
     );
     if (backupIsAbsent) {
-      this.backupConflictWarning = 'Ce backup sera absent pendant la période couverte par cette absence.';
+      this.backupConflictWarning = 'Ce backup est déjà absent pendant la période couverte par cette absence : il ne peut pas être désigné comme backup.';
     }
   }
 

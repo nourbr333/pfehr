@@ -3,12 +3,6 @@
     <div>
       <h1>Vue Responsables</h1>
       <p>Supervision et actions RH héritées du rôle Responsable.</p>
-      <div class="admin-embed-banner">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
-        </svg>
-        Mode admin — actions Responsable RH
-      </div>
     </div>
     <div class="dashboard-header-right">
       <span class="employee-muted">Mise à jour · {{ todayLabel }}</span>
@@ -155,13 +149,11 @@
     <section class="section-block">
       <div class="section-title-row">
         <h2>Actions RH</h2>
-        <span class="section-title-hint">Actions héritées du rôle Responsable RH</span>
       </div>
 
       <div class="admin-embed-tabs">
         <button type="button" class="admin-embed-tab" [class.active]="activeTab === 'conges'" (click)="setTab('conges')">Congés</button>
         <button type="button" class="admin-embed-tab" [class.active]="activeTab === 'effectif'" (click)="setTab('effectif')">Effectif</button>
-        <button type="button" class="admin-embed-tab" [class.active]="activeTab === 'performances'" (click)="setTab('performances')">Performances</button>
       </div>
 
       <div class="admin-embed-tab-panel" *ngIf="activeTab === 'conges'">
@@ -194,38 +186,6 @@
 
       <div class="admin-embed-tab-panel" *ngIf="activeTab === 'effectif'">
         <app-admin-rh-employees-panel></app-admin-rh-employees-panel>
-      </div>
-
-      <div class="admin-embed-tab-panel" *ngIf="activeTab === 'performances'">
-        <div class="table-card">
-          <table class="data-table data-table-compact">
-            <thead>
-              <tr>
-                <th>Collaborateur</th>
-                <th>Département</th>
-                <th>Manager</th>
-                <th>Période</th>
-                <th>Note</th>
-                <th>Évalué le</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let evalItem of overview?.evaluationsRecentes">
-                <td>{{ evalItem.employe || '—' }}</td>
-                <td>{{ evalItem.departement || '—' }}</td>
-                <td>{{ evalItem.manager || '—' }}</td>
-                <td>{{ evalItem.periode || '—' }}</td>
-                <td>{{ noteLabel(evalItem.note) }}</td>
-                <td>{{ formatYmd(evalItem.evalueLe) }}</td>
-              </tr>
-              <tr *ngIf="(overview?.evaluationsRecentes ?? []).length === 0">
-                <td colspan="6">
-                  <div class="empty-row">Aucune évaluation récente.</div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
       </div>
     </section>
   </div>

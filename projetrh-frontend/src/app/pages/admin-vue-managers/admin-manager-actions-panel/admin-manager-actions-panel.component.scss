@@ -11,24 +11,6 @@
   padding: 16px;
 }
 
-.admin-manager-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-
-  h3 {
-    font-size: 0.98rem;
-    font-weight: 600;
-    color: $text-dark;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: unset;
-    word-break: break-word;
-  }
-}
-
 .admin-embed-tabs {
   margin-bottom: 16px;
 }

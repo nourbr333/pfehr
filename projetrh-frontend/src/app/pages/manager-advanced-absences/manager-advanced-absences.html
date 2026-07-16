@@ -770,7 +770,7 @@
                     <textarea rows="3" [(ngModel)]="continuityNotes" maxlength="1000" placeholder="ex : accès tickets Jira, point hebdo mercredi, contact client à notifier, documentation à transmettre…"></textarea>
                   </div>
                   <div style="display:flex;gap:8px">
-                    <button class="btn-action primary" type="button" (click)="createContinuityPlan()" [disabled]="actionLoading || !selectedRequestIdForPlan">
+                    <button class="btn-action primary" type="button" (click)="createContinuityPlan()" [disabled]="actionLoading || !selectedRequestIdForPlan || !!backupConflictWarning">
                       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
                       </svg>
@@ -805,7 +805,7 @@
                     </div>
                   </div>
                   <div class="plan-item-meta">
-                    <span class="pill approved">{{ plan.status }}</span>
+                    <span class="pill approved">{{ planStatusLabel(plan.status) }}</span>
                     <span class="plan-date">{{ plan.createdAt | date:'dd/MM/yyyy' }}</span>
                   </div>
                 </div>

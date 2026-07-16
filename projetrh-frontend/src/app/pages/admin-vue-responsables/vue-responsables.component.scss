@@ -7,13 +7,23 @@
   margin-top: 20px;
 }
 
+// ——— Section « Activité congés » : liste + graphique compacts ———
+.chart-body--list {
+  min-height: 0;
+}
+
+.chart-body--chart {
+  min-height: 160px;
+}
+
 // ——— Liste des derniers mouvements ———
 .movement-list {
   border-radius: 10px;
   border: 1px solid $border;
   background: #fff;
-  overflow: hidden;
+  overflow-y: auto;
   flex: 1;
+  max-height: 220px;
 }
 
 .movement-item {
@@ -21,7 +31,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 11px 14px;
+  padding: 8px 14px;
   border-bottom: 1px solid $border;
 
   &:last-child {

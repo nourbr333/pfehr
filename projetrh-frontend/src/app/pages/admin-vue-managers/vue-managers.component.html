@@ -3,12 +3,6 @@
     <div>
       <h1>Vue Managers</h1>
       <p>Supervision et actions manager héritées du rôle Manager.</p>
-      <div class="admin-embed-banner">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
-        </svg>
-        Mode admin — agir au nom d'un manager
-      </div>
     </div>
     <div class="dashboard-header-right">
       <span class="employee-muted">Mise à jour · {{ todayLabel }}</span>
@@ -76,7 +70,7 @@
             </div>
           </div>
           <strong class="kpi-value">{{ overview?.absencesEnAttenteTotal ?? 0 }}</strong>
-          <span class="kpi-subvalue">{{ overview?.evaluationsAnnee ?? 0 }} évaluation(s) réalisée(s) cette année</span>
+          <span class="kpi-subvalue">Toutes équipes confondues</span>
         </article>
       </div>
     </section>
@@ -95,8 +89,6 @@
               <th>Équipe</th>
               <th>Objectifs</th>
               <th>Risque</th>
-              <th>Éval.</th>
-              <th>Absences</th>
               <th>Compte</th>
               <th>Actions</th>
             </tr>
@@ -127,11 +119,6 @@
                   <span *ngIf="m.objectifsEnRisque > 0" class="log-type-pill log-type-pill-red">{{ m.objectifsEnRisque }}</span>
                   <span *ngIf="m.objectifsEnRisque === 0" class="cell-muted">—</span>
                 </td>
-                <td>{{ m.evaluationsAnnee }}</td>
-                <td>
-                  <span *ngIf="m.absencesEnAttente > 0" class="log-type-pill log-type-pill-orange">{{ m.absencesEnAttente }}</span>
-                  <span *ngIf="m.absencesEnAttente === 0" class="cell-muted">—</span>
-                </td>
                 <td>
                   <span *ngIf="m.compteActif" class="log-type-pill log-type-pill-green">Actif</span>
                   <span *ngIf="!m.compteActif" class="log-type-pill log-type-pill-gray">Non lié</span>
@@ -143,7 +130,7 @@
                 </td>
               </tr>
               <tr *ngIf="selectedManagerId === m.employeeId">
-                <td colspan="8" class="panel-cell">
+                <td colspan="6" class="panel-cell">
                   <app-admin-manager-actions-panel
                     [managerId]="m.employeeId"
                     [managerName]="m.nom"
@@ -153,7 +140,7 @@
             </ng-container>
 
             <tr *ngIf="!loading && managers.length === 0">
-              <td colspan="8">
+              <td colspan="6">
                 <div class="empty-row">Aucun manager identifié (champ « is_manager » des collaborateurs)</div>
               </td>
             </tr>

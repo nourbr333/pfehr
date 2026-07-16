@@ -25,7 +25,7 @@ import { AdminRhEmployeesPanelComponent } from './admin-rh-employees-panel/admin
 
 let chartJsRegistered = false;
 
-type RhTab = 'conges' | 'effectif' | 'performances';
+type RhTab = 'conges' | 'effectif';
 
 @Component({
   selector: 'app-vue-responsables',
@@ -391,7 +391,4 @@ export class VueResponsablesComponent implements OnInit, OnDestroy {
     return `il y a ${diffDays} jours`;
   }
 
-  noteLabel(note: number | null): string {
-    return note == null ? '—' : `${note}/100`;
-  }
 }
